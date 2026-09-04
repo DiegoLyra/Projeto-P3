@@ -1,0 +1,30 @@
+name: Gerar Releases
+#usa a função de releases do próprio github
+#o caminho é: git tag v1.0.0 -> git push origin v1.0.0 (após a main estar atualizada para essa versão)
+
+on:
+  push:
+    tags:
+      - 'v*'   # dispara quando você fizer push de uma tag tipo v1.0.0 sinalizando versão
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write   # necessário para criar releases
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Build com Maven
+        run: mvn -B clean package -DskipTests
+
+      - name: Criar Release e anexar JAR
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/*.jar
