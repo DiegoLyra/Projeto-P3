@@ -99,7 +99,7 @@ public class CategoriaPersistenciaCSV implements ICategoriaRepository {
                 try {
                     leitor.close();
                 } catch (IOException e){
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }
@@ -128,7 +128,7 @@ public class CategoriaPersistenciaCSV implements ICategoriaRepository {
                 try {
                     escritor.close();
                 } catch (IOException e){
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }

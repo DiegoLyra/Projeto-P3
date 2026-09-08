@@ -149,7 +149,7 @@ public class ItemPersistenciaCSV implements IItemRepository {
                 try {
                     leitor.close();
                 } catch (IOException e){
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }
@@ -183,7 +183,7 @@ public class ItemPersistenciaCSV implements IItemRepository {
                 try {
                     escritor.close();
                 } catch (IOException e){
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }
