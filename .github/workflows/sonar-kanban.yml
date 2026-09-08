@@ -31,27 +31,32 @@ jobs:
         run: |
           python -c '
           import os
+          import sys
           import requests
 
-          sonar_url = os.environ["SONARQUBE_URL"]
-          sonar_token = os.environ["SONAR_TOKEN"]
-          sonar_project = os.environ["SONAR_PROJECT_KEY"]
-          gh_token = os.environ["GITHUB_TOKEN"]
-          gh_repo = os.environ["GITHUB_REPO"]
+          sonar_url = os.environ.get("SONARQUBE_URL", "").strip()
+          sonar_token = os.environ.get("SONARTOKEN", "").strip() or os.environ.get("SONAR_TOKEN", "").strip()
+          sonar_project = os.environ.get("SONAR_PROJECT_KEY", "").strip()
+          gh_token = os.environ.get("GITHUB_TOKEN", "").strip()
+          gh_repo = os.environ.get("GITHUB_REPO", "").strip()
 
-          issues_url = f"{sonar_url}/api/issues/search"
+          if not sonar_url:
+              print("Erro crítico: A variável SONARQUBE_URL está vazia nos Secrets do GitHub!")
+              sys.exit(1)
+
+          issues_url = f"{sonar_url.rstrip(\"/\")}/api/issues/search"
           params = {
               "componentKeys": sonar_project,
               "statuses": "OPEN,CONFIRMED,REOPENED",
               "ps": 50,
           }
 
-          print("Buscando issues no SonarQube...")
+          print(f"Conectando em: {issues_url} para o projeto {sonar_project}")
           response = requests.get(issues_url, params=params, auth=(sonar_token, ""))
 
           if response.status_code != 200:
-              print(f"Erro ao conectar no SonarQube: {response.status_code}")
-              exit(1)
+              print(f"Erro ao conectar no SonarQube: {response.status_code} - {response.text}")
+              sys.exit(1)
 
           issues_data = response.json().get("issues", [])
           print(f"Encontradas {len(issues_data)} pendências. Criando issues no GitHub...")
@@ -88,5 +93,5 @@ jobs:
               if gh_response.status_code == 201:
                   print(f"Issue criada: {title}")
               else:
-                  print(f"Falha ao criar issue (pode já existir ou erro de token): {gh_response.status_code}")
+                  print(f"Falha ao criar issue: {gh_response.status_code} - {gh_response.text}")
           '
