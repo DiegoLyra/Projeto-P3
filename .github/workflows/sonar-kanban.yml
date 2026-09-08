@@ -33,7 +33,7 @@ jobs:
           import sys
           import requests
 
-          sonar_url = os.environ.get("SONARQUBE_URL", "").strip()
+          sonar_url = os.environ.get("SONARQUBE_URL", "").strip().rstrip("/")
           sonar_token = os.environ.get("SONAR_TOKEN", "").strip()
           sonar_project = os.environ.get("SONAR_PROJECT_KEY", "").strip()
           gh_token = os.environ.get("GITHUB_TOKEN", "").strip()
@@ -42,7 +42,7 @@ jobs:
           print(f"Conectando na URL: {sonar_url}")
           print(f"Projeto: {sonar_project}")
 
-          issues_url = f"{sonar_url.rstrip(\"/\")}/api/issues/search"
+          issues_url = f"{sonar_url}/api/issues/search"
           params = {
               "componentKeys": sonar_project,
               "statuses": "OPEN,CONFIRMED,REOPENED",
