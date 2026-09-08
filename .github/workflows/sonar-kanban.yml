@@ -3,7 +3,6 @@ name: Sincronizar SonarQube com o Kanban
 on:
   schedule:
     - cron: '0 8 * * *'
-  
   workflow_dispatch:
 
 jobs:
@@ -23,10 +22,11 @@ jobs:
 
       - name: Executar script de sincronização
         env:
-          SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONARQUBE_URL: "[https://sonarcloud.io](https://sonarcloud.io)"
+
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPO: ${{ github.repository }}
         run: |
           python -c '
@@ -35,14 +35,13 @@ jobs:
           import requests
 
           sonar_url = os.environ.get("SONARQUBE_URL", "").strip()
-          sonar_token = os.environ.get("SONARTOKEN", "").strip() or os.environ.get("SONAR_TOKEN", "").strip()
+          sonar_token = os.environ.get("SONAR_TOKEN", "").strip()
           sonar_project = os.environ.get("SONAR_PROJECT_KEY", "").strip()
           gh_token = os.environ.get("GITHUB_TOKEN", "").strip()
           gh_repo = os.environ.get("GITHUB_REPO", "").strip()
 
-          if not sonar_url:
-              print("Erro crítico: A variável SONARQUBE_URL está vazia nos Secrets do GitHub!")
-              sys.exit(1)
+          print(f"Conectando na URL: {sonar_url}")
+          print(f"Projeto: {sonar_project}")
 
           issues_url = f"{sonar_url.rstrip(\"/\")}/api/issues/search"
           params = {
@@ -51,7 +50,6 @@ jobs:
               "ps": 50,
           }
 
-          print(f"Conectando em: {issues_url} para o projeto {sonar_project}")
           response = requests.get(issues_url, params=params, auth=(sonar_token, ""))
 
           if response.status_code != 200:
