@@ -1,0 +1,43 @@
+name: Publicar Imagem Docker
+on:
+  release:
+    types: [published]
+
+jobs:
+  docker:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Baixar o .jar da Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "*.jar" \
+            --output app.jar
+
+      - name: Normalizar nome do repositório (GHCR exige minúsculas)
+        id: repo
+        run: echo "name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Login no GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3e8f65 # v6.13.0
+        with:
+          context: .
+          file: ./Dockerfile-release
+          push: true
+          tags: |
+            ghcr.io/${{ steps.repo.outputs.name }}:${{ github.event.release.tag_name }}
+            ghcr.io/${{ steps.repo.outputs.name }}:latest
