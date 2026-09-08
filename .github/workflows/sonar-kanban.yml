@@ -22,8 +22,7 @@ jobs:
 
       - name: Executar script de sincronização
         env:
-          SONARQUBE_URL: "[https://sonarcloud.io](https://sonarcloud.io)"
-
+          SONARQUBE_URL: "https://sonarcloud.io"
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
