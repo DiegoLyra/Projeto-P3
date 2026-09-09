@@ -2,10 +2,10 @@ name: Configurações SonarQube
 on:
   push:
     branches:
-      - develop
+      - main
   pull_request:
     branches:
-      - develop
+      - main
     types: [opened, synchronize, reopened]
 
 jobs:
