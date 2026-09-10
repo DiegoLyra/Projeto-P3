@@ -1,4 +1,4 @@
-  name: Sincronizar SonarQube com o Kanban
+name: Sincronizar SonarQube com o Kanban
 
 on:
   schedule:
@@ -57,7 +57,6 @@ jobs:
           }
 
           response = requests.get(issues_url, params=params, auth=(sonar_token, ""))
-
           if response.status_code != 200:
               print(f"Erro ao conectar no SonarQube: {response.status_code} - {response.text}")
               sys.exit(1)
@@ -92,8 +91,8 @@ jobs:
 
           # Mapa chave-sonar -> issue do github, extraída do corpo
           padrao_chave = re.compile(r"<!-- sonar-key: (.+?) -->")
-
           chave_para_issue_github = {}
+
           for issue_gh in issues_github_abertas:
               corpo = issue_gh.get("body") or ""
               match = padrao_chave.search(corpo)
@@ -113,7 +112,6 @@ jobs:
                       headers=headers,
                   )
                   resp_close = requests.patch(close_url, json={"state": "closed"}, headers=headers)
-
                   if resp_close.status_code == 200:
                       fechadas += 1
                       print(f"Issue fechada automaticamente: #{numero} - {issue_gh[\"title\"]}")
@@ -125,7 +123,6 @@ jobs:
           criadas = 0
           for issue in issues_abertas_sonar:
               chave = issue.get("key")
-
               if chave in chave_para_issue_github:
                   # já existe issue aberta correspondente, não duplica
                   continue
