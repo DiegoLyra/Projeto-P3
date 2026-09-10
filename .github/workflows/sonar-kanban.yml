@@ -114,7 +114,7 @@ jobs:
                   resp_close = requests.patch(close_url, json={"state": "closed"}, headers=headers)
                   if resp_close.status_code == 200:
                       fechadas += 1
-                      print(f"Issue fechada automaticamente: #{numero} - {issue_gh[\"title\"]}")
+                      print(f"Issue fechada automaticamente: #{numero} - {issue_gh['title']}")
                   else:
                       print(f"Falha ao fechar issue #{numero}: {resp_close.status_code} - {resp_close.text}")
 
