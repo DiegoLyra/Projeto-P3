@@ -3,12 +3,16 @@ package com.loja.padraoFacade;
 import com.loja.padraoFacade.interfaces.ILojaFacade;
 import com.loja.business.interfaces.*;
 import com.loja.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
 public class LojaFacade implements ILojaFacade{
+
+    private static final Logger logger = LoggerFactory.getLogger(LojaFacade.class);
 
     private final IUsuarioBusiness usuarioBusiness;
     private final IItemBusiness itemBusiness;
@@ -17,12 +21,12 @@ public class LojaFacade implements ILojaFacade{
     private final IContratoBusiness contratoBusiness;
     private final IMultaBusiness multaBusiness;
 
-    public LojaFacade(IUsuarioBusiness usuarioBusiness, 
-                    IItemBusiness itemBusiness,
-                    ICategoriaBusiness categoriaBusiness,
-                    IFornecedorBusiness fornecedorBusiness,
-                    IContratoBusiness contratoBusiness,
-                    IMultaBusiness multaBusiness){
+    public LojaFacade(IUsuarioBusiness usuarioBusiness,
+                      IItemBusiness itemBusiness,
+                      ICategoriaBusiness categoriaBusiness,
+                      IFornecedorBusiness fornecedorBusiness,
+                      IContratoBusiness contratoBusiness,
+                      IMultaBusiness multaBusiness){
         this.usuarioBusiness = usuarioBusiness;
         this.itemBusiness = itemBusiness;
         this.categoriaBusiness = categoriaBusiness;
@@ -75,9 +79,9 @@ public class LojaFacade implements ILojaFacade{
         BigDecimal totalAlugueis = contratoBusiness.listar().values().stream()
                 .filter(
                         c -> c.getStatus().equalsIgnoreCase("ENCERRADO")
-                        && c.getDataEfetivaDevolucao() != null
-                        && !c.getDataEfetivaDevolucao().isBefore(inicio)
-                        && !c.getDataEfetivaDevolucao().isAfter(fim))
+                                && c.getDataEfetivaDevolucao() != null
+                                && !c.getDataEfetivaDevolucao().isBefore(inicio)
+                                && !c.getDataEfetivaDevolucao().isAfter(fim))
                 .map(ContratoAluguel::getValorTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalMultas = multaBusiness.listar().values().stream()
@@ -370,22 +374,19 @@ public class LojaFacade implements ILojaFacade{
     }
 
     public void salvarTudo() {
-        try { usuarioBusiness.salvarDados(); }
-        catch (RuntimeException e) { System.out.println("Erro ao salvar usuários: " + e.getMessage()); }
+        salvarComTratamento("usuários", usuarioBusiness::salvarDados);
+        salvarComTratamento("itens", itemBusiness::salvarDados);
+        salvarComTratamento("categorias", categoriaBusiness::salvarDados);
+        salvarComTratamento("fornecedores", fornecedorBusiness::salvarDados);
+        salvarComTratamento("contratos", contratoBusiness::salvarDados);
+        salvarComTratamento("multas", multaBusiness::salvarDados);
+    }
 
-        try { itemBusiness.salvarDados(); }
-        catch (RuntimeException e) { System.out.println("Erro ao salvar itens: " + e.getMessage()); }
-
-        try { categoriaBusiness.salvarDados(); }
-        catch (RuntimeException e) { System.out.println("Erro ao salvar categorias: " + e.getMessage()); }
-
-        try { fornecedorBusiness.salvarDados(); }
-        catch (RuntimeException e) { System.out.println("Erro ao salvar fornecedores: " + e.getMessage()); }
-
-        try { contratoBusiness.salvarDados(); }
-        catch (RuntimeException e) { System.out.println("Erro ao salvar contratos: " + e.getMessage()); }
-
-        try { multaBusiness.salvarDados(); }
-        catch (RuntimeException e) { System.out.println("Erro ao salvar multas: " + e.getMessage()); }
+    private void salvarComTratamento(String nomeEntidade, Runnable acaoDeSalvar) {
+        try {
+            acaoDeSalvar.run();
+        } catch (RuntimeException e) {
+            logger.error("Erro ao salvar {}: {}", nomeEntidade, e.getMessage(), e);
+        }
     }
 }
