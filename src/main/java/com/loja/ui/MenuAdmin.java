@@ -12,6 +12,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.Scanner;
 
+@SuppressWarnings("java:S106")
 public class MenuAdmin {
 
     private static final Logger logger = LoggerFactory.getLogger(MenuAdmin.class);
