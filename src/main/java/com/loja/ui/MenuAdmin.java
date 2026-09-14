@@ -124,7 +124,7 @@ public class MenuAdmin {
             System.out.print("Perfil desejado: ");
             String perfil = scanner.nextLine().toUpperCase();
             if (facade.listarUsuarioPorPerfil(perfil).isEmpty()) {
-                throw new RuntimeException("Nehum usuário de perfil " + perfil);
+                throw new IllegalArgumentException("Nehum usuário de perfil " + perfil);
             }
             facade.listarUsuarioPorPerfil(perfil).values().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
         } else {
@@ -148,27 +148,27 @@ public class MenuAdmin {
         if (escolha.equals("1")) {
             System.out.print("Novo Nome (" + u.getNome() + "): ");
             String novoNome = scanner.nextLine();
-            if (novoNome.isBlank()) throw new RuntimeException("nome inválido!");
+            if (novoNome.isBlank()) throw new IllegalArgumentException("nome inválido!");
             u.setNome(novoNome);
         } else if (escolha.equals("2")) {
             System.out.print("Novo Email/Login (" + u.getLogin() + "): ");
             String novoLogin = scanner.nextLine();
-            if (novoLogin.isBlank()) throw new RuntimeException("login inválido!");
+            if (novoLogin.isBlank()) throw new IllegalArgumentException("login inválido!");
             u.setLogin(novoLogin);
         } else if (escolha.equals("3")) {
             System.out.print("Nova senha: ");
             String novaSenha = scanner.nextLine();
-            if (novaSenha.isBlank() || novaSenha.length() < 3) throw new RuntimeException("Senha inválida!");
+            if (novaSenha.isBlank() || novaSenha.length() < 3) throw new IllegalArgumentException("Senha inválida!");
             u.setSenha(novaSenha);
         } else if (escolha.equals("4") && !(u instanceof Funcionario)) {
-            throw new RuntimeException("O usuário não é funcionário!");
+            throw new IllegalArgumentException("O usuário não é funcionário!");
         } else if (escolha.equals("4")) {
             System.out.print("Novo cargo (" + ((Funcionario) u).getCargo() + "): ");
             String novoCargo = scanner.nextLine();
-            if (novoCargo.isBlank()) throw new RuntimeException("Cargo inválido!");
+            if (novoCargo.isBlank()) throw new IllegalArgumentException("Cargo inválido!");
             ((Funcionario) u).setCargo(novoCargo);
         } else {
-            throw new RuntimeException("Opção inválida!");
+            throw new IllegalArgumentException("Opção inválida!");
         }
 
         facade.atualizarUsuario(id, u);
@@ -234,11 +234,11 @@ public class MenuAdmin {
             System.out.print(prompt);
             BigDecimal valor = new BigDecimal(scanner.nextLine());
             if (valor.compareTo(BigDecimal.ZERO) < 0) {
-                throw new RuntimeException("O valor não pode ser negativo!");
+                throw new IllegalArgumentException("O valor não pode ser negativo!");
             }
             return valor;
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Valor inválido para " + rotulo + ".", e);
+            throw new IllegalArgumentException("Valor inválido para " + rotulo + ".", e);
         }
     }
 
@@ -279,7 +279,7 @@ public class MenuAdmin {
         if (escolha.equals("1")) {
             System.out.print("Novo Nome (" + item.getNome() + "): ");
             String novoNome = scanner.nextLine();
-            if (novoNome.isBlank()) throw new RuntimeException("nome inválido!");
+            if (novoNome.isBlank()) throw new IllegalArgumentException("nome inválido!");
             item.setNome(novoNome);
         } else if (escolha.equals("2")) {
             item.setTaxaDiaria(lerValorMonetario("Nova taxa diária (" + item.getTaxaDiaria() + ")(XX.xx):  R$ ", "taxa diária"));
@@ -292,7 +292,7 @@ public class MenuAdmin {
             System.out.print("Digite o id do fornecedor (" + item.getFornecedor().getId() + "): ");
             item.setFornecedor(facade.buscarFornecedor(scanner.nextLine()));
         } else {
-            throw new RuntimeException("Opção inválida!");
+            throw new IllegalArgumentException("Opção inválida!");
         }
 
         facade.atualizarItem(item);
@@ -400,20 +400,20 @@ public class MenuAdmin {
         if (escolha.equals("1")) {
             System.out.print("Novo Nome (" + f.getNome() + "): ");
             String novoNome = scanner.nextLine();
-            if (novoNome.isBlank()) throw new RuntimeException("Nome inválido!");
+            if (novoNome.isBlank()) throw new IllegalArgumentException("Nome inválido!");
             f.setNome(novoNome);
         } else if (escolha.equals("2")) {
             System.out.print("Novo CNPJ (" + f.getCnpj() + "): ");
             String novoCnpj = scanner.nextLine();
-            if (novoCnpj.isBlank()) throw new RuntimeException("CNPJ inválido!");
+            if (novoCnpj.isBlank()) throw new IllegalArgumentException("CNPJ inválido!");
             f.setCnpj(novoCnpj);
         } else if (escolha.equals("3")) {
             System.out.print("Novo Telefone (" + f.getTelefone() + "): ");
             String novoTelefone = scanner.nextLine();
-            if (novoTelefone.isBlank()) throw new RuntimeException("Telefone inválido!");
+            if (novoTelefone.isBlank()) throw new IllegalArgumentException("Telefone inválido!");
             f.setTelefone(novoTelefone);
         } else {
-            throw new RuntimeException("Opção inválida!");
+            throw new IllegalArgumentException("Opção inválida!");
         }
 
         facade.atualizarFornecedor(f);
