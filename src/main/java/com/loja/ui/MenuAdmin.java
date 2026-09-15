@@ -97,20 +97,29 @@ public class MenuAdmin {
         System.out.print("Senha: "); // NOSONAR
         String senha = scanner.nextLine();
 
-        if (tipo.equals("1")) {
-            facade.cadastrarCliente(new Cliente(id, nome, email, senha));
-            System.out.println("Cliente cadastrado com sucesso!"); // NOSONAR
-        } else if (tipo.equals("2")) {
-            System.out.print("Cargo do Funcionário: "); // NOSONAR
-            String cargo = scanner.nextLine();
-            facade.cadastrarFuncionario(new Funcionario(id, nome, email, senha, cargo));
-            System.out.println("Funcionário cadastrado com sucesso!"); // NOSONAR
-        } else if (tipo.equals("3")) {
-            facade.cadastrarAdm(new Administrador(id, nome, email, senha));
-            System.out.println("Administrador cadastrado com sucesso!"); // NOSONAR
-        } else {
-            System.out.println("Tipo de usuário inválido!"); // NOSONAR
+        switch (tipo) {
+            case "1" -> cadastrarCliente(id, nome, email, senha);
+            case "2" -> cadastrarFuncionarioNovo(id, nome, email, senha);
+            case "3" -> cadastrarAdministrador(id, nome, email, senha);
+            default -> System.out.println("Tipo de usuário inválido!"); // NOSONAR
         }
+    }
+
+    private void cadastrarCliente(String id, String nome, String email, String senha) {
+        facade.cadastrarCliente(new Cliente(id, nome, email, senha));
+        System.out.println("Cliente cadastrado com sucesso!"); // NOSONAR
+    }
+
+    private void cadastrarFuncionarioNovo(String id, String nome, String email, String senha) {
+        System.out.print("Cargo do Funcionário: "); // NOSONAR
+        String cargo = scanner.nextLine();
+        facade.cadastrarFuncionario(new Funcionario(id, nome, email, senha, cargo));
+        System.out.println("Funcionário cadastrado com sucesso!"); // NOSONAR
+    }
+
+    private void cadastrarAdministrador(String id, String nome, String email, String senha) {
+        facade.cadastrarAdm(new Administrador(id, nome, email, senha));
+        System.out.println("Administrador cadastrado com sucesso!"); // NOSONAR
     }
 
     private void listarUsuarios() {
@@ -119,17 +128,27 @@ public class MenuAdmin {
         String listOpt = scanner.nextLine();
 
         if (listOpt.equals("1")) {
-            facade.listarUsuario().values().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome() + " | Perfil: " + u.getPerfil())); // NOSONAR
+            listarTodosUsuarios();
         } else if (listOpt.equals("2")) {
-            System.out.print("Perfil desejado: "); // NOSONAR
-            String perfil = scanner.nextLine().toUpperCase();
-            if (facade.listarUsuarioPorPerfil(perfil).isEmpty()) {
-                throw new RuntimeException("Nehum usuário de perfil " + perfil);
-            }
-            facade.listarUsuarioPorPerfil(perfil).values().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome())); // NOSONAR
+            listarUsuariosPorPerfil();
         } else {
             System.out.println("Digite uma opção válida!"); // NOSONAR
         }
+    }
+
+    private void listarTodosUsuarios() {
+        facade.listarUsuario().values()
+                .forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome() + " | Perfil: " + u.getPerfil())); // NOSONAR
+    }
+
+    private void listarUsuariosPorPerfil() {
+        System.out.print("Perfil desejado: "); // NOSONAR
+        String perfil = scanner.nextLine().toUpperCase();
+        Map<String, Usuario> usuarios = facade.listarUsuarioPorPerfil(perfil);
+        if (usuarios.isEmpty()) {
+            throw new RuntimeException("Nehum usuário de perfil " + perfil);
+        }
+        usuarios.values().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome())); // NOSONAR
     }
 
     private void atualizarUsuario() {
@@ -145,34 +164,55 @@ public class MenuAdmin {
         System.out.println("4 - Cargo (quando aplicavel)"); // NOSONAR
         String escolha = scanner.nextLine();
 
-        if (escolha.equals("1")) {
-            System.out.print("Novo Nome (" + u.getNome() + "): "); // NOSONAR
-            String novoNome = scanner.nextLine();
-            if (novoNome.isBlank()) throw new RuntimeException("nome inválido!");
-            u.setNome(novoNome);
-        } else if (escolha.equals("2")) {
-            System.out.print("Novo Email/Login (" + u.getLogin() + "): "); // NOSONAR
-            String novoLogin = scanner.nextLine();
-            if (novoLogin.isBlank()) throw new RuntimeException("login inválido!");
-            u.setLogin(novoLogin);
-        } else if (escolha.equals("3")) {
-            System.out.print("Nova senha: "); // NOSONAR
-            String novaSenha = scanner.nextLine();
-            if (novaSenha.isBlank() || novaSenha.length() < 3) throw new RuntimeException("Senha inválida!");
-            u.setSenha(novaSenha);
-        } else if (escolha.equals("4") && !(u instanceof Funcionario)) {
-            throw new RuntimeException("O usuário não é funcionário!");
-        } else if (escolha.equals("4")) {
-            System.out.print("Novo cargo (" + ((Funcionario) u).getCargo() + "): "); // NOSONAR
-            String novoCargo = scanner.nextLine();
-            if (novoCargo.isBlank()) throw new RuntimeException("Cargo inválido!");
-            ((Funcionario) u).setCargo(novoCargo);
-        } else {
-            throw new RuntimeException("Opção inválida!");
+        switch (escolha) {
+            case "1" -> atualizarNomeUsuario(u);
+            case "2" -> atualizarLoginUsuario(u);
+            case "3" -> atualizarSenhaUsuario(u);
+            case "4" -> atualizarCargoFuncionario(u);
+            default -> throw new RuntimeException("Opção inválida!");
         }
 
         facade.atualizarUsuario(id, u);
         System.out.println("Usuário atualizado com sucesso!"); // NOSONAR
+    }
+
+    private void atualizarNomeUsuario(Usuario u) {
+        System.out.print("Novo Nome (" + u.getNome() + "): "); // NOSONAR
+        String novoNome = scanner.nextLine();
+        if (novoNome.isBlank()) {
+            throw new RuntimeException("nome inválido!");
+        }
+        u.setNome(novoNome);
+    }
+
+    private void atualizarLoginUsuario(Usuario u) {
+        System.out.print("Novo Email/Login (" + u.getLogin() + "): "); // NOSONAR
+        String novoLogin = scanner.nextLine();
+        if (novoLogin.isBlank()) {
+            throw new RuntimeException("login inválido!");
+        }
+        u.setLogin(novoLogin);
+    }
+
+    private void atualizarSenhaUsuario(Usuario u) {
+        System.out.print("Nova senha: "); // NOSONAR
+        String novaSenha = scanner.nextLine();
+        if (novaSenha.isBlank() || novaSenha.length() < 3) {
+            throw new RuntimeException("Senha inválida!");
+        }
+        u.setSenha(novaSenha);
+    }
+
+    private void atualizarCargoFuncionario(Usuario u) {
+        if (!(u instanceof Funcionario func)) {
+            throw new RuntimeException("O usuário não é funcionário!");
+        }
+        System.out.print("Novo cargo (" + func.getCargo() + "): "); // NOSONAR
+        String novoCargo = scanner.nextLine();
+        if (novoCargo.isBlank()) {
+            throw new RuntimeException("Cargo inválido!");
+        }
+        func.setCargo(novoCargo);
     }
 
     private void desativarUsuario() {
@@ -247,21 +287,39 @@ public class MenuAdmin {
         System.out.print(OPCAO_PROMPT); // NOSONAR
         String opt = scanner.nextLine();
 
-        if (opt.equals("1")) {
-            facade.listarItem().values().forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome() + " | Status: " + i.getStatus())); // NOSONAR
-        } else if (opt.equals("2")) {
-            System.out.print("Status (DISPONIVEL/ALUGADO): "); // NOSONAR
-            String status = scanner.nextLine().toUpperCase();
-            facade.listarItemPorStatus(status).values().forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome())); // NOSONAR
-        } else if (opt.equals("3")) {
-            System.out.print("ID Categoria: "); // NOSONAR
-            Categoria cat = facade.buscarCategoria(scanner.nextLine());
-            facade.listarItemPorCategoria(cat).values().forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome())); // NOSONAR
-        } else if (opt.equals("4")) {
-            System.out.print("ID Fornecedor: "); // NOSONAR
-            Fornecedor forn = facade.buscarFornecedor(scanner.nextLine());
-            facade.listarItemPorFornecedor(forn).values().forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome())); // NOSONAR
+        switch (opt) {
+            case "1" -> listarTodosItens();
+            case "2" -> listarItensPorStatus();
+            case "3" -> listarItensPorCategoria();
+            case "4" -> listarItensPorFornecedor();
+            default -> System.out.println("Opção inválida!"); // NOSONAR
         }
+    }
+
+    private void listarTodosItens() {
+        facade.listarItem().values()
+                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome() + " | Status: " + i.getStatus())); // NOSONAR
+    }
+
+    private void listarItensPorStatus() {
+        System.out.print("Status (DISPONIVEL/ALUGADO): "); // NOSONAR
+        String status = scanner.nextLine().toUpperCase();
+        facade.listarItemPorStatus(status).values()
+                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome())); // NOSONAR
+    }
+
+    private void listarItensPorCategoria() {
+        System.out.print("ID Categoria: "); // NOSONAR
+        Categoria cat = facade.buscarCategoria(scanner.nextLine());
+        facade.listarItemPorCategoria(cat).values()
+                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome())); // NOSONAR
+    }
+
+    private void listarItensPorFornecedor() {
+        System.out.print("ID Fornecedor: "); // NOSONAR
+        Fornecedor forn = facade.buscarFornecedor(scanner.nextLine());
+        facade.listarItemPorFornecedor(forn).values()
+                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome())); // NOSONAR
     }
 
     private void atualizarItem() {
@@ -276,27 +334,38 @@ public class MenuAdmin {
         System.out.println("5 - Fornecedor"); // NOSONAR
         String escolha = scanner.nextLine();
 
-        if (escolha.equals("1")) {
-            System.out.print("Novo Nome (" + item.getNome() + "): "); // NOSONAR
-            String novoNome = scanner.nextLine();
-            if (novoNome.isBlank()) throw new RuntimeException("nome inválido!");
-            item.setNome(novoNome);
-        } else if (escolha.equals("2")) {
-            item.setTaxaDiaria(lerValorMonetario("Nova taxa diária (" + item.getTaxaDiaria() + ")(XX.xx):  R$ ", "taxa diária"));
-        } else if (escolha.equals("3")) {
-            item.setValorReposicao(lerValorMonetario("Valor de reposição (XX.xx): R$ ", "valor de reposição"));
-        } else if (escolha.equals("4")) {
-            System.out.print("Digite o id da categoria (" + item.getCategoria().getId() + "): "); // NOSONAR
-            item.setCategoria(facade.buscarCategoria(scanner.nextLine()));
-        } else if (escolha.equals("5")) {
-            System.out.print("Digite o id do fornecedor (" + item.getFornecedor().getId() + "): "); // NOSONAR
-            item.setFornecedor(facade.buscarFornecedor(scanner.nextLine()));
-        } else {
-            throw new RuntimeException("Opção inválida!");
+        switch (escolha) {
+            case "1" -> atualizarNomeItem(item);
+            case "2" -> item.setTaxaDiaria(lerValorMonetario(
+                    "Nova taxa diária (" + item.getTaxaDiaria() + ")(XX.xx):  R$ ", "taxa diária"));
+            case "3" -> item.setValorReposicao(lerValorMonetario(
+                    "Valor de reposição (XX.xx): R$ ", "valor de reposição"));
+            case "4" -> atualizarCategoriaItem(item);
+            case "5" -> atualizarFornecedorItem(item);
+            default -> throw new RuntimeException("Opção inválida!");
         }
 
         facade.atualizarItem(item);
         System.out.println("Item atualizado com sucesso!"); // NOSONAR
+    }
+
+    private void atualizarNomeItem(Item item) {
+        System.out.print("Novo Nome (" + item.getNome() + "): "); // NOSONAR
+        String novoNome = scanner.nextLine();
+        if (novoNome.isBlank()) {
+            throw new RuntimeException("nome inválido!");
+        }
+        item.setNome(novoNome);
+    }
+
+    private void atualizarCategoriaItem(Item item) {
+        System.out.print("Digite o id da categoria (" + item.getCategoria().getId() + "): "); // NOSONAR
+        item.setCategoria(facade.buscarCategoria(scanner.nextLine()));
+    }
+
+    private void atualizarFornecedorItem(Item item) {
+        System.out.print("Digite o id do fornecedor (" + item.getFornecedor().getId() + "): "); // NOSONAR
+        item.setFornecedor(facade.buscarFornecedor(scanner.nextLine()));
     }
 
     private void deletarItem() {
@@ -315,34 +384,46 @@ public class MenuAdmin {
         String subOpcao = scanner.nextLine();
 
         try {
-            if (subOpcao.equals("1")) {
-                System.out.print("ID: "); // NOSONAR
-                String id = scanner.nextLine();
-                System.out.print("Nome: "); // NOSONAR
-                String nome = scanner.nextLine();
-                facade.cadastrarCategoria(new Categoria(id, nome));
-                System.out.println("Categoria criada!"); // NOSONAR
-
-            } else if (subOpcao.equals("2")) {
-                facade.listarCategoria().values().forEach(c -> System.out.println("ID: " + c.getId() + " | Nome: " + c.getNome())); // NOSONAR
-
-            } else if (subOpcao.equals("3")) {
-                System.out.print("ID: "); // NOSONAR
-                Categoria c = facade.buscarCategoria(scanner.nextLine());
-                System.out.print("Novo Nome: "); // NOSONAR
-                c.setNome(scanner.nextLine());
-                facade.atualizarCategoria(c);
-                System.out.println("Categoria atualizada!"); // NOSONAR
-
-            } else if (subOpcao.equals("4")) {
-                System.out.print("ID a deletar: "); // NOSONAR
-                facade.deletarCategoria(scanner.nextLine());
-                System.out.println("Categoria removida."); // NOSONAR
+            switch (subOpcao) {
+                case "1" -> cadastrarCategoria();
+                case "2" -> listarCategorias();
+                case "3" -> atualizarCategoria();
+                case "4" -> deletarCategoria();
+                default -> System.out.println("Opção inválida."); // NOSONAR
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar categorias: {}", e.getMessage(), e);
             System.out.println("Erro: " + e.getMessage()); // NOSONAR
         }
+    }
+
+    private void cadastrarCategoria() {
+        System.out.print("ID: "); // NOSONAR
+        String id = scanner.nextLine();
+        System.out.print("Nome: "); // NOSONAR
+        String nome = scanner.nextLine();
+        facade.cadastrarCategoria(new Categoria(id, nome));
+        System.out.println("Categoria criada!"); // NOSONAR
+    }
+
+    private void listarCategorias() {
+        facade.listarCategoria().values()
+                .forEach(c -> System.out.println("ID: " + c.getId() + " | Nome: " + c.getNome())); // NOSONAR
+    }
+
+    private void atualizarCategoria() {
+        System.out.print("ID: "); // NOSONAR
+        Categoria c = facade.buscarCategoria(scanner.nextLine());
+        System.out.print("Novo Nome: "); // NOSONAR
+        c.setNome(scanner.nextLine());
+        facade.atualizarCategoria(c);
+        System.out.println("Categoria atualizada!"); // NOSONAR
+    }
+
+    private void deletarCategoria() {
+        System.out.print("ID a deletar: "); // NOSONAR
+        facade.deletarCategoria(scanner.nextLine());
+        System.out.println("Categoria removida."); // NOSONAR
     }
 
     private void gerenciarFornecedores() {
@@ -355,16 +436,12 @@ public class MenuAdmin {
         String subOpcao = scanner.nextLine();
 
         try {
-            if (subOpcao.equals("1")) {
-                cadastrarFornecedor();
-            } else if (subOpcao.equals("2")) {
-                facade.listarFornecedor().values().forEach(f -> System.out.println("ID: " + f.getId() + " | Nome: " + f.getNome() + " | CNPJ: " + f.getCnpj() + " | Telefone: " + f.getTelefone())); // NOSONAR
-            } else if (subOpcao.equals("3")) {
-                atualizarFornecedor();
-            } else if (subOpcao.equals("4")) {
-                System.out.print("ID a deletar: "); // NOSONAR
-                facade.deletarFornecedor(scanner.nextLine());
-                System.out.println("Fornecedor removido."); // NOSONAR
+            switch (subOpcao) {
+                case "1" -> cadastrarFornecedor();
+                case "2" -> listarFornecedores();
+                case "3" -> atualizarFornecedor();
+                case "4" -> deletarFornecedor();
+                default -> System.out.println("Opção inválida."); // NOSONAR
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar fornecedores: {}", e.getMessage(), e);
@@ -386,6 +463,12 @@ public class MenuAdmin {
         System.out.println("Fornecedor criado!"); // NOSONAR
     }
 
+    private void listarFornecedores() {
+        facade.listarFornecedor().values()
+                .forEach(f -> System.out.println("ID: " + f.getId() + " | Nome: " + f.getNome()
+                        + " | CNPJ: " + f.getCnpj() + " | Telefone: " + f.getTelefone())); // NOSONAR
+    }
+
     private void atualizarFornecedor() {
         System.out.print("ID: "); // NOSONAR
         Fornecedor f = facade.buscarFornecedor(scanner.nextLine());
@@ -397,27 +480,48 @@ public class MenuAdmin {
         System.out.print(OPCAO_PROMPT); // NOSONAR
         String escolha = scanner.nextLine();
 
-        if (escolha.equals("1")) {
-            System.out.print("Novo Nome (" + f.getNome() + "): "); // NOSONAR
-            String novoNome = scanner.nextLine();
-            if (novoNome.isBlank()) throw new RuntimeException("Nome inválido!");
-            f.setNome(novoNome);
-        } else if (escolha.equals("2")) {
-            System.out.print("Novo CNPJ (" + f.getCnpj() + "): "); // NOSONAR
-            String novoCnpj = scanner.nextLine();
-            if (novoCnpj.isBlank()) throw new RuntimeException("CNPJ inválido!");
-            f.setCnpj(novoCnpj);
-        } else if (escolha.equals("3")) {
-            System.out.print("Novo Telefone (" + f.getTelefone() + "): "); // NOSONAR
-            String novoTelefone = scanner.nextLine();
-            if (novoTelefone.isBlank()) throw new RuntimeException("Telefone inválido!");
-            f.setTelefone(novoTelefone);
-        } else {
-            throw new RuntimeException("Opção inválida!");
+        switch (escolha) {
+            case "1" -> atualizarNomeFornecedor(f);
+            case "2" -> atualizarCnpjFornecedor(f);
+            case "3" -> atualizarTelefoneFornecedor(f);
+            default -> throw new RuntimeException("Opção inválida!");
         }
 
         facade.atualizarFornecedor(f);
         System.out.println("Fornecedor atualizado!"); // NOSONAR
+    }
+
+    private void atualizarNomeFornecedor(Fornecedor f) {
+        System.out.print("Novo Nome (" + f.getNome() + "): "); // NOSONAR
+        String novoNome = scanner.nextLine();
+        if (novoNome.isBlank()) {
+            throw new RuntimeException("Nome inválido!");
+        }
+        f.setNome(novoNome);
+    }
+
+    private void atualizarCnpjFornecedor(Fornecedor f) {
+        System.out.print("Novo CNPJ (" + f.getCnpj() + "): "); // NOSONAR
+        String novoCnpj = scanner.nextLine();
+        if (novoCnpj.isBlank()) {
+            throw new RuntimeException("CNPJ inválido!");
+        }
+        f.setCnpj(novoCnpj);
+    }
+
+    private void atualizarTelefoneFornecedor(Fornecedor f) {
+        System.out.print("Novo Telefone (" + f.getTelefone() + "): "); // NOSONAR
+        String novoTelefone = scanner.nextLine();
+        if (novoTelefone.isBlank()) {
+            throw new RuntimeException("Telefone inválido!");
+        }
+        f.setTelefone(novoTelefone);
+    }
+
+    private void deletarFornecedor() {
+        System.out.print("ID a deletar: "); // NOSONAR
+        facade.deletarFornecedor(scanner.nextLine());
+        System.out.println("Fornecedor removido."); // NOSONAR
     }
 
     private void emitirRelatorios() {
@@ -487,31 +591,8 @@ public class MenuAdmin {
 
     private void relatorioFaturamento() {
         System.out.println("\nRELATÓRIO FINANCEIRO"); // NOSONAR
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate ini = null;
-        LocalDate fim = null;
-
-        while (ini == null) {
-            try {
-                System.out.print("Data Inicial (dd/MM/yyyy): "); // NOSONAR
-                ini = LocalDate.parse(scanner.nextLine(), formatter);
-            } catch (DateTimeParseException e) {
-                System.out.println("Data inválida, tente novamente."); // NOSONAR
-            }
-        }
-
-        while (fim == null) {
-            try {
-                System.out.print("Data Final (dd/MM/yyyy): "); // NOSONAR
-                fim = LocalDate.parse(scanner.nextLine(), formatter);
-                if (fim.isBefore(ini)) {
-                    System.out.println("Data final não pode ser anterior à data inicial."); // NOSONAR
-                    fim = null;
-                }
-            } catch (DateTimeParseException e) {
-                System.out.println("Data inválida, tente novamente."); // NOSONAR
-            }
-        }
+        LocalDate ini = lerData("Data Inicial (dd/MM/yyyy): ");
+        LocalDate fim = lerDataFinal(ini);
 
         try {
             System.out.println(facade.gerarRelatorioFaturamento(ini, fim)); // NOSONAR
@@ -519,5 +600,38 @@ public class MenuAdmin {
             logger.error("Falha ao gerar relatório de faturamento ({} a {}): {}", ini, fim, e.getMessage(), e);
             System.out.println("Erro ao gerar relatório: " + e.getMessage()); // NOSONAR
         }
+    }
+
+    private LocalDate lerData(String prompt) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate data = null;
+        while (data == null) {
+            try {
+                System.out.print(prompt); // NOSONAR
+                data = LocalDate.parse(scanner.nextLine(), formatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Data inválida, tente novamente."); // NOSONAR
+            }
+        }
+        return data;
+    }
+
+    private LocalDate lerDataFinal(LocalDate dataInicial) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate fim = null;
+        while (fim == null) {
+            try {
+                System.out.print("Data Final (dd/MM/yyyy): "); // NOSONAR
+                LocalDate candidata = LocalDate.parse(scanner.nextLine(), formatter);
+                if (candidata.isBefore(dataInicial)) {
+                    System.out.println("Data final não pode ser anterior à data inicial."); // NOSONAR
+                } else {
+                    fim = candidata;
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Data inválida, tente novamente."); // NOSONAR
+            }
+        }
+        return fim;
     }
 }
