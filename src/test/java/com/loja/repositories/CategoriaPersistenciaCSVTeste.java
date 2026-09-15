@@ -113,9 +113,10 @@ class CategoriaPersistenciaCSVTeste {
 
     @Test
     void deveCarregarDadosDoArquivo() throws IOException {
-        Files.writeString(arquivo,
-                "id;nome;historico\n" +
-                "C1;Eletrônicos;true\n");
+        Files.writeString(arquivo, """
+                id;nome;historico
+                C1;Eletrônicos;true
+                """);
 
         repository = new CategoriaPersistenciaCSV(arquivo.toString());
 
@@ -128,9 +129,10 @@ class CategoriaPersistenciaCSVTeste {
 
     @Test
     void deveCarregarCategoriaSemHistorico() throws IOException {
-        Files.writeString(arquivo,
-                "id;nome;historico\n" +
-                "C1;Eletrônicos;false\n");
+        Files.writeString(arquivo, """
+                id;nome;historico
+                C1;Eletrônicos;false
+                """);
 
         repository = new CategoriaPersistenciaCSV(arquivo.toString());
 
@@ -142,10 +144,11 @@ class CategoriaPersistenciaCSVTeste {
 
     @Test
     void deveIgnorarLinhaInvalidaDoArquivo() throws IOException {
-        Files.writeString(arquivo,
-                "id;nome;historico\n" +
-                "linha;invalida\n" +
-                "C1;Eletrônicos;false\n");
+        Files.writeString(arquivo, """
+                id;nome;historico
+                linha;invalida
+                C1;Eletrônicos;false
+                """);
 
         repository = new CategoriaPersistenciaCSV(arquivo.toString());
 
@@ -169,10 +172,10 @@ class CategoriaPersistenciaCSVTeste {
 
     @Test
     void deveLancarExcecaoQuandoArquivoNaoExiste() {
-        Path arquivoInexistente = pastaTemporaria.resolve("inexistente.csv");
+        String caminhoInexistente = pastaTemporaria.resolve("inexistente.csv").toString();
 
         assertThrows(RuntimeException.class,
-                () -> new CategoriaPersistenciaCSV(arquivoInexistente.toString()));
+                () -> new CategoriaPersistenciaCSV(caminhoInexistente));
     }
 
     @Test
