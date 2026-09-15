@@ -26,13 +26,11 @@ class ContratoPersistenciaCSVTeste {
 
     @BeforeEach
     void setUp() throws IOException {
-        // cria um arquivo CSV temporário com cabeçalho para cada teste
         arquivoTemp = Files.createTempFile("contratos_teste", ".csv");
         Files.writeString(arquivoTemp, "id;clienteId;itemId;dataRetirada;dataPrevDevolucao;dataEfetivaDevolucao;valorTotal;status;historico\n");
 
         repositorio = new ContratoPersistenciaCSV(arquivoTemp.toString());
 
-        // objetos reutilizáveis nos testes
         cliente = new Cliente("C1", "João", "joao@email.com", "123");
         item    = new Item("I1", "Furadeira", new BigDecimal("50.00"), new BigDecimal("500.00"), "DISPONIVEL", null, null);
 
@@ -42,19 +40,30 @@ class ContratoPersistenciaCSVTeste {
 
     @AfterEach
     void tearDown() throws IOException {
-        // remove o arquivo temporário após cada teste
         Files.deleteIfExists(arquivoTemp);
+    }
+
+    private ContratoAluguel criarContrato(String id, Cliente cliente, Item item,
+                                          LocalDate retirada, LocalDate prevDevolucao,
+                                          LocalDate efetivaDevolucao, BigDecimal valorTotal, String status) {
+        return new ContratoAluguel.Builder()
+                .id(id)
+                .cliente(cliente)
+                .item(item)
+                .dataRetirada(retirada)
+                .dataPrevDevolucao(prevDevolucao)
+                .dataEfetivaDevolucao(efetivaDevolucao)
+                .valorTotal(valorTotal)
+                .status(status)
+                .build();
     }
 
     // salvar e buscar
     @Test
     @DisplayName("salvar e buscar: deve recuperar contrato salvo pelo id")
     void salvar_devePersistir_e_buscarDeveRecuperar() {
-        ContratoAluguel contrato = new ContratoAluguel(
-                "CT01", cliente, item,
-                dataRetirada, dataPrevDevolucao,
-                null, new BigDecimal("250.00"), "ATIVO"
-        );
+        ContratoAluguel contrato = criarContrato("CT01", cliente, item,
+                dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO");
 
         repositorio.salvar(contrato);
 
@@ -73,24 +82,20 @@ class ContratoPersistenciaCSVTeste {
     @Test
     @DisplayName("salvar: deve normalizar id para maiúsculo")
     void salvar_deveNormalizarId_paraMaiusculo() {
-        ContratoAluguel contrato = new ContratoAluguel(
-                "ct01", cliente, item,
-                dataRetirada, dataPrevDevolucao,
-                null, new BigDecimal("250.00"), "ATIVO"
-        );
+        ContratoAluguel contrato = criarContrato("ct01", cliente, item,
+                dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO");
 
         repositorio.salvar(contrato);
 
         assertNotNull(repositorio.buscar("CT01"));
     }
 
-
     // listar
     @Test
     @DisplayName("listar: deve retornar todos os contratos salvos")
     void listar_deveRetornarTodosOsContratos() {
-        repositorio.salvar(new ContratoAluguel("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
-        repositorio.salvar(new ContratoAluguel("CT02", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("150.00"), "ENCERRADO"));
+        repositorio.salvar(criarContrato("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
+        repositorio.salvar(criarContrato("CT02", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("150.00"), "ENCERRADO"));
 
         assertEquals(2, repositorio.listar().size());
     }
@@ -98,8 +103,8 @@ class ContratoPersistenciaCSVTeste {
     @Test
     @DisplayName("listar por status: deve retornar apenas contratos com status ATIVO")
     void listarPorStatus_deveRetornarApenasAtivos() {
-        repositorio.salvar(new ContratoAluguel("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
-        repositorio.salvar(new ContratoAluguel("CT02", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("150.00"), "ENCERRADO"));
+        repositorio.salvar(criarContrato("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
+        repositorio.salvar(criarContrato("CT02", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("150.00"), "ENCERRADO"));
 
         Map<String, ContratoAluguel> ativos = repositorio.listar("ATIVO");
 
@@ -112,8 +117,8 @@ class ContratoPersistenciaCSVTeste {
     void listarPorCliente_deveRetornarContratosDoClienteCorreto() {
         Cliente outroCliente = new Cliente("C2", "Maria", "maria@email.com", "456");
 
-        repositorio.salvar(new ContratoAluguel("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
-        repositorio.salvar(new ContratoAluguel("CT02", outroCliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("150.00"), "ATIVO"));
+        repositorio.salvar(criarContrato("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
+        repositorio.salvar(criarContrato("CT02", outroCliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("150.00"), "ATIVO"));
 
         Map<String, ContratoAluguel> resultado = repositorio.listar(cliente);
 
@@ -125,11 +130,8 @@ class ContratoPersistenciaCSVTeste {
     @Test
     @DisplayName("atualizar: deve retornar true e atualizar contrato existente")
     void atualizar_deveRetornarTrue_quandoContratoExiste() {
-        ContratoAluguel contrato = new ContratoAluguel(
-                "CT01", cliente, item,
-                dataRetirada, dataPrevDevolucao,
-                null, new BigDecimal("250.00"), "ATIVO"
-        );
+        ContratoAluguel contrato = criarContrato("CT01", cliente, item,
+                dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO");
         repositorio.salvar(contrato);
 
         contrato.setStatus("ENCERRADO");
@@ -142,20 +144,17 @@ class ContratoPersistenciaCSVTeste {
     @Test
     @DisplayName("atualizar: deve retornar false quando contrato não existe")
     void atualizar_deveRetornarFalse_quandoContratoNaoExiste() {
-        ContratoAluguel contrato = new ContratoAluguel(
-                "INEXISTENTE", cliente, item,
-                dataRetirada, dataPrevDevolucao,
-                null, new BigDecimal("250.00"), "ATIVO"
-        );
+        ContratoAluguel contrato = criarContrato("INEXISTENTE", cliente, item,
+                dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO");
 
         assertFalse(repositorio.atualizar(contrato));
     }
 
     // deletar
-        @Test
+    @Test
     @DisplayName("deletar: deve retornar true e remover contrato existente")
     void deletar_deveRetornarTrue_e_removerContrato() {
-        repositorio.salvar(new ContratoAluguel("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
+        repositorio.salvar(criarContrato("CT01", cliente, item, dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO"));
 
         boolean resultado = repositorio.deletar("CT01");
 
@@ -173,15 +172,11 @@ class ContratoPersistenciaCSVTeste {
     @Test
     @DisplayName("salvarDados e carregarDados: deve persistir e recarregar contratos corretamente")
     void salvarDados_e_carregarDados_devemPersistirERelerContratos() throws IOException {
-        ContratoAluguel contrato = new ContratoAluguel(
-                "CT01", cliente, item,
-                dataRetirada, dataPrevDevolucao,
-                null, new BigDecimal("250.00"), "ATIVO"
-        );
+        ContratoAluguel contrato = criarContrato("CT01", cliente, item,
+                dataRetirada, dataPrevDevolucao, null, new BigDecimal("250.00"), "ATIVO");
         repositorio.salvar(contrato);
         repositorio.salvarDados();
 
-        // cria novo repositório apontando para o mesmo arquivo — simula reinício do sistema
         ContratoPersistenciaCSV novoRepositorio = new ContratoPersistenciaCSV(arquivoTemp.toString());
 
         ContratoAluguel recarregado = novoRepositorio.buscar("CT01");
@@ -200,11 +195,8 @@ class ContratoPersistenciaCSVTeste {
     @DisplayName("salvarDados e carregarDados: deve persistir dataEfetivaDevolucao quando não é nula")
     void salvarDados_devePeristir_dataEfetivaDevolucao_quandoPreenchida() {
         LocalDate dataEfetiva = LocalDate.of(2025, 1, 20);
-        ContratoAluguel contrato = new ContratoAluguel(
-                "CT01", cliente, item,
-                dataRetirada, dataPrevDevolucao,
-                dataEfetiva, new BigDecimal("250.00"), "ENCERRADO"
-        );
+        ContratoAluguel contrato = criarContrato("CT01", cliente, item,
+                dataRetirada, dataPrevDevolucao, dataEfetiva, new BigDecimal("250.00"), "ENCERRADO");
         repositorio.salvar(contrato);
         repositorio.salvarDados();
 
