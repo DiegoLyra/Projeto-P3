@@ -14,15 +14,15 @@ public class ContratoAluguel {
     private String status;
     private Boolean historico;
 
-    public ContratoAluguel(String id, Cliente cliente, Item item, LocalDate dataRetirada, LocalDate dataPrevDevolucao, LocalDate dataEfetivaDevolucao, BigDecimal valorTotal, String status){
-        this.id = id;
-        this.cliente = cliente;
-        this.item = item;
-        this.dataRetirada = dataRetirada;
-        this.dataPrevDevolucao = dataPrevDevolucao;
-        this.dataEfetivaDevolucao = dataEfetivaDevolucao;
-        this.valorTotal = valorTotal;
-        this.status = status;
+    private ContratoAluguel(Builder builder) {
+        this.id = builder.id;
+        this.cliente = builder.cliente;
+        this.item = builder.item;
+        this.dataRetirada = builder.dataRetirada;
+        this.dataPrevDevolucao = builder.dataPrevDevolucao;
+        this.dataEfetivaDevolucao = builder.dataEfetivaDevolucao;
+        this.valorTotal = builder.valorTotal;
+        this.status = builder.status;
         this.historico = false;
     }
 
@@ -102,5 +102,60 @@ public class ContratoAluguel {
 
     public void setHistorico(Boolean historico) {
         this.historico = historico;
+    }
+
+    public static class Builder {
+        private String id;
+        private Cliente cliente;
+        private Item item;
+        private LocalDate dataRetirada;
+        private LocalDate dataPrevDevolucao;
+        private LocalDate dataEfetivaDevolucao;
+        private BigDecimal valorTotal;
+        private String status;
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder cliente(Cliente cliente) {
+            this.cliente = cliente;
+            return this;
+        }
+
+        public Builder item(Item item) {
+            this.item = item;
+            return this;
+        }
+
+        public Builder dataRetirada(LocalDate dataRetirada) {
+            this.dataRetirada = dataRetirada;
+            return this;
+        }
+
+        public Builder dataPrevDevolucao(LocalDate dataPrevDevolucao) {
+            this.dataPrevDevolucao = dataPrevDevolucao;
+            return this;
+        }
+
+        public Builder dataEfetivaDevolucao(LocalDate dataEfetivaDevolucao) {
+            this.dataEfetivaDevolucao = dataEfetivaDevolucao;
+            return this;
+        }
+
+        public Builder valorTotal(BigDecimal valorTotal) {
+            this.valorTotal = valorTotal;
+            return this;
+        }
+
+        public Builder status(String status) {
+            this.status = status;
+            return this;
+        }
+
+        public ContratoAluguel build() {
+            return new ContratoAluguel(this);
+        }
     }
 }

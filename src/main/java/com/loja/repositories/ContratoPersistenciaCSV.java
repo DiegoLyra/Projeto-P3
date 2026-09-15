@@ -85,31 +85,7 @@ public class ContratoPersistenciaCSV implements IContratoRepository {
                 String[] dados = linha.split(";");
 
                 if (dados.length >= 9) {
-                    String id = dados[0].toUpperCase();
-                    String clienteId = dados[1].toUpperCase();
-                    String itemId = dados[2].toUpperCase();
-
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-                    LocalDate dataRetirada = LocalDate.parse(dados[3], formatter);
-                    LocalDate dataPrevDevolucao = LocalDate.parse(dados[4], formatter);
-                    LocalDate dataEfetivaDevolucao = dados[5].isBlank() ? null : LocalDate.parse(dados[5], formatter);
-                    BigDecimal valorTotal = new BigDecimal(dados[6]);
-                    String status = dados[7];
-                    boolean historico = Boolean.parseBoolean(dados[8]);
-
-                    Cliente cliente = new Cliente();
-                    cliente.setId(clienteId);
-                    Item item = new Item();
-                    item.setId(itemId);
-
-                    ContratoAluguel contrato = new ContratoAluguel(
-                            id, cliente, item,
-                            dataRetirada, dataPrevDevolucao,
-                            dataEfetivaDevolucao, valorTotal, status
-                    );
-                    contrato.setHistorico(historico);
-
+                    ContratoAluguel contrato = construirContratoDaLinha(dados);
                     this.contratos.put(contrato.getId(), contrato);
                 }
                 linha = leitor.readLine();
@@ -117,6 +93,40 @@ public class ContratoPersistenciaCSV implements IContratoRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private ContratoAluguel construirContratoDaLinha(String[] dados) {
+        String id = dados[0].toUpperCase();
+        String clienteId = dados[1].toUpperCase();
+        String itemId = dados[2].toUpperCase();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        LocalDate dataRetirada = LocalDate.parse(dados[3], formatter);
+        LocalDate dataPrevDevolucao = LocalDate.parse(dados[4], formatter);
+        LocalDate dataEfetivaDevolucao = dados[5].isBlank() ? null : LocalDate.parse(dados[5], formatter);
+        BigDecimal valorTotal = new BigDecimal(dados[6]);
+        String status = dados[7];
+        boolean historico = Boolean.parseBoolean(dados[8]);
+
+        Cliente cliente = new Cliente();
+        cliente.setId(clienteId);
+        Item item = new Item();
+        item.setId(itemId);
+
+        ContratoAluguel contrato = new ContratoAluguel.Builder()
+                .id(id)
+                .cliente(cliente)
+                .item(item)
+                .dataRetirada(dataRetirada)
+                .dataPrevDevolucao(dataPrevDevolucao)
+                .dataEfetivaDevolucao(dataEfetivaDevolucao)
+                .valorTotal(valorTotal)
+                .status(status)
+                .build();
+        contrato.setHistorico(historico);
+
+        return contrato;
     }
 
     @Override
