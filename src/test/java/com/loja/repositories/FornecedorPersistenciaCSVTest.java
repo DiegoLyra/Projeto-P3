@@ -1,17 +1,22 @@
 package com.loja.repositories;
 
-import com.loja.model.Fornecedor;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.loja.model.Fornecedor;
 
 class FornecedorPersistenciaCSVTest {
 
@@ -115,9 +120,11 @@ class FornecedorPersistenciaCSVTest {
     void deveCarregarDadosDoArquivo() throws IOException {
         Files.writeString(
                 arquivo,
-                "id;nome;cnpj;telefone;historico\n" +
-                        "F1;Fornecedor A;12345678000190;81999999999;true\n"
-        );
+                """
+                id;nome;cnpj;telefone;historico
+                F1;Fornecedor A;12345678000190;81999999999;true
+                """
+                );
 
         repository = new FornecedorPersistenciaCSV(arquivo.toString());
 
@@ -133,10 +140,11 @@ class FornecedorPersistenciaCSVTest {
     void deveIgnorarLinhaInvalidaDoArquivo() throws IOException {
         Files.writeString(
                 arquivo,
-                "id;nome;cnpj;telefone;historico\n" +
-                        "linha;invalida\n" +
-                        "F1;Fornecedor A;123;999;false\n"
-        );
+                """
+                id;nome;cnpj;telefone;historico
+                linha;invalida
+                """
+                );
 
         repository = new FornecedorPersistenciaCSV(arquivo.toString());
 

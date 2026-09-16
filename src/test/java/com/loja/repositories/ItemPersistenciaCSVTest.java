@@ -1,12 +1,5 @@
 package com.loja.repositories;
 
-import com.loja.model.Categoria;
-import com.loja.model.Fornecedor;
-import com.loja.model.Item;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -14,7 +7,19 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.loja.model.Categoria;
+import com.loja.model.Fornecedor;
+import com.loja.model.Item;
 
 class ItemPersistenciaCSVTest {
 
@@ -164,8 +169,10 @@ class ItemPersistenciaCSVTest {
     @Test
     void deveCarregarDadosDoArquivo() throws IOException {
         Files.writeString(arquivo,
-                "id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico\n" +
-                "I1;Furadeira;10.50;100.00;DISPONIVEL;C1;F1;true\n");
+                """
+                id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico
+                I1;Furadeira;10.50;100.00;DISPONIVEL;C1;F1;true
+                """);
 
         repository = new ItemPersistenciaCSV(arquivo.toString());
 
@@ -182,9 +189,11 @@ class ItemPersistenciaCSVTest {
     @Test
     void deveIgnorarLinhaInvalidaDoArquivo() throws IOException {
         Files.writeString(arquivo,
-                "id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico\n" +
-                "linha;invalida\n" +
-                "I1;Furadeira;10.50;100.00;DISPONIVEL;C1;F1;false\n");
+                """
+                id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico
+                linha;invalida
+                I1;Furadeira;10.50;100.00;DISPONIVEL;C1;F1;false
+                """);
 
         repository = new ItemPersistenciaCSV(arquivo.toString());
 
