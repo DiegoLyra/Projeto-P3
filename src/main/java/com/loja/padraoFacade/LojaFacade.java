@@ -48,26 +48,42 @@ public class LojaFacade implements ILojaFacade{
         }
 
         LocalDate hoje = LocalDate.now();
-        String relatorio = "=== ITENS ALUGADOS: " + hoje + " ===\n\n";
+        StringBuilder relatorio = new StringBuilder();
+        relatorio.append("=== ITENS ALUGADOS: ").append(hoje).append(" ===\n\n");
 
         for (ContratoAluguel c : ativos.values()) {
-            boolean emAtraso = hoje.isAfter(c.getDataPrevDevolucao());
-            relatorio += "Contrato : " + c.getId() + "\n";
-            relatorio += "Item     : " + c.getItem().getNome() + "\n";
-            relatorio += "Cliente  : " + c.getCliente().getNome() + "\n";
-            relatorio += "Retirada : " + c.getDataRetirada() + "\n";
-            relatorio += "Prev Dev.: " + c.getDataPrevDevolucao();
-            if (emAtraso) relatorio += "  *** EM ATRASO ***";
-            relatorio += "\n\n";
+            relatorio.append(formatarLinhaContrato(c, hoje));
         }
 
         long atrasados = ativos.values().stream()
                 .filter(c -> hoje.isAfter(c.getDataPrevDevolucao()))
                 .count();
 
-        relatorio += "Total alugados: " + ativos.size() + " | Em atraso: " + atrasados + "\n";
+        relatorio.append("Total alugados: %d | Em atraso: %d%n"
+                .formatted(ativos.size(), atrasados));
 
-        return relatorio;
+        return relatorio.toString();
+    }
+
+    private String formatarLinhaContrato(ContratoAluguel c, LocalDate hoje) {
+        boolean emAtraso = hoje.isAfter(c.getDataPrevDevolucao());
+        String tagAtraso = emAtraso ? "  *** EM ATRASO ***" : "";
+
+        return """
+                Contrato : %s
+                Item     : %s
+                Cliente  : %s
+                Retirada : %s
+                Prev Dev.: %s%s
+
+                """.formatted(
+                c.getId(),
+                c.getItem().getNome(),
+                c.getCliente().getNome(),
+                c.getDataRetirada(),
+                c.getDataPrevDevolucao(),
+                tagAtraso
+        );
     }
 
     @Override
@@ -92,13 +108,17 @@ public class LojaFacade implements ILojaFacade{
                 .map(Multa::getValorTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        String relatorio = "=== RELATÓRIO DE FATURAMENTO ===\n";
-        relatorio += "Período: " + inicio + " a " + fim + "\n\n";
-        relatorio += String.format("Receita com aluguéis : R$ %.2f%n", totalAlugueis);
-        relatorio += String.format("Receita com multas   : R$ %.2f%n", totalMultas);
-        relatorio += String.format("TOTAL                : R$ %.2f%n", totalAlugueis.add(totalMultas));
+        return """
+                === RELATÓRIO DE FATURAMENTO ===
+                Período: %s a %s
 
-        return relatorio;
+                Receita com aluguéis : R$ %.2f
+                Receita com multas   : R$ %.2f
+                TOTAL                : R$ %.2f
+                """.formatted(
+                inicio, fim,
+                totalAlugueis, totalMultas, totalAlugueis.add(totalMultas)
+        );
     }
 
     /* =========================================================================
@@ -313,13 +333,13 @@ public class LojaFacade implements ILojaFacade{
     @Override
     public void aplicarMulta(ContratoAluguel contrato) {
         if (contrato == null) throw new RuntimeException("Não é possível aplicar multa sobre um contrato nulo.");
-        multaBusiness.aplicar(contrato); // Mapeado no Business como "aplicar"
+        multaBusiness.aplicar(contrato);
     }
 
     @Override
     public void quitarMulta(String multaId) {
         if (multaId == null || multaId.trim().isEmpty()) throw new RuntimeException("ID inválido para quitação de multa.");
-        multaBusiness.quitar(multaId);   // Mapeado no Business como "quitar"
+        multaBusiness.quitar(multaId);
     }
 
     @Override
@@ -331,18 +351,18 @@ public class LojaFacade implements ILojaFacade{
     @Override
     public Map<String, Multa> listarMultaPorCliente(String clienteId) {
         if (clienteId == null || clienteId.trim().isEmpty()) throw new RuntimeException("ID de cliente inválido.");
-        return multaBusiness.listarPorCliente(clienteId); // Mapeado no Business como "listarPorCliente"
+        return multaBusiness.listarPorCliente(clienteId);
     }
 
     @Override
     public Map<String, Multa> listarMulta() {
-        return multaBusiness.listar(); // Mapeado no Business como "listar"
+        return multaBusiness.listar();
     }
 
     @Override
     public void deletarMulta(String id) {
         if (id == null || id.trim().isEmpty()) throw new RuntimeException("ID inválido para deleção de multa.");
-        multaBusiness.deletarMulta(id); // Mapeado no Business como "deletarMulta"
+        multaBusiness.deletarMulta(id);
     }
 
     /* =========================================================================

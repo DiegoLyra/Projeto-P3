@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CategoriaPersistenciaCSVTeste {
+class CategoriaPersistenciaCSVTest {
 
     @TempDir
     Path pastaTemporaria;
