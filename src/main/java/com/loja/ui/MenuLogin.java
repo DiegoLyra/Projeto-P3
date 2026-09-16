@@ -4,7 +4,8 @@ import com.loja.model.Administrador;
 import com.loja.model.Cliente;
 import com.loja.model.Funcionario;
 import com.loja.model.Usuario;
-import com.loja.padraoFacade.interfaces.ILojaFacade;
+import com.loja.padrao.facade.interfaces.ILojaFacade;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

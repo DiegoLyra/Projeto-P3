@@ -1,7 +1,8 @@
 package com.loja.ui;
 
 import com.loja.model.*;
-import com.loja.padraoFacade.interfaces.ILojaFacade;
+import com.loja.padrao.facade.interfaces.ILojaFacade;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,8 @@ public class MenuAdmin {
 
     private static final Logger logger = LoggerFactory.getLogger(MenuAdmin.class);
     private static final String OPCAO_PROMPT = "Opção: ";
+    private static final String NOME_PROMPT = "Novo Nome (";
+    private static final String OPCAO_NOME = "1 - Nome";
 
     private final ILojaFacade facade;
     private final Administrador usuarioLogado;
@@ -159,7 +162,7 @@ public class MenuAdmin {
         Usuario u = facade.buscarUsuario(id);
 
         System.out.println("O que você deseja atualizar?");
-        System.out.println("1 - Nome");
+        System.out.println(OPCAO_NOME);
         System.out.println("2 - Email/Login");
         System.out.println("3 - Senha");
         System.out.println("4 - Cargo (quando aplicavel)");
@@ -178,7 +181,7 @@ public class MenuAdmin {
     }
 
     private void atualizarNomeUsuario(Usuario u) {
-        System.out.print("Novo Nome (" + u.getNome() + "): ");
+        System.out.print(NOME_PROMPT + u.getNome() + "): ");
         String novoNome = scanner.nextLine();
         if (novoNome.isBlank()) {
             throw new IllegalArgumentException("nome inválido!");
@@ -329,7 +332,7 @@ public class MenuAdmin {
         Item item = facade.buscarItem(scanner.nextLine());
 
         System.out.println("O que você deseja atualizar?");
-        System.out.println("1 - Nome");
+        System.out.println(OPCAO_NOME);
         System.out.println("2 - Taxa diária");
         System.out.println("3 - Valor de reposição");
         System.out.println("4 - Categoria");
@@ -352,7 +355,7 @@ public class MenuAdmin {
     }
 
     private void atualizarNomeItem(Item item) {
-        System.out.print("Novo Nome (" + item.getNome() + "): ");
+        System.out.print(NOME_PROMPT + item.getNome() + "): ");
         String novoNome = scanner.nextLine();
         if (novoNome.isBlank()) {
             throw new IllegalArgumentException("nome inválido!");
@@ -478,7 +481,7 @@ public class MenuAdmin {
         Fornecedor f = facade.buscarFornecedor(scanner.nextLine());
 
         System.out.println("O que você deseja atualizar?");
-        System.out.println("1 - Nome");
+        System.out.println(OPCAO_NOME);
         System.out.println("2 - CNPJ");
         System.out.println("3 - Telefone");
         System.out.print(OPCAO_PROMPT);
@@ -496,7 +499,7 @@ public class MenuAdmin {
     }
 
     private void atualizarNomeFornecedor(Fornecedor f) {
-        System.out.print("Novo Nome (" + f.getNome() + "): ");
+        System.out.print(NOME_PROMPT + f.getNome() + "): ");
         String novoNome = scanner.nextLine();
         if (novoNome.isBlank()) {
             throw new IllegalArgumentException("Nome inválido!");
