@@ -37,6 +37,10 @@ class FornecedorPersistenciaCSVTest {
         return new Fornecedor(id, nome, "12.345.678/0001-90", "(81) 99999-9999");
     }
 
+    private FornecedorPersistenciaCSV criarRepository(String caminho) {
+        return new FornecedorPersistenciaCSV(caminho);
+    }
+
     @Test
     void deveSalvarFornecedorNaMemoria() {
         Fornecedor fornecedor = criarFornecedor("f1", "Fornecedor A");
@@ -175,7 +179,7 @@ class FornecedorPersistenciaCSVTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> new FornecedorPersistenciaCSV(caminhoInexistente)
+                () -> criarRepository(caminhoInexistente)
         );
     }
 
