@@ -46,6 +46,10 @@ class ItemPersistenciaCSVTest {
         return new Item(id, nome, new BigDecimal("10.50"), new BigDecimal("100.00"),
                 status, categoria, fornecedor);
     }
+    
+    private ItemPersistenciaCSV criarRepository(String caminho) {
+        return new ItemPersistenciaCSV(caminho);
+    }
 
     @Test
     void deveSalvarItemNaMemoria() {
@@ -220,7 +224,7 @@ class ItemPersistenciaCSVTest {
         String caminhoInexistente = pastaTemporaria.resolve("inexistente.csv").toString();
 
         assertThrows(RuntimeException.class,
-                () -> new ItemPersistenciaCSV(caminhoInexistente));
+            () -> criarRepository(caminhoInexistente));
     }
 
     @Test
