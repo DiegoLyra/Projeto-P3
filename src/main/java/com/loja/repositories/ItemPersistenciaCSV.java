@@ -187,7 +187,7 @@ public class ItemPersistenciaCSV implements IItemRepository {
                 try {
                     escritor.close();
                 } catch (IOException e){
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }
