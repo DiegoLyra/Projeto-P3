@@ -1,10 +1,5 @@
 package com.loja.ui;
 
-import com.loja.model.*;
-import com.loja.padraoFacade.interfaces.ILojaFacade;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -12,9 +7,23 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.loja.model.Administrador;
+import com.loja.model.Categoria;
+import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Fornecedor;
+import com.loja.model.Funcionario;
+import com.loja.model.Item;
+import com.loja.model.Usuario;
+import com.loja.padraoFacade.interfaces.ILojaFacade;
+
 @SuppressWarnings("java:S106")
 public class MenuAdmin {
 
+    private static final String MSG_ATUALIZAR = "O que você deseja atualizar?";
     private static final Logger logger = LoggerFactory.getLogger(MenuAdmin.class);
     private static final String OPCAO_PROMPT = "Opção: ";
 
@@ -158,7 +167,7 @@ public class MenuAdmin {
 
         Usuario u = facade.buscarUsuario(id);
 
-        System.out.println("O que você deseja atualizar?");
+        System.out.println(MSG_ATUALIZAR);
         System.out.println("1 - Nome");
         System.out.println("2 - Email/Login");
         System.out.println("3 - Senha");
@@ -328,7 +337,7 @@ public class MenuAdmin {
         System.out.print("ID do Item: ");
         Item item = facade.buscarItem(scanner.nextLine());
 
-        System.out.println("O que você deseja atualizar?");
+        System.out.println(MSG_ATUALIZAR);
         System.out.println("1 - Nome");
         System.out.println("2 - Taxa diária");
         System.out.println("3 - Valor de reposição");
@@ -477,7 +486,7 @@ public class MenuAdmin {
         System.out.print("ID: ");
         Fornecedor f = facade.buscarFornecedor(scanner.nextLine());
 
-        System.out.println("O que você deseja atualizar?");
+        System.out.println(MSG_ATUALIZAR);
         System.out.println("1 - Nome");
         System.out.println("2 - CNPJ");
         System.out.println("3 - Telefone");
