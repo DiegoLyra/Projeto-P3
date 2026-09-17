@@ -32,7 +32,9 @@ class ItemPersistenciaCSVTest {
     @BeforeEach
     void setUp() throws IOException {
         arquivo = pastaTemporaria.resolve("itens.csv");
-        Files.writeString(arquivo, "id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico\n");
+        Files.writeString(arquivo, """
+                id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico
+                """);
         repository = new ItemPersistenciaCSV(arquivo.toString());
     }
 
