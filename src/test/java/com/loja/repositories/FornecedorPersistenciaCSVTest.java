@@ -142,6 +142,7 @@ class FornecedorPersistenciaCSVTest {
                 arquivo,
                 """
                 id;nome;cnpj;telefone;historico
+                F1;Fornecedor A;12345678000190;81999999999;true
                 linha;invalida
                 """
                 );
