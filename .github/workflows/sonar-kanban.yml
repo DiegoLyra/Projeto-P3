@@ -63,20 +63,39 @@ jobs:
           print(f"Conectando na URL: {sonar_url}")
           print(f"Projeto: {sonar_project}")
 
+          # BUSCA DE ISSUES DO SONARQUBE (COM PAGINAÇÃO)
           issues_url = f"{sonar_url}/api/issues/search"
-          params = {
-              "componentKeys": sonar_project,
-              "statuses": "OPEN,CONFIRMED,REOPENED",
-              "ps": 100,
-          }
+          issues_abertas_sonar = []
+          pagina_sonar = 1
 
-          response = requests.get(issues_url, params=params, auth=(sonar_token, ""))
+          while True:
+              params = {
+                  "componentKeys": sonar_project,
+                  "statuses": "OPEN,CONFIRMED,REOPENED",
+                  "ps": 100,
+                  "p": pagina_sonar,
+              }
 
-          if response.status_code != 200:
-              print(f"Erro ao conectar no SonarQube: {response.status_code} - {response.text}")
-              sys.exit(1)
+              response = requests.get(issues_url, params=params, auth=(sonar_token, ""))
 
-          issues_abertas_sonar = response.json().get("issues", [])
+              if response.status_code != 200:
+                  print(f"Erro ao conectar no SonarQube: {response.status_code} - {response.text}")
+                  sys.exit(1)
+
+              dados = response.json()
+              issues_pagina = dados.get("issues", [])
+
+              if not issues_pagina:
+                  break
+
+              issues_abertas_sonar.extend(issues_pagina)
+
+              total_issues = dados.get("paging", {}).get("total", 0)
+              if len(issues_abertas_sonar) >= total_issues:
+                  break
+
+              pagina_sonar += 1
+
           chaves_ativas = {issue.get("key") for issue in issues_abertas_sonar}
           print(f"Sonar reporta {len(issues_abertas_sonar)} issues abertas.")
 

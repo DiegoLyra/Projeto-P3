@@ -1,15 +1,19 @@
 package com.loja.repositories;
-import com.loja.model.Categoria;
-import com.loja.model.Fornecedor;
-import com.loja.model.Item;
-import com.loja.repositories.interfaces.IItemRepository;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.loja.model.Categoria;
+import com.loja.model.Fornecedor;
+import com.loja.model.Item;
+import com.loja.repositories.interfaces.IItemRepository;
 
 public class ItemPersistenciaCSV implements IItemRepository {
     private String caminhoArquivo;
@@ -149,7 +153,7 @@ public class ItemPersistenciaCSV implements IItemRepository {
                 try {
                     leitor.close();
                 } catch (IOException e){
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -183,7 +187,7 @@ public class ItemPersistenciaCSV implements IItemRepository {
                 try {
                     escritor.close();
                 } catch (IOException e){
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }

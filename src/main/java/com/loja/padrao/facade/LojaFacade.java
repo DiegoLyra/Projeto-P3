@@ -1,8 +1,9 @@
-package com.loja.padraoFacade;
+package com.loja.padrao.facade;
 
-import com.loja.padraoFacade.interfaces.ILojaFacade;
 import com.loja.business.interfaces.*;
 import com.loja.model.*;
+import com.loja.padrao.facade.interfaces.ILojaFacade;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

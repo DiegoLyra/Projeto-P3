@@ -18,7 +18,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.loja.model.Fornecedor;
 
-class FornecedorPersistenciaCSVTeste {
+class FornecedorPersistenciaCSVTest {
 
     @TempDir
     Path pastaTemporaria;
@@ -35,6 +35,10 @@ class FornecedorPersistenciaCSVTeste {
 
     private Fornecedor criarFornecedor(String id, String nome) {
         return new Fornecedor(id, nome, "12.345.678/0001-90", "(81) 99999-9999");
+    }
+
+    private FornecedorPersistenciaCSV criarRepository(String caminho) {
+        return new FornecedorPersistenciaCSV(caminho);
     }
 
     @Test
@@ -142,6 +146,7 @@ class FornecedorPersistenciaCSVTeste {
                 arquivo,
                 """
                 id;nome;cnpj;telefone;historico
+                F1;Fornecedor A;12345678000190;81999999999;true
                 linha;invalida
                 """
                 );
@@ -174,7 +179,7 @@ class FornecedorPersistenciaCSVTeste {
 
         assertThrows(
                 RuntimeException.class,
-                () -> new FornecedorPersistenciaCSV(caminhoInexistente)
+                () -> criarRepository(caminhoInexistente)
         );
     }
 

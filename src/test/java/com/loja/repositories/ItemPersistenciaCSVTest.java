@@ -32,7 +32,9 @@ class ItemPersistenciaCSVTest {
     @BeforeEach
     void setUp() throws IOException {
         arquivo = pastaTemporaria.resolve("itens.csv");
-        Files.writeString(arquivo, "id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico\n");
+        Files.writeString(arquivo, """
+                id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico
+                """);
         repository = new ItemPersistenciaCSV(arquivo.toString());
     }
 
@@ -45,6 +47,10 @@ class ItemPersistenciaCSVTest {
 
         return new Item(id, nome, new BigDecimal("10.50"), new BigDecimal("100.00"),
                 status, categoria, fornecedor);
+    }
+    
+    private ItemPersistenciaCSV criarRepository(String caminho) {
+        return new ItemPersistenciaCSV(caminho);
     }
 
     @Test
@@ -220,7 +226,7 @@ class ItemPersistenciaCSVTest {
         String caminhoInexistente = pastaTemporaria.resolve("inexistente.csv").toString();
 
         assertThrows(RuntimeException.class,
-                () -> new ItemPersistenciaCSV(caminhoInexistente));
+            () -> criarRepository(caminhoInexistente));
     }
 
     @Test
