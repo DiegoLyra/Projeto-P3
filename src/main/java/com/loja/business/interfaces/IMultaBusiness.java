@@ -6,7 +6,7 @@ import com.loja.model.Multa;
 import java.math.BigDecimal;
 import java.util.Map;
 
-public interface IMultaBusiness{
+public interface IMultaBusiness {
 
     void aplicar(ContratoAluguel contrato);
 
@@ -20,11 +20,11 @@ public interface IMultaBusiness{
 
     Map<String, Multa> listar();
     
-    Multa buscar(String Id);
+    Multa buscar(String id);
 
     void atualizar(Multa multa);
 
-    void deletarMulta(String Id);
+    void deletarMulta(String id);
 
-    public void salvarDados();
+    void salvarDados();
 }
