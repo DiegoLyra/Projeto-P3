@@ -13,9 +13,11 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.Scanner;
 
+
 @SuppressWarnings("java:S106")
 public class MenuAdmin {
 
+    private static final String MSG_ATUALIZAR = "O que você deseja atualizar?";
     private static final Logger logger = LoggerFactory.getLogger(MenuAdmin.class);
     private static final String OPCAO_PROMPT = "Opção: ";
     private static final String NOME_PROMPT = "Novo Nome (";
