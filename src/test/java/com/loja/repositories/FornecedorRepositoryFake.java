@@ -44,12 +44,13 @@ public class FornecedorRepositoryFake implements IFornecedorRepository{
 
     @Override
     public void carregarDados() {
-
+        // Fake em memória usado apenas em testes: não há arquivo/fonte externa
+        // para carregar, então este método intencionalmente não faz nada.
     }
-    
 
     @Override
     public void salvarDados() {
-
+        // Fake em memória usado apenas em testes: não há necessidade de
+        // persistir em disco, então este método intencionalmente não faz nada.
     }
 }
