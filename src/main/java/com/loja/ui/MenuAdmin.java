@@ -22,6 +22,9 @@ public class MenuAdmin {
     private static final String OPCAO_PROMPT = "Opção: ";
     private static final String NOME_PROMPT = "Novo Nome (";
     private static final String OPCAO_NOME = "1 - Nome";
+    private static final String LABEL_NOME = "Nome: ";
+    private static final String MSG_OPCAO_INVALIDA = "Opção inválida.";
+    private static final String SEPARADOR_NOME = " | Nome: ";
 
     private final ILojaFacade facade;
     private final Administrador usuarioLogado;
@@ -78,7 +81,7 @@ public class MenuAdmin {
                 case "2" -> listarUsuarios();
                 case "3" -> atualizarUsuario();
                 case "4" -> desativarUsuario();
-                default -> System.out.println("Opção inválida.");
+                default -> System.out.println(MSG_OPCAO_INVALIDA);
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar usuários: {}", e.getMessage(), e);
@@ -94,7 +97,7 @@ public class MenuAdmin {
         System.out.print("ID: ");
         String id = scanner.nextLine();
 
-        System.out.print("Nome: ");
+        System.out.print(LABEL_NOME);
         String nome = scanner.nextLine();
 
         System.out.print("Email/Login: ");
@@ -144,7 +147,7 @@ public class MenuAdmin {
 
     private void listarTodosUsuarios() {
         facade.listarUsuario().values()
-                .forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome() + " | Perfil: " + u.getPerfil()));
+                .forEach(u -> System.out.println("ID: " + u.getId() + SEPARADOR_NOME + u.getNome() + " | Perfil: " + u.getPerfil()));
     }
 
     private void listarUsuariosPorPerfil() {
@@ -154,7 +157,7 @@ public class MenuAdmin {
         if (usuarios.isEmpty()) {
             throw new IllegalArgumentException("Nehum usuário de perfil " + perfil);
         }
-        usuarios.values().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
+        usuarios.values().forEach(u -> System.out.println("ID: " + u.getId() + SEPARADOR_NOME + u.getNome()));
     }
 
     private void atualizarUsuario() {
@@ -163,7 +166,7 @@ public class MenuAdmin {
 
         Usuario u = facade.buscarUsuario(id);
 
-        System.out.println("O que você deseja atualizar?");
+        System.out.println(MSG_ATUALIZAR);
         System.out.println(OPCAO_NOME);
         System.out.println("2 - Email/Login");
         System.out.println("3 - Senha");
@@ -244,7 +247,7 @@ public class MenuAdmin {
                 case "2" -> listarItens();
                 case "3" -> atualizarItem();
                 case "4" -> deletarItem();
-                default -> System.out.println("Opção inválida.");
+                default -> System.out.println(MSG_OPCAO_INVALIDA);
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar itens: {}", e.getMessage(), e);
@@ -258,7 +261,7 @@ public class MenuAdmin {
         System.out.print("ID: ");
         item.setId(scanner.nextLine());
 
-        System.out.print("Nome: ");
+        System.out.print(LABEL_NOME);
         item.setNome(scanner.nextLine());
 
         item.setStatus("DISPONIVEL");
@@ -305,35 +308,35 @@ public class MenuAdmin {
 
     private void listarTodosItens() {
         facade.listarItem().values()
-                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome() + " | Status: " + i.getStatus()));
+                .forEach(i -> System.out.println("ID: " + i.getId() + SEPARADOR_NOME + i.getNome() + " | Status: " + i.getStatus()));
     }
 
     private void listarItensPorStatus() {
         System.out.print("Status (DISPONIVEL/ALUGADO): ");
         String status = scanner.nextLine().toUpperCase();
         facade.listarItemPorStatus(status).values()
-                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome()));
+                .forEach(i -> System.out.println("ID: " + i.getId() + SEPARADOR_NOME + i.getNome()));
     }
 
     private void listarItensPorCategoria() {
         System.out.print("ID Categoria: ");
         Categoria cat = facade.buscarCategoria(scanner.nextLine());
         facade.listarItemPorCategoria(cat).values()
-                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome()));
+                .forEach(i -> System.out.println("ID: " + i.getId() + SEPARADOR_NOME + i.getNome()));
     }
 
     private void listarItensPorFornecedor() {
         System.out.print("ID Fornecedor: ");
         Fornecedor forn = facade.buscarFornecedor(scanner.nextLine());
         facade.listarItemPorFornecedor(forn).values()
-                .forEach(i -> System.out.println("ID: " + i.getId() + " | Nome: " + i.getNome()));
+                .forEach(i -> System.out.println("ID: " + i.getId() + SEPARADOR_NOME + i.getNome()));
     }
 
     private void atualizarItem() {
         System.out.print("ID do Item: ");
         Item item = facade.buscarItem(scanner.nextLine());
 
-        System.out.println("O que você deseja atualizar?");
+        System.out.println(MSG_ATUALIZAR);
         System.out.println(OPCAO_NOME);
         System.out.println("2 - Taxa diária");
         System.out.println("3 - Valor de reposição");
@@ -397,7 +400,7 @@ public class MenuAdmin {
                 case "2" -> listarCategorias();
                 case "3" -> atualizarCategoria();
                 case "4" -> deletarCategoria();
-                default -> System.out.println("Opção inválida.");
+                default -> System.out.println(MSG_OPCAO_INVALIDA);
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar categorias: {}", e.getMessage(), e);
@@ -408,7 +411,7 @@ public class MenuAdmin {
     private void cadastrarCategoria() {
         System.out.print("ID: ");
         String id = scanner.nextLine();
-        System.out.print("Nome: ");
+        System.out.print(LABEL_NOME);
         String nome = scanner.nextLine();
         facade.cadastrarCategoria(new Categoria(id, nome));
         System.out.println("Categoria criada!");
@@ -416,7 +419,7 @@ public class MenuAdmin {
 
     private void listarCategorias() {
         facade.listarCategoria().values()
-                .forEach(c -> System.out.println("ID: " + c.getId() + " | Nome: " + c.getNome()));
+                .forEach(c -> System.out.println("ID: " + c.getId() + SEPARADOR_NOME + c.getNome()));
     }
 
     private void atualizarCategoria() {
@@ -450,7 +453,7 @@ public class MenuAdmin {
                 case "2" -> listarFornecedores();
                 case "3" -> atualizarFornecedor();
                 case "4" -> deletarFornecedor();
-                default -> System.out.println("Opção inválida.");
+                default -> System.out.println(MSG_OPCAO_INVALIDA);
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar fornecedores: {}", e.getMessage(), e);
@@ -461,7 +464,7 @@ public class MenuAdmin {
     private void cadastrarFornecedor() {
         System.out.print("ID: ");
         String id = scanner.nextLine();
-        System.out.print("Nome: ");
+        System.out.print(LABEL_NOME);
         String nome = scanner.nextLine();
         System.out.print("CNPJ: ");
         String cnpj = scanner.nextLine();
@@ -474,7 +477,7 @@ public class MenuAdmin {
 
     private void listarFornecedores() {
         facade.listarFornecedor().values()
-                .forEach(f -> System.out.println("ID: " + f.getId() + " | Nome: " + f.getNome()
+                .forEach(f -> System.out.println("ID: " + f.getId() + SEPARADOR_NOME + f.getNome()
                         + " | CNPJ: " + f.getCnpj() + " | Telefone: " + f.getTelefone()));
     }
 
@@ -482,7 +485,7 @@ public class MenuAdmin {
         System.out.print("ID: ");
         Fornecedor f = facade.buscarFornecedor(scanner.nextLine());
 
-        System.out.println("O que você deseja atualizar?");
+        System.out.println(MSG_ATUALIZAR);
         System.out.println(OPCAO_NOME);
         System.out.println("2 - CNPJ");
         System.out.println("3 - Telefone");
@@ -560,7 +563,7 @@ public class MenuAdmin {
                 System.out.println("Não há itens disponíveis para aluguel no momento.");
             } else {
                 for (Item item : itens.values()) {
-                    System.out.println("ID: " + item.getId() + " | Nome: " + item.getNome() + " | Valor Diário: " + item.getTaxaDiaria());
+                    System.out.println("ID: " + item.getId() + SEPARADOR_NOME + item.getNome() + " | Valor Diário: " + item.getTaxaDiaria());
                 }
             }
         } catch (RuntimeException e) {
