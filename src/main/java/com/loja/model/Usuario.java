@@ -14,7 +14,8 @@ public abstract class Usuario {
         this.login = login;
         this.senha = senha;
     }
-    public Usuario(){};
+
+    public Usuario() {}
 
     public abstract String getPerfil();
 
