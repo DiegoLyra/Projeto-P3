@@ -80,7 +80,9 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
     @Override
     public void carregarDados() {
         try (BufferedReader br = new BufferedReader(new FileReader(this.caminhoArquivo))) {
-            br.readLine();
+            String cabecalho = br.readLine();
+            if (cabecalho == null) return;
+
             String linha;
             while ((linha = br.readLine()) != null) {
                 if (linha.trim().isEmpty()) continue;
@@ -145,13 +147,13 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
                 String linha =
                         usuario.getId().toUpperCase() + ";" +
-                        usuario.getNome() + ";" +
-                        usuario.getLogin() + ";" +
-                        usuario.getSenha() + ";" +
-                        usuario.getPerfil() + ";" +
-                        usuario.isAtivo() + ";" +
-                        campoExtra1 + ";" +
-                        campoExtra2;
+                                usuario.getNome() + ";" +
+                                usuario.getLogin() + ";" +
+                                usuario.getSenha() + ";" +
+                                usuario.getPerfil() + ";" +
+                                usuario.isAtivo() + ";" +
+                                campoExtra1 + ";" +
+                                campoExtra2;
                 escritor.write(linha);
                 escritor.newLine();
             }
