@@ -1,19 +1,15 @@
 package com.loja.repositories;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.loja.model.Categoria;
+import com.loja.model.Fornecedor;
+import com.loja.model.Item;
+import com.loja.repositories.interfaces.IItemRepository;
+
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.loja.model.Categoria;
-import com.loja.model.Fornecedor;
-import com.loja.model.Item;
-import com.loja.repositories.interfaces.IItemRepository;
 
 public class ItemPersistenciaCSV implements IItemRepository {
     private String caminhoArquivo;
@@ -105,9 +101,7 @@ public class ItemPersistenciaCSV implements IItemRepository {
     // pega cada linha do csv e cria o objeto, passando pra o map
     @Override
     public void carregarDados() {
-        BufferedReader leitor = null;
-        try {
-            leitor = new BufferedReader(new FileReader(this.caminhoArquivo));
+        try (BufferedReader leitor = new BufferedReader(new FileReader(this.caminhoArquivo))) {
             String linha = leitor.readLine();
 
             if(linha != null && linha.toLowerCase().startsWith("id;nome")){
@@ -123,13 +117,6 @@ public class ItemPersistenciaCSV implements IItemRepository {
                     BigDecimal taxaDiaria = new BigDecimal(dados[2]);
                     BigDecimal valorReposicao = new BigDecimal(dados[3]);
                     String status = dados[4];
-
-                    /*
-                    * para evitar problemas de duplicação de dados de fornecedor e categoria
-                    * (ter no item.csv e fornecedor.csv, por exemplo), criamos os objetos vazios
-                    * e preenchemos apenas o ID, para na facade ele criar o fornecedor e categoria
-                    * e atualizar o objeto corretamente
-                    */
 
                     Categoria categoria = new Categoria();
                     categoria.setId(dados[5].toUpperCase());
@@ -148,48 +135,30 @@ public class ItemPersistenciaCSV implements IItemRepository {
             }
         } catch (IOException e){
             throw new RuntimeException(e);
-        } finally {
-            if(leitor != null) {
-                try {
-                    leitor.close();
-                } catch (IOException e){
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 
     @Override
     public void salvarDados() {
-        BufferedWriter escritor = null;
-        try{
-            escritor = new BufferedWriter(new FileWriter(this.caminhoArquivo));
+        try (BufferedWriter escritor = new BufferedWriter(new FileWriter(this.caminhoArquivo))) {
             escritor.write("id;nome;taxaDiaria;valorReposicao;status;categoriaId;fornecedorId;historico");
             escritor.newLine();
 
             for(Item item : this.itens.values()){
                 String linha = item.getId().toUpperCase() + ";" +
-                                item.getNome() + ";" +
-                                item.getTaxaDiaria() + ";" +
-                                item.getValorReposicao() + ";" +
-                                item.getStatus() + ";" +
-                                item.getCategoria().getId().toUpperCase() + ";" +
-                                item.getFornecedor().getId().toUpperCase() + ";" +
-                                item.hasHistorico();
+                        item.getNome() + ";" +
+                        item.getTaxaDiaria() + ";" +
+                        item.getValorReposicao() + ";" +
+                        item.getStatus() + ";" +
+                        item.getCategoria().getId().toUpperCase() + ";" +
+                        item.getFornecedor().getId().toUpperCase() + ";" +
+                        item.hasHistorico();
                 escritor.write(linha);
                 escritor.newLine();
             }
 
         } catch (IOException e){
             throw new RuntimeException(e);
-        } finally {
-            if(escritor != null) {
-                try {
-                    escritor.close();
-                } catch (IOException e){
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 }
