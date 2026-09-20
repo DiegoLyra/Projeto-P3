@@ -83,7 +83,7 @@ public class MultaBusiness implements IMultaBusiness{
             return BigDecimal.ZERO;
         }
         LocalDate dataFinalCalculo = contrato.getDataEfetivaDevolucao() != null ?
-                contrato.getDataEfetivaDevolucao() : LocalDate.now(ZoneId.systemDefault());
+                contrato.getDataEfetivaDevolucao() : LocalDate.now(ZoneId.systemDefault());  //trocou colocando Zone id
 
         long diasAtraso = ChronoUnit.DAYS.between(contrato.getDataPrevDevolucao(), dataFinalCalculo);
 
