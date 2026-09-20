@@ -25,6 +25,7 @@ public class MenuAdmin {
     private static final String LABEL_NOME = "Nome: ";
     private static final String MSG_OPCAO_INVALIDA = "Opção inválida.";
     private static final String SEPARADOR_NOME = " | Nome: ";
+    private static final String MSG_ERRO = "Erro: ";
 
     private final ILojaFacade facade;
     private final Administrador usuarioLogado;
@@ -85,7 +86,7 @@ public class MenuAdmin {
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar usuários: {}", e.getMessage(), e);
-            System.out.println("Erro: " + e.getMessage());
+            System.out.println(MSG_ERRO + e.getMessage());
         }
     }
 
@@ -251,7 +252,7 @@ public class MenuAdmin {
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar itens: {}", e.getMessage(), e);
-            System.out.println("Erro: " + e.getMessage());
+            System.out.println(MSG_ERRO + e.getMessage());
         }
     }
 
@@ -404,7 +405,7 @@ public class MenuAdmin {
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar categorias: {}", e.getMessage(), e);
-            System.out.println("Erro: " + e.getMessage());
+            System.out.println(MSG_ERRO + e.getMessage());
         }
     }
 
@@ -457,7 +458,7 @@ public class MenuAdmin {
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao gerenciar fornecedores: {}", e.getMessage(), e);
-            System.out.println("Erro: " + e.getMessage());
+            System.out.println(MSG_ERRO + e.getMessage());
         }
     }
 
