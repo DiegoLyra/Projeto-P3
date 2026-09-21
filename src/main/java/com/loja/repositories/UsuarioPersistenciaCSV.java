@@ -1,23 +1,30 @@
 package com.loja.repositories;
 
+import com.loja.exceptions.PersistenciaException;
 import com.loja.model.Administrador;
 import com.loja.model.Cliente;
 import com.loja.model.Funcionario;
 import com.loja.model.Usuario;
 import com.loja.repositories.interfaces.IUsuarioRepository;
 
-import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.logging.Logger;
 
 public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
     private String caminhoArquivo;
     private Map<String, Usuario> usuarios;
-    private static final Logger LOGGER = Logger.getLogger(UsuarioPersistenciaCSV.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioPersistenciaCSV.class);
 
     public UsuarioPersistenciaCSV(String caminhoArquivo) {
         this.caminhoArquivo = caminhoArquivo;
@@ -25,8 +32,13 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
         this.carregarDados();
     }
 
-    public String getCaminhoArquivo() { return caminhoArquivo; }
-    public void setCaminhoArquivo(String caminhoArquivo) { this.caminhoArquivo = caminhoArquivo; }
+    public String getCaminhoArquivo() { 
+        return caminhoArquivo; 
+    }
+    
+    public void setCaminhoArquivo(String caminhoArquivo) { 
+        this.caminhoArquivo = caminhoArquivo; 
+    }
 
     @Override
     public void salvar(Usuario usuario) {
@@ -124,7 +136,8 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
                 }
             }
         } catch (IOException e) {
-            LOGGER.severe("Erro ao carregar dados do arquivo CSV: " + e.getMessage());
+            logger.error("Erro ao carregar dados do arquivo CSV: {}", e.getMessage());
+            throw new PersistenciaException("Erro ao carregar dados do arquivo CSV", e);
         }
     }
 
@@ -160,7 +173,8 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
                 escritor.newLine();
             }
         } catch (IOException e) {
-            LOGGER.severe("Erro ao carregar dados do arquivo CSV: " + e.getMessage());
+            logger.error("Erro ao salvar dados no arquivo CSV: {}", e.getMessage());
+            throw new PersistenciaException("Erro ao salvar dados no arquivo CSV", e);
         }
     }
 }
