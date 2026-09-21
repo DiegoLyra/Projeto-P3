@@ -186,7 +186,7 @@ public class MenuAdmin {
             case "2" -> atualizarLoginUsuario(u);
             case "3" -> atualizarSenhaUsuario(u);
             case "4" -> atualizarCargoFuncionario(u);
-            default -> throw new IllegalArgumentException("Opção inválida!");
+            default -> throw new IllegalArgumentException(MSG_OPCAO_INVALIDA);
         }
 
         facade.atualizarUsuario(id, u);
@@ -360,7 +360,7 @@ public class MenuAdmin {
                     "Valor de reposição (XX.xx): R$ ", "valor de reposição"));
             case "4" -> atualizarCategoriaItem(item);
             case "5" -> atualizarFornecedorItem(item);
-            default -> throw new IllegalArgumentException("Opção inválida!");
+            default -> throw new IllegalArgumentException(MSG_OPCAO_INVALIDA);
         }
 
         facade.atualizarItem(item);
@@ -504,7 +504,7 @@ public class MenuAdmin {
             case "1" -> atualizarNomeFornecedor(f);
             case "2" -> atualizarCnpjFornecedor(f);
             case "3" -> atualizarTelefoneFornecedor(f);
-            default -> throw new IllegalArgumentException("Opção inválida!");
+            default -> throw new IllegalArgumentException(MSG_OPCAO_INVALIDA);
         }
 
         facade.atualizarFornecedor(f);
