@@ -1,17 +1,24 @@
 package com.loja.ui;
 
-import com.loja.model.*;
-import com.loja.padrao.facade.interfaces.ILojaFacade;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.Scanner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.loja.model.Administrador;
+import com.loja.model.Categoria;
+import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Fornecedor;
+import com.loja.model.Funcionario;
+import com.loja.model.Item;
+import com.loja.model.Usuario;
+import com.loja.padrao.facade.interfaces.ILojaFacade;
 
 
 @SuppressWarnings("java:S106")
@@ -61,7 +68,7 @@ public class MenuAdmin {
                     System.out.println("Saindo do painel administrativo...");
                     ativo = false;
                 }
-                default -> System.out.println("Opção inválida!");
+                default -> System.out.println(MSG_OPCAO_INVALIDA);
             }
         }
     }
@@ -303,7 +310,7 @@ public class MenuAdmin {
             case "2" -> listarItensPorStatus();
             case "3" -> listarItensPorCategoria();
             case "4" -> listarItensPorFornecedor();
-            default -> System.out.println("Opção inválida!");
+            default -> System.out.println(MSG_OPCAO_INVALIDA);
         }
     }
 
@@ -552,7 +559,7 @@ public class MenuAdmin {
             case "2" -> relatorioAlugueisAtivos();
             case "3" -> relatorioContratosPorCliente();
             case "4" -> relatorioFaturamento();
-            default -> System.out.println("Opção inválida!");
+            default -> System.out.println(MSG_OPCAO_INVALIDA);
         }
     }
 
