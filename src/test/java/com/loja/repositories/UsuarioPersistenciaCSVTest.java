@@ -30,7 +30,10 @@ class UsuarioPersistenciaCSVTest {
     }
 
     private UsuarioPersistenciaCSV criarRepositorioComArquivoNovo() throws IOException {
-        Files.writeString(arquivoCsv, "id;nome;login;senha;perfil;ativo;campoExtra1;campoExtra2\n");
+        String cabecalho = """
+                id;nome;login;senha;perfil;ativo;campoExtra1;campoExtra2
+                """;
+        Files.writeString(arquivoCsv, cabecalho);
         return new UsuarioPersistenciaCSV(arquivoCsv.toString());
     }
 
