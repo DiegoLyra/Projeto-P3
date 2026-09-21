@@ -65,6 +65,14 @@ public class MultaRepositoryFake implements IMultaRepository {
         return multas.remove(id) != null;
     }
 
-    @Override public void carregarDados() {}
-    @Override public void salvarDados() {}
+    @Override 
+    public void carregarDados() {
+        throw new UnsupportedOperationException("Operação carregarDados não suportada em MultaRepositoryFake");
+    }
+
+    @Override 
+    public void salvarDados() {
+        throw new UnsupportedOperationException("Operação salvarDados não suportada em MultaRepositoryFake");
+    }
+
 }
