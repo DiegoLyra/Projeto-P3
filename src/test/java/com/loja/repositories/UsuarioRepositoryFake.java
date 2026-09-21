@@ -53,6 +53,13 @@ public class UsuarioRepositoryFake implements IUsuarioRepository {
         return usuarios.remove(id) != null;
     }
 
-    @Override public void carregarDados() {}
-    @Override public void salvarDados() {}
+    @Override 
+    public void carregarDados() {
+        // Implementação em memória: sem necessidade de carregar dados externos
+    }
+
+    @Override 
+    public void salvarDados() {
+        // Implementação em memória: sem necessidade de persistir dados externos
+    }
 }
