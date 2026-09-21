@@ -1,16 +1,27 @@
 package com.loja.business;
 
-import com.loja.model.*;
-import com.loja.repositories.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Item;
+import com.loja.repositories.CategoriaRepositoryFake;
+import com.loja.repositories.ContratoRepositoryFake;
+import com.loja.repositories.FornecedorRepositoryFake;
+import com.loja.repositories.ItemRepositoryFake;
+import com.loja.repositories.UsuarioRepositoryFake;
 
 class ContratoBusinessTest {
 
@@ -82,49 +93,21 @@ class ContratoBusinessTest {
         assertEquals("ALUGADO", itemDisponivel.getStatus());
     }
 
-    @Test
-    @DisplayName("registrarAluguel: deve lançar exceção quando cliente é inadimplente (RN04)")
-    void registrarAluguel_deveLancarExcecao_quandoClienteInadimplente() {
-        LocalDate retirada = LocalDate.now();
-        LocalDate devolucao = retirada.plusDays(3);
+@ParameterizedTest(name = "deve lançar exceção {2}")
+@CsvSource({
+    "C2,       I1,       quando cliente é inadimplente (RN04)",
+    "C1,       I2,       quando item não está disponível (RN01)",
+    "INVALIDO, I1,       quando cliente não existe",
+    "C1,       INVALIDO, quando item não existe"
+})
+void registrarAluguel_deveLancarExcecao(String clienteId, String itemId, String cenario) {
+    LocalDate retirada = LocalDate.now();
+    LocalDate devolucao = retirada.plusDays(3);
 
-        assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("C2", "I1", retirada, devolucao)
-        );
-    }
-
-    @Test
-    @DisplayName("registrarAluguel: deve lançar exceção quando item não está disponível (RN01)")
-    void registrarAluguel_deveLancarExcecao_quandoItemIndisponivel() {
-        LocalDate retirada = LocalDate.now();
-        LocalDate devolucao = retirada.plusDays(3);
-
-        assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("C1", "I2", retirada, devolucao)
-        );
-    }
-
-    @Test
-    @DisplayName("registrarAluguel: deve lançar exceção quando cliente não existe")
-    void registrarAluguel_deveLancarExcecao_quandoClienteNaoExiste() {
-        LocalDate retirada = LocalDate.now();
-        LocalDate devolucao = retirada.plusDays(3);
-
-        assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("INVALIDO", "I1", retirada, devolucao)
-        );
-    }
-
-    @Test
-    @DisplayName("registrarAluguel: deve lançar exceção quando item não existe")
-    void registrarAluguel_deveLancarExcecao_quandoItemNaoExiste() {
-        LocalDate retirada = LocalDate.now();
-        LocalDate devolucao = retirada.plusDays(3);
-
-        assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("C1", "INVALIDO", retirada, devolucao)
-        );
-    }
+    assertThrows(RuntimeException.class, () ->
+            business.registrarAluguel(clienteId, itemId, retirada, devolucao)
+    );
+}
 
     // processarDevolucao
     @Test
