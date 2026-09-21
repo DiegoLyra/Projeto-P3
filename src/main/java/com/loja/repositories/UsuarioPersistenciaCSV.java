@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -93,7 +94,13 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
     @Override
     public void carregarDados() {
-        try (BufferedReader br = new BufferedReader(new FileReader(this.caminhoArquivo))) {
+        File arquivo = new File(this.caminhoArquivo);
+        if (!arquivo.exists()) {
+            logger.info("Arquivo CSV não encontrado em: {}. Inicializando repositório vazio.", this.caminhoArquivo);
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(arquivo))) {
             String cabecalho = br.readLine();
             if (cabecalho == null) return;
 
@@ -136,7 +143,7 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
                 }
             }
         } catch (IOException e) {
-            logger.error("Erro ao carregar dados do arquivo CSV: {}", e.getMessage());
+            logger.error("Erro ao ler o arquivo CSV em {}: {}", this.caminhoArquivo, e.getMessage(), e);
             throw new PersistenciaException("Erro ao carregar dados do arquivo CSV", e);
         }
     }
@@ -173,8 +180,8 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
                 escritor.newLine();
             }
         } catch (IOException e) {
-            logger.error("Erro ao salvar dados no arquivo CSV: {}", e.getMessage());
-            throw new PersistenciaException("Erro ao salvar dados no arquivo CSV", e);
+            logger.error("Erro ao salvar dados no arquivo CSV em {}: {}", caminhoArquivo, e.getMessage(), e);
+            throw new PersistenciaException("Erro ao salvar dados do arquivo CSV", e);
         }
     }
 }
