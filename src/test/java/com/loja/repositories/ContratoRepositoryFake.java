@@ -56,13 +56,11 @@ public class ContratoRepositoryFake implements IContratoRepository {
 
     @Override
     public void carregarDados() {
-        // Fake em memória usado apenas em testes: não há arquivo/fonte externa
-        // para carregar, então este método intencionalmente não faz nada.
+        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
     }
 
     @Override
     public void salvarDados() {
-        // Fake em memória usado apenas em testes: não há necessidade de
-        // persistir em disco, então este método intencionalmente não faz nada.
+        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
     }
 }
