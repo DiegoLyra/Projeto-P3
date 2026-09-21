@@ -1,20 +1,24 @@
 package com.loja.repositories;
 
-import com.loja.model.Cliente;
-import com.loja.model.ContratoAluguel;
-import com.loja.model.Multa;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Multa;
 
 class MultaPersistenciaCSVTest {
 
@@ -23,7 +27,7 @@ class MultaPersistenciaCSVTest {
     private ContratoAluguel contratoMock;
 
     @BeforeEach
-    void setUp(@TempDir Path tempDir) throws IOException {
+    void setUp(@TempDir Path tempDir){
         arquivoTemp = tempDir.resolve("multas_teste.csv");
         persistencia = new MultaPersistenciaCSV(arquivoTemp.toString());
 
