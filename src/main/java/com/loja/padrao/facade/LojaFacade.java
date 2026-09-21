@@ -1,17 +1,31 @@
 package com.loja.padrao.facade;
 
-import com.loja.business.interfaces.*;
-import com.loja.exceptions.ItemException;
-import com.loja.exceptions.PersistenciaException;
-import com.loja.model.*;
-import com.loja.padrao.facade.interfaces.ILojaFacade;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Map;
+import com.loja.business.interfaces.ICategoriaBusiness;
+import com.loja.business.interfaces.IContratoBusiness;
+import com.loja.business.interfaces.IFornecedorBusiness;
+import com.loja.business.interfaces.IItemBusiness;
+import com.loja.business.interfaces.IMultaBusiness;
+import com.loja.business.interfaces.IUsuarioBusiness;
+import com.loja.exceptions.ItemException;
+import com.loja.exceptions.PersistenciaException;
+import com.loja.model.Administrador;
+import com.loja.model.Categoria;
+import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Fornecedor;
+import com.loja.model.Funcionario;
+import com.loja.model.Item;
+import com.loja.model.Multa;
+import com.loja.model.Usuario;
+import com.loja.padrao.facade.interfaces.ILojaFacade;
 
 public class LojaFacade implements ILojaFacade {
 
@@ -51,7 +65,7 @@ public class LojaFacade implements ILojaFacade {
             return "Nenhum item alugado no momento.";
         }
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Recife"));
         StringBuilder relatorio = new StringBuilder();
         relatorio.append("=== ITENS ALUGADOS: ").append(hoje).append(" ===\n\n");
 
