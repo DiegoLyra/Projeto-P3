@@ -2,6 +2,7 @@ package com.loja.padrao.facade;
 
 import com.loja.business.interfaces.*;
 import com.loja.exceptions.ItemException;
+import com.loja.exceptions.PersistenciaException;
 import com.loja.model.*;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
-public class LojaFacade implements ILojaFacade{
+public class LojaFacade implements ILojaFacade {
 
     private static final Logger logger = LoggerFactory.getLogger(LojaFacade.class);
 
@@ -28,7 +29,7 @@ public class LojaFacade implements ILojaFacade{
                       ICategoriaBusiness categoriaBusiness,
                       IFornecedorBusiness fornecedorBusiness,
                       IContratoBusiness contratoBusiness,
-                      IMultaBusiness multaBusiness){
+                      IMultaBusiness multaBusiness) {
         this.usuarioBusiness = usuarioBusiness;
         this.itemBusiness = itemBusiness;
         this.categoriaBusiness = categoriaBusiness;
@@ -37,6 +38,7 @@ public class LojaFacade implements ILojaFacade{
         this.multaBusiness = multaBusiness;
         resolverDependencias();
     }
+
     /* =========================================================================
      * 1. RELATÓRIOS
      * ========================================================================= */
@@ -69,7 +71,7 @@ public class LojaFacade implements ILojaFacade{
 
     private String formatarLinhaContrato(ContratoAluguel c, LocalDate hoje) {
         boolean emAtraso = hoje.isAfter(c.getDataPrevDevolucao());
-        String tagAtraso = emAtraso ? "  *** EM ATRASO ***" : "";
+        String tagAtraso = emAtraso ? "   *** EM ATRASO ***" : "";
 
         return """
                 Contrato : %s
@@ -95,11 +97,10 @@ public class LojaFacade implements ILojaFacade{
         }
 
         BigDecimal totalAlugueis = contratoBusiness.listar().values().stream()
-                .filter(
-                        c -> c.getStatus().equalsIgnoreCase("ENCERRADO")
-                                && c.getDataEfetivaDevolucao() != null
-                                && !c.getDataEfetivaDevolucao().isBefore(inicio)
-                                && !c.getDataEfetivaDevolucao().isAfter(fim))
+                .filter(c -> c.getStatus().equalsIgnoreCase("ENCERRADO")
+                        && c.getDataEfetivaDevolucao() != null
+                        && !c.getDataEfetivaDevolucao().isBefore(inicio)
+                        && !c.getDataEfetivaDevolucao().isAfter(fim))
                 .map(ContratoAluguel::getValorTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalMultas = multaBusiness.listar().values().stream()
@@ -200,7 +201,7 @@ public class LojaFacade implements ILojaFacade{
     public ContratoAluguel processarDevolucao(String contratoId) {
         if (contratoId == null || contratoId.trim().isEmpty()) throw new IllegalArgumentException("ID inválido para processar devolução.");
         ContratoAluguel contrato = contratoBusiness.processarDevolucao(contratoId);
-        if(multaBusiness.calcularAtraso(contrato).compareTo(BigDecimal.ZERO) > 0){
+        if (multaBusiness.calcularAtraso(contrato).compareTo(BigDecimal.ZERO) > 0) {
             multaBusiness.aplicar(contrato);
         }
         return contrato;
@@ -407,7 +408,7 @@ public class LojaFacade implements ILojaFacade{
     private void salvarComTratamento(String nomeEntidade, Runnable acaoDeSalvar) {
         try {
             acaoDeSalvar.run();
-        } catch (RuntimeException e) {
+        } catch (PersistenciaException e) { // <--- Tratamento com exceção específica
             logger.error("Erro ao salvar {}: {}", nomeEntidade, e.getMessage(), e);
         }
     }
