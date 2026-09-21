@@ -14,7 +14,9 @@ public abstract class Usuario {
         this.login = login;
         this.senha = senha;
     }
-    public Usuario(){};
+    public Usuario() {
+    	// Intencionalmente deixado em branco.
+    }
 
     public abstract String getPerfil();
 

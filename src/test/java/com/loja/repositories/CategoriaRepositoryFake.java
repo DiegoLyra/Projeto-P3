@@ -44,12 +44,12 @@ public class CategoriaRepositoryFake implements ICategoriaRepository {
 
     @Override
     public void carregarDados() {
-
+    	// Deixado intencionalmente em branco.
     }
     
 
     @Override
     public void salvarDados() {
-
+    	// Deixado intencionalmente em branco.
     }
 }

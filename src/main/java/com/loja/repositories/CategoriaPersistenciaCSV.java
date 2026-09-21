@@ -67,9 +67,7 @@ public class CategoriaPersistenciaCSV implements ICategoriaRepository {
     // pega cada linha do csv e cria o objeto, passando pra o map
     @Override
     public void carregarDados() {
-        BufferedReader leitor = null;
-        try {
-            leitor = new BufferedReader(new FileReader(this.caminhoArquivo));
+        try (BufferedReader leitor = new BufferedReader(new FileReader(this.caminhoArquivo));){
             String linha = leitor.readLine();
 
             if(linha != null && linha.toLowerCase().startsWith("id;nome")){
@@ -94,22 +92,12 @@ public class CategoriaPersistenciaCSV implements ICategoriaRepository {
             }
         } catch (IOException e){
             throw new RuntimeException(e);
-        } finally {
-            if(leitor != null) {
-                try {
-                    leitor.close();
-                } catch (IOException e){
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
     @Override
     public void salvarDados() {
-        BufferedWriter escritor = null;
-        try{
-            escritor = new BufferedWriter(new FileWriter(this.caminhoArquivo));
+        try(BufferedWriter escritor = new BufferedWriter(new FileWriter(this.caminhoArquivo));) {
             escritor.write("id;nome;historico");
             escritor.newLine();
 
@@ -123,14 +111,6 @@ public class CategoriaPersistenciaCSV implements ICategoriaRepository {
 
         } catch (IOException e){
             throw new RuntimeException(e);
-        } finally {
-            if(escritor != null) {
-                try {
-                    escritor.close();
-                } catch (IOException e){
-                    e.printStackTrace();
-                }
-            }
-        }
+        } 
     }
 }
