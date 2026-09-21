@@ -1,17 +1,17 @@
 package com.loja.business;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.loja.business.interfaces.IMultaBusiness;
 import com.loja.exceptions.MultaException;
 import com.loja.model.ContratoAluguel;
 import com.loja.model.Multa;
 import com.loja.repositories.interfaces.IMultaRepository;
-import com.loja.business.interfaces.IMultaBusiness;
-import java.time.ZoneId;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MultaBusiness implements IMultaBusiness{
 
@@ -120,13 +120,13 @@ public class MultaBusiness implements IMultaBusiness{
     }
 
     @Override
-    public Multa buscar(String Id){
-        if (Id == null || Id.trim().isEmpty()) {
+    public Multa buscar(String id){
+        if (id == null || id.trim().isEmpty()) {
             throw new MultaException("ID fornecido é inválido para busca.");
         }
-        Multa multa = multaRepository.buscar(Id);
+        Multa multa = multaRepository.buscar(id);
         if(multa == null){
-            throw new MultaException("Multa não encontrada para o Id: " + Id);
+            throw new MultaException("Multa não encontrada para o Id: " + id);
         }
         return multa;
     }
