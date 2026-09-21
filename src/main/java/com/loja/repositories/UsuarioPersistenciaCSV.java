@@ -106,46 +106,56 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
             String linha;
             while ((linha = br.readLine()) != null) {
-                if (linha.trim().isEmpty()) continue;
-
-                String[] dados = linha.split(";", -1);
-                if (dados.length < 6) continue;
-
-                String id = dados[0].toUpperCase();
-                String nome = dados[1];
-                String login = dados[2];
-                String senha = dados[3];
-                String perfil = dados[4];
-                boolean ativo = Boolean.parseBoolean(dados[5]);
-
-                Usuario usuario = null;
-
-                if (perfil.equalsIgnoreCase("ADMINISTRADOR")) {
-                    int nivelAcesso = dados.length > 6 && !dados[6].isEmpty() ? Integer.parseInt(dados[6]) : 1;
-                    String departamento = dados.length > 7 && !dados[7].isEmpty() ? dados[7] : "Geral";
-                    usuario = new Administrador(id, nome, login, senha, nivelAcesso, departamento);
-
-                } else if (perfil.equalsIgnoreCase("FUNCIONARIO")) {
-                    String cargo = dados.length > 6 && !dados[6].isEmpty() ? dados[6] : "Geral";
-                    usuario = new Funcionario(id, nome, login, senha, cargo);
-
-                } else if (perfil.equalsIgnoreCase("CLIENTE")) {
-                    Cliente cliente = new Cliente(id, nome, login, senha);
-                    if (dados.length > 6 && !dados[6].isEmpty()) {
-                        cliente.setInadimplente(Boolean.parseBoolean(dados[6]));
-                    }
-                    usuario = cliente;
-                }
-
-                if (usuario != null) {
-                    usuario.setAtivo(ativo);
-                    this.usuarios.put(id, usuario);
-                }
+                processarLinha(linha);
             }
         } catch (IOException e) {
             logger.error("Erro ao ler o arquivo CSV em {}: {}", this.caminhoArquivo, e.getMessage(), e);
             throw new PersistenciaException("Erro ao carregar dados do arquivo CSV", e);
         }
+    }
+
+    private void processarLinha(String linha) {
+        if (linha.trim().isEmpty()) return;
+
+        String[] dados = linha.split(";", -1);
+        if (dados.length < 6) return;
+
+        String id = dados[0].toUpperCase();
+        String nome = dados[1];
+        String login = dados[2];
+        String senha = dados[3];
+        String perfil = dados[4];
+        boolean ativo = Boolean.parseBoolean(dados[5]);
+
+        Usuario usuario = instanciarUsuario(perfil, id, nome, login, senha, dados);
+
+        if (usuario != null) {
+            usuario.setAtivo(ativo);
+            this.usuarios.put(id, usuario);
+        }
+    }
+
+    private Usuario instanciarUsuario(String perfil, String id, String nome, String login, String senha, String[] dados) {
+        if (perfil.equalsIgnoreCase("ADMINISTRADOR")) {
+            int nivelAcesso = dados.length > 6 && !dados[6].isEmpty() ? Integer.parseInt(dados[6]) : 1;
+            String departamento = dados.length > 7 && !dados[7].isEmpty() ? dados[7] : "Geral";
+            return new Administrador(id, nome, login, senha, nivelAcesso, departamento);
+        } 
+        
+        if (perfil.equalsIgnoreCase("FUNCIONARIO")) {
+            String cargo = dados.length > 6 && !dados[6].isEmpty() ? dados[6] : "Geral";
+            return new Funcionario(id, nome, login, senha, cargo);
+        } 
+        
+        if (perfil.equalsIgnoreCase("CLIENTE")) {
+            Cliente cliente = new Cliente(id, nome, login, senha);
+            if (dados.length > 6 && !dados[6].isEmpty()) {
+                cliente.setInadimplente(Boolean.parseBoolean(dados[6]));
+            }
+            return cliente;
+        }
+
+        return null;
     }
 
     @Override
