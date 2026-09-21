@@ -55,11 +55,11 @@ public class UsuarioRepositoryFake implements IUsuarioRepository {
 
     @Override 
     public void carregarDados() {
-        // Implementação em memória: sem necessidade de carregar dados externos
+        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
     }
 
     @Override 
     public void salvarDados() {
-        // Implementação em memória: sem necessidade de persistir dados externos
+        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
     }
 }
