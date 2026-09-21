@@ -1,13 +1,14 @@
 package com.loja.repositories;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.loja.model.Fornecedor;
 import com.loja.repositories.interfaces.IFornecedorRepository;
 
-public class FornecedorRepositoryFake implements IFornecedorRepository{
-    private Map<String, Fornecedor> fornecedores;
+public class FornecedorRepositoryFake implements IFornecedorRepository {
+    private final Map<String, Fornecedor> fornecedores = new HashMap<>();
 
     @Override
     public void salvar(Fornecedor fornecedor) {
@@ -44,12 +45,13 @@ public class FornecedorRepositoryFake implements IFornecedorRepository{
 
     @Override
     public void carregarDados() {
-
+        // Fake em memória usado apenas em testes: não há arquivo/fonte externa
+        // para carregar, então este método intencionalmente não faz nada.
     }
-    
 
     @Override
     public void salvarDados() {
-
+        // Fake em memória usado apenas em testes: não há necessidade de
+        // persistir em disco, então este método intencionalmente não faz nada.
     }
 }

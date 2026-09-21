@@ -33,11 +33,11 @@ public class ItemBusiness implements IItemBusiness {
             throw new ItemException("Fornecedor não cadastrado: " + i.getFornecedor().getNome());
         }
 
-        if (i.getStatus().isBlank() || i.getStatus() == null){
+        if (i.getStatus() == null || i.getStatus().isBlank()){
             i.setStatus("DISPONIVEL");
         }
         repo.salvar(i);
-    };
+    }
 
     public Item buscar(String id){
         Item item = repo.buscar(id);
@@ -45,15 +45,15 @@ public class ItemBusiness implements IItemBusiness {
             throw new ItemException("Item não encontrado: " + id);
         }
         return item;
-    };
+    }
 
     public Map<String, Item> listar(){
         return repo.listar();
-    };
+    }
 
     public Map<String, Item> listarPorStatus(String status){
         return repo.listar(status);
-    };
+    }
 
     public Map<String, Item> listarPorCategoria(Categoria categoria){
         if (categoria == null){
@@ -64,7 +64,7 @@ public class ItemBusiness implements IItemBusiness {
             throw new ItemException("Categoria não cadastrada: " + categoria.getNome());
         }
         return repo.listar(categoria);
-    };
+    }
 
     public Map<String, Item> listarPorFornecedor(Fornecedor fornecedor){
         if (fornecedor == null){
@@ -83,8 +83,8 @@ public class ItemBusiness implements IItemBusiness {
         }
         if (!repo.atualizar(item)){
             throw new ItemException("Não foi possível atualizar!");
-        };
-    };
+        }
+    }
 
     public void deletar(String id){
         if (repo.buscar(id) == null){
@@ -94,7 +94,7 @@ public class ItemBusiness implements IItemBusiness {
             throw new ItemException("O item não pode ser excluido, tem histórico");
         }
         repo.deletar(id);
-    };
+    }
 
     public void salvarDados(){
         this.repo.salvarDados();

@@ -11,11 +11,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
 public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
     private String caminhoArquivo;
     private Map<String, Usuario> usuarios;
+    private static final Logger LOGGER = Logger.getLogger(UsuarioPersistenciaCSV.class.getName());
 
     public UsuarioPersistenciaCSV(String caminhoArquivo) {
         this.caminhoArquivo = caminhoArquivo;
@@ -80,7 +82,9 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
     @Override
     public void carregarDados() {
         try (BufferedReader br = new BufferedReader(new FileReader(this.caminhoArquivo))) {
-            br.readLine();
+            String cabecalho = br.readLine();
+            if (cabecalho == null) return;
+
             String linha;
             while ((linha = br.readLine()) != null) {
                 if (linha.trim().isEmpty()) continue;
@@ -120,7 +124,7 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
                 }
             }
         } catch (IOException e) {
-            System.err.println("Erro ao carregar dados do arquivo CSV: " + e.getMessage());
+            LOGGER.severe("Erro ao carregar dados do arquivo CSV: " + e.getMessage());
         }
     }
 
@@ -145,18 +149,18 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
                 String linha =
                         usuario.getId().toUpperCase() + ";" +
-                        usuario.getNome() + ";" +
-                        usuario.getLogin() + ";" +
-                        usuario.getSenha() + ";" +
-                        usuario.getPerfil() + ";" +
-                        usuario.isAtivo() + ";" +
-                        campoExtra1 + ";" +
-                        campoExtra2;
+                                usuario.getNome() + ";" +
+                                usuario.getLogin() + ";" +
+                                usuario.getSenha() + ";" +
+                                usuario.getPerfil() + ";" +
+                                usuario.isAtivo() + ";" +
+                                campoExtra1 + ";" +
+                                campoExtra2;
                 escritor.write(linha);
                 escritor.newLine();
             }
         } catch (IOException e) {
-            System.err.println("Erro ao salvar dados no arquivo CSV: " + e.getMessage());
+            LOGGER.severe("Erro ao carregar dados do arquivo CSV: " + e.getMessage());
         }
     }
 }

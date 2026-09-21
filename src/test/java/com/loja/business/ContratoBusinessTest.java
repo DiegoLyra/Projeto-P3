@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ContratoBusinessTeste {
+class ContratoBusinessTest {
 
     private ContratoRepositoryFake contratoRepo;
     private ItemRepositoryFake itemRepo;
@@ -74,7 +74,10 @@ class ContratoBusinessTeste {
     @Test
     @DisplayName("registrarAluguel: deve marcar item como ALUGADO após registrar")
     void registrarAluguel_deveMudarStatusItem_paraAlugado() {
-        business.registrarAluguel("C1", "I1", LocalDate.now(), LocalDate.now().plusDays(3));
+        LocalDate retirada = LocalDate.now();
+        LocalDate devolucao = retirada.plusDays(3);
+
+        business.registrarAluguel("C1", "I1", retirada, devolucao);
 
         assertEquals("ALUGADO", itemDisponivel.getStatus());
     }
@@ -82,32 +85,44 @@ class ContratoBusinessTeste {
     @Test
     @DisplayName("registrarAluguel: deve lançar exceção quando cliente é inadimplente (RN04)")
     void registrarAluguel_deveLancarExcecao_quandoClienteInadimplente() {
+        LocalDate retirada = LocalDate.now();
+        LocalDate devolucao = retirada.plusDays(3);
+
         assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("C2", "I1", LocalDate.now(), LocalDate.now().plusDays(3))
+                business.registrarAluguel("C2", "I1", retirada, devolucao)
         );
     }
 
     @Test
     @DisplayName("registrarAluguel: deve lançar exceção quando item não está disponível (RN01)")
     void registrarAluguel_deveLancarExcecao_quandoItemIndisponivel() {
+        LocalDate retirada = LocalDate.now();
+        LocalDate devolucao = retirada.plusDays(3);
+
         assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("C1", "I2", LocalDate.now(), LocalDate.now().plusDays(3))
+                business.registrarAluguel("C1", "I2", retirada, devolucao)
         );
     }
 
     @Test
     @DisplayName("registrarAluguel: deve lançar exceção quando cliente não existe")
     void registrarAluguel_deveLancarExcecao_quandoClienteNaoExiste() {
+        LocalDate retirada = LocalDate.now();
+        LocalDate devolucao = retirada.plusDays(3);
+
         assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("INVALIDO", "I1", LocalDate.now(), LocalDate.now().plusDays(3))
+                business.registrarAluguel("INVALIDO", "I1", retirada, devolucao)
         );
     }
 
     @Test
     @DisplayName("registrarAluguel: deve lançar exceção quando item não existe")
     void registrarAluguel_deveLancarExcecao_quandoItemNaoExiste() {
+        LocalDate retirada = LocalDate.now();
+        LocalDate devolucao = retirada.plusDays(3);
+
         assertThrows(RuntimeException.class, () ->
-                business.registrarAluguel("C1", "INVALIDO", LocalDate.now(), LocalDate.now().plusDays(3))
+                business.registrarAluguel("C1", "INVALIDO", retirada, devolucao)
         );
     }
 
@@ -115,7 +130,8 @@ class ContratoBusinessTeste {
     @Test
     @DisplayName("processarDevolucao: deve encerrar contrato e liberar item")
     void processarDevolucao_deveEncerrarContrato_e_liberarItem() {
-        ContratoAluguel contrato = business.registrarAluguel("C1", "I1", LocalDate.now(), LocalDate.now().plusDays(3));
+        LocalDate retirada = LocalDate.now();
+        ContratoAluguel contrato = business.registrarAluguel("C1", "I1", retirada, retirada.plusDays(3));
 
         ContratoAluguel encerrado = business.processarDevolucao(contrato.getId());
 
@@ -135,11 +151,13 @@ class ContratoBusinessTeste {
     @Test
     @DisplayName("processarDevolucao: deve lançar exceção quando contrato já está encerrado")
     void processarDevolucao_deveLancarExcecao_quandoContratoJaEncerrado() {
-        ContratoAluguel contrato = business.registrarAluguel("C1", "I1", LocalDate.now(), LocalDate.now().plusDays(3));
-        business.processarDevolucao(contrato.getId());
+        LocalDate retirada = LocalDate.now();
+        ContratoAluguel contrato = business.registrarAluguel("C1", "I1", retirada, retirada.plusDays(3));
+        String contratoId = contrato.getId();
+        business.processarDevolucao(contratoId);
 
         assertThrows(RuntimeException.class, () ->
-                business.processarDevolucao(contrato.getId())
+                business.processarDevolucao(contratoId)
         );
     }
 
@@ -147,7 +165,8 @@ class ContratoBusinessTeste {
     @Test
     @DisplayName("listarAtivos: deve retornar apenas contratos com status ATIVO")
     void listarAtivos_deveRetornarApenasAtivos() {
-        ContratoAluguel contrato = business.registrarAluguel("C1", "I1", LocalDate.now(), LocalDate.now().plusDays(3));
+        LocalDate retirada = LocalDate.now();
+        ContratoAluguel contrato = business.registrarAluguel("C1", "I1", retirada, retirada.plusDays(3));
         business.processarDevolucao(contrato.getId()); // encerra o contrato
 
         Map<String, ContratoAluguel> ativos = business.listarAtivos();
@@ -158,7 +177,8 @@ class ContratoBusinessTeste {
     @Test
     @DisplayName("listarPorCliente: deve retornar apenas contratos do cliente informado")
     void listarPorCliente_deveRetornarContratosDo_clienteCorreto() {
-        business.registrarAluguel("C1", "I1", LocalDate.now(), LocalDate.now().plusDays(3));
+        LocalDate retirada = LocalDate.now();
+        business.registrarAluguel("C1", "I1", retirada, retirada.plusDays(3));
 
         Map<String, ContratoAluguel> resultado = business.listarPorCliente("C1");
 
@@ -169,7 +189,8 @@ class ContratoBusinessTeste {
     @Test
     @DisplayName("listar: deve retornar todos os contratos")
     void listar_deveRetornarTodosOsContratos() {
-        business.registrarAluguel("C1", "I1", LocalDate.now(), LocalDate.now().plusDays(3));
+        LocalDate retirada = LocalDate.now();
+        business.registrarAluguel("C1", "I1", retirada, retirada.plusDays(3));
 
         assertEquals(1, business.listar().size());
     }

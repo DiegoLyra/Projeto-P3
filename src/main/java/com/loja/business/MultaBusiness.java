@@ -5,6 +5,7 @@ import com.loja.model.ContratoAluguel;
 import com.loja.model.Multa;
 import com.loja.repositories.interfaces.IMultaRepository;
 import com.loja.business.interfaces.IMultaBusiness;
+import java.time.ZoneId;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -82,7 +83,7 @@ public class MultaBusiness implements IMultaBusiness{
             return BigDecimal.ZERO;
         }
         LocalDate dataFinalCalculo = contrato.getDataEfetivaDevolucao() != null ?
-                contrato.getDataEfetivaDevolucao() : LocalDate.now();
+                contrato.getDataEfetivaDevolucao() : LocalDate.now(ZoneId.systemDefault());  //trocou colocando Zone id
 
         long diasAtraso = ChronoUnit.DAYS.between(contrato.getDataPrevDevolucao(), dataFinalCalculo);
 

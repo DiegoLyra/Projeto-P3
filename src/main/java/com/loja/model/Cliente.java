@@ -10,9 +10,10 @@ public class Cliente extends Usuario {
         this.inadimplente = false;
         this.historico = false;
     }
+
     public Cliente(){
         super();
-    };
+    }
 
     @Override
     public String getPerfil(){

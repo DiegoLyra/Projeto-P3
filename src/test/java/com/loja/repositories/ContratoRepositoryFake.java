@@ -54,7 +54,15 @@ public class ContratoRepositoryFake implements IContratoRepository {
         return contratos.remove(id) != null;
     }
 
-    @Override public void carregarDados() {}
+    @Override
+    public void carregarDados() {
+        // Fake em memória usado apenas em testes: não há arquivo/fonte externa
+        // para carregar, então este método intencionalmente não faz nada.
+    }
 
-    @Override public void salvarDados() {}
+    @Override
+    public void salvarDados() {
+        // Fake em memória usado apenas em testes: não há necessidade de
+        // persistir em disco, então este método intencionalmente não faz nada.
+    }
 }

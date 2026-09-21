@@ -138,4 +138,14 @@ class MultaBusinessTeste {
 
         assertThrows(RuntimeException.class, () -> business.deletarMulta("5"));
     }
+    @Test
+    @DisplayName("calcularAtraso: deve calcular usando a data atual quando não houver devolução efetiva")
+    void calcularAtraso_deveUsarDataAtual_quandoNaoHouverDevolucaoEfetiva() {
+        contratoComAtraso.setDataEfetivaDevolucao(null);
+
+        BigDecimal resultado = business.calcularAtraso(contratoComAtraso);
+
+        assertTrue(resultado.compareTo(BigDecimal.ZERO) > 0);
+}
+
 }
