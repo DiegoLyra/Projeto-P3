@@ -4,10 +4,12 @@ import com.loja.business.interfaces.*;
 import com.loja.exceptions.ItemException;
 import com.loja.exceptions.PersistenciaException;
 import com.loja.model.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -303,8 +305,10 @@ class LojaFacadeTest {
     @Test
     @DisplayName("gerarRelatorioFaturamento: deve lançar exceção quando datas são nulas")
     void gerarRelatorioFaturamento_deveLancarExcecao_quandoDatasNulas() {
+        LocalDate agora = LocalDate.now();
+
         assertThrows(IllegalArgumentException.class,
-                () -> facade.gerarRelatorioFaturamento(null, LocalDate.now()));
+                () -> facade.gerarRelatorioFaturamento(null, agora));
     }
 
     @Test
