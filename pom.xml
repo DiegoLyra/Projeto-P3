@@ -18,6 +18,12 @@
         <sonar.organization>diegolyra</sonar.organization>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
+        <jacoco.version>0.8.12</jacoco.version>
+
+        <!-- Caminho do relatório de cobertura lido pelo sonar-maven-plugin -->
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.build.directory}/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencies>
@@ -74,6 +80,32 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+
+            <!-- JaCoCo: instrumenta os testes e gera o relatório de cobertura
+                 consumido pelo SonarQube/SonarCloud (métrica "Coverage" e
+                 "Coverage on New Code" do Quality Gate). -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <!-- Liga o agente do JaCoCo antes dos testes rodarem -->
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <!-- Gera o relatório XML/HTML logo após a fase de testes -->
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
