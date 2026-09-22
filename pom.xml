@@ -19,6 +19,7 @@
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <mockito.version>5.12.0</mockito.version>
 
         <!-- Caminho do relatório de cobertura lido pelo sonar-maven-plugin -->
         <sonar.coverage.jacoco.xmlReportPaths>
@@ -33,6 +34,19 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 
