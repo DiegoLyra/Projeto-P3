@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.MenuClienteController">
+   <top>
+      <VBox spacing="5.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="lblBoasVindas" text="ÁREA DO CLIENTE" textFill="#2c3e50">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="15.0" right="15.0" top="15.0" />
+         </padding>
+      </VBox>
+   </top>
+   <center>
+      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+          <Tab text="Itens Disponíveis">
+            <content>
+              <AnchorPane>
+                     <children>
+                        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                           <children>
+                              <TableView fx:id="tblItens" VBox.vgrow="ALWAYS">
+                                <columns>
+                                  <TableColumn fx:id="colItemId" prefWidth="100.0" text="ID" />
+                                  <TableColumn fx:id="colItemNome" prefWidth="300.0" text="Nome" />
+                                    <TableColumn fx:id="colItemValor" prefWidth="150.0" text="Valor Diário" />
+                                </columns>
+                              </TableView>
+                              <Button onAction="#carregarItensDisponiveis" text="Atualizar Itens" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Meus Aluguéis">
+            <content>
+              <AnchorPane>
+                     <children>
+                        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                           <children>
+                              <TableView fx:id="tblAlugueis" VBox.vgrow="ALWAYS">
+                                <columns>
+                                  <TableColumn fx:id="colContratoId" prefWidth="100.0" text="ID Contrato" />
+                                  <TableColumn fx:id="colContratoItem" prefWidth="200.0" text="Item" />
+                                    <TableColumn fx:id="colContratoRetirada" prefWidth="150.0" text="Retirada" />
+                                    <TableColumn fx:id="colContratoDevolucao" prefWidth="150.0" text="Prev. Devolução" />
+                                </columns>
+                              </TableView>
+                              <Button onAction="#carregarMeusAlugueis" text="Atualizar Histórico" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab text="Minhas Multas">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                           <children>
+                              <TableView fx:id="tblMultas" VBox.vgrow="ALWAYS">
+                                <columns>
+                                  <TableColumn fx:id="colMultaId" prefWidth="100.0" text="ID Multa" />
+                                  <TableColumn fx:id="colMultaMotivo" prefWidth="250.0" text="Motivo" />
+                                    <TableColumn fx:id="colMultaValor" prefWidth="120.0" text="Valor Total" />
+                                    <TableColumn fx:id="colMultaStatus" prefWidth="120.0" text="Status" />
+                                </columns>
+                              </TableView>
+                              <Button onAction="#carregarMultasPendentes" text="Atualizar Multas" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER_RIGHT" spacing="10.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" onAction="#handleSair" text="Sair / Desconectar" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </HBox>
+   </bottom>
+</BorderPane>
