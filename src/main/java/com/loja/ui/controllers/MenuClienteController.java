@@ -1,14 +1,20 @@
 package com.loja.ui.controllers;
 
 import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
 import com.loja.model.Item;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -27,8 +33,16 @@ public class MenuClienteController {
 
     @FXML private Label lblBoasVindas;
 
-    // ABA 1: ITENS DISPONÍVEIS
+    // ITENS DISPONÍVEIS
     @FXML private FlowPane containerCardsItens;
+
+    // ALUGUÉIS
+    @FXML private TableView<ContratoAluguel> tblAlugueis;
+    @FXML private TableColumn<ContratoAluguel, String> colContratoId;
+    @FXML private TableColumn<ContratoAluguel, String> colContratoItem;
+    @FXML private TableColumn<ContratoAluguel, Object> colContratoStatus;
+    @FXML private TableColumn<ContratoAluguel, Object> colContratoValorTotal;
+    @FXML private TableColumn<ContratoAluguel, Object> colContratoDevolucaoEfetiva;
 
     public void initData(ILojaFacade facade, Cliente usuarioLogado) {
         this.facade = facade;
@@ -37,7 +51,24 @@ public class MenuClienteController {
         if (usuarioLogado != null) {
             this.lblBoasVindas.setText("ÁREA DO CLIENTE: " + usuarioLogado.getNome().toUpperCase());
         }
+
+        configurarTabelaAlugueis();
         carregarItensDisponiveis();
+        carregarMeusAlugueis();
+    }
+
+    private void configurarTabelaAlugueis() {
+        colContratoId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getId()));
+        colContratoItem.setCellValueFactory(cellData -> {
+            Item item = cellData.getValue().getItem();
+            return new SimpleStringProperty(item != null ? item.getNome() : "N/I");
+        });
+        colContratoStatus.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getStatus()));
+        colContratoValorTotal.setCellValueFactory(cellData -> new SimpleObjectProperty<>("R$ " + cellData.getValue().getValorTotal()));
+        colContratoDevolucaoEfetiva.setCellValueFactory(cellData -> {
+            Object devEfetiva = cellData.getValue().getDataDevolucaoEfetiva();
+            return new SimpleObjectProperty<>(devEfetiva != null ? devEfetiva : "Pendente / Em Aberto");
+        });
     }
 
     @FXML
@@ -83,6 +114,19 @@ public class MenuClienteController {
 
         card.getChildren().addAll(lblNome, lblId, lblValor, btnAlugar);
         return card;
+    }
+
+    @FXML
+    public void carregarMeusAlugueis() {
+        try {
+            Map<String, ContratoAluguel> contratos = facade.consultarHistoricoCliente(usuarioLogado.getId());
+            if (contratos != null) {
+                tblAlugueis.setItems(FXCollections.observableArrayList(contratos.values()));
+            }
+        } catch (RuntimeException e) {
+            logger.error("Falha ao buscar histórico do cliente '{}': {}", usuarioLogado.getId(), e.getMessage(), e);
+            exibirAlertaErro("Erro", "Erro ao buscar histórico: " + e.getMessage());
+        }
     }
 
     @FXML
