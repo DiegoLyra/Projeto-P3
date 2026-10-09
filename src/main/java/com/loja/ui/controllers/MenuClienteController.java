@@ -5,8 +5,8 @@ import com.loja.model.ContratoAluguel;
 import com.loja.model.Item;
 import com.loja.model.Multa;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
-import com.loja.ui.navigation.Navigator;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -20,25 +20,31 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public class MenuClienteController {
 
     private static final Logger logger = LoggerFactory.getLogger(MenuClienteController.class);
-    private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    private final ILojaFacade facade;
-    private final Navigator navigator;
+    private ILojaFacade facade;
     private Cliente usuarioLogado;
 
+    // PAGEHEADER E PILLNAV
     @FXML private Label lblBoasVindas;
+    @FXML private Label lblTituloSecao;
+    @FXML private Button btnNavItens;
+    @FXML private Button btnNavAlugueis;
+    @FXML private Button btnNavMultas;
+
+    // PAINÉIS DAS ABAS
+    @FXML private VBox paneItens;
+    @FXML private VBox paneAlugueis;
+    @FXML private VBox paneMultas;
 
     // ITENS DISPONÍVEIS
     @FXML private FlowPane containerCardsItens;
@@ -47,9 +53,9 @@ public class MenuClienteController {
     @FXML private TableView<ContratoAluguel> tblAlugueis;
     @FXML private TableColumn<ContratoAluguel, String> colContratoId;
     @FXML private TableColumn<ContratoAluguel, String> colContratoItem;
-    @FXML private TableColumn<ContratoAluguel, String> colContratoStatus;
-    @FXML private TableColumn<ContratoAluguel, String> colContratoValorTotal;
-    @FXML private TableColumn<ContratoAluguel, String> colContratoDevolucaoEfetiva;
+    @FXML private TableColumn<ContratoAluguel, Object> colContratoStatus;
+    @FXML private TableColumn<ContratoAluguel, Object> colContratoValorTotal;
+    @FXML private TableColumn<ContratoAluguel, Object> colContratoDevolucaoEfetiva;
 
     // MULTAS
     @FXML private HBox bannerMultas;
@@ -57,24 +63,19 @@ public class MenuClienteController {
     @FXML private TableView<Multa> tblMultas;
     @FXML private TableColumn<Multa, String> colMultaId;
     @FXML private TableColumn<Multa, String> colMultaMotivo;
-    @FXML private TableColumn<Multa, String> colMultaValor;
+    @FXML private TableColumn<Multa, Object> colMultaValor;
     @FXML private TableColumn<Multa, String> colMultaStatus;
 
-    public MenuClienteController(ILojaFacade facade, Navigator navigator) {
+    public void initData(ILojaFacade facade, Cliente usuarioLogado) {
         this.facade = facade;
-        this.navigator = navigator;
-    }
+        this.usuarioLogado = usuarioLogado;
 
-    @FXML
-    private void initialize() {
-        if (!(navigator.getUsuarioLogado() instanceof Cliente cliente)) {
-            throw new IllegalStateException("Usuário logado não é um cliente.");
+        if (usuarioLogado != null && usuarioLogado.getNome() != null) {
+            this.lblBoasVindas.setText("ÁREA DO CLIENTE: " + usuarioLogado.getNome().toUpperCase());
         }
-        this.usuarioLogado = cliente;
-        lblBoasVindas.setText("ÁREA DO CLIENTE: " + cliente.getNome().toUpperCase());
 
         configurarTabelas();
-        carregarDadosIniciais();
+        mostrarAbaItens();
     }
 
     private void configurarTabelas() {
@@ -83,23 +84,17 @@ public class MenuClienteController {
             Item item = cellData.getValue().getItem();
             return new SimpleStringProperty(item != null ? item.getNome() : "N/I");
         });
-        colContratoStatus.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getStatus()));
-        colContratoValorTotal.setCellValueFactory(cellData ->
-                new SimpleStringProperty(formatarMoeda(cellData.getValue().getValorTotal())));
+        colContratoStatus.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getStatus()));
+        colContratoValorTotal.setCellValueFactory(cellData -> new SimpleObjectProperty<>("R$ " + cellData.getValue().getValorTotal()));
         colContratoDevolucaoEfetiva.setCellValueFactory(cellData -> {
-            LocalDate devEfetiva = cellData.getValue().getDataEfetivaDevolucao();
-            return new SimpleStringProperty(devEfetiva != null
-                    ? devEfetiva.format(FORMATO_DATA)
-                    : "Pendente / Em Aberto");
+            Object devEfetiva = cellData.getValue().getDataEfetivaDevolucao();
+            return new SimpleObjectProperty<>(devEfetiva != null ? devEfetiva : "Pendente / Em Aberto");
         });
 
         colMultaId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getId()));
         colMultaMotivo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMotivo()));
-        colMultaValor.setCellValueFactory(cellData ->
-                new SimpleStringProperty(formatarMoeda(cellData.getValue().getValorTotal())));
-        colMultaStatus.setCellValueFactory(cellData ->
-                new SimpleStringProperty(String.valueOf(cellData.getValue().getStatus())));
+        colMultaValor.setCellValueFactory(cellData -> new SimpleObjectProperty<>("R$ " + cellData.getValue().getValorTotal()));
+        colMultaStatus.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getStatus())));
 
         colMultaStatus.setCellFactory(column -> new TableCell<Multa, String>() {
             @Override
@@ -123,10 +118,45 @@ public class MenuClienteController {
         });
     }
 
-    private void carregarDadosIniciais() {
+    // NAVEGAÇÃO ENTRE ABAS
+    @FXML
+    public void mostrarAbaItens() {
+        lblTituloSecao.setText("📦 Itens Disponíveis para Aluguel");
+        paneItens.setVisible(true);
+        paneAlugueis.setVisible(false);
+        paneMultas.setVisible(false);
+
+        destacarBotaoNav(btnNavItens, btnNavAlugueis, btnNavMultas);
         carregarItensDisponiveis();
+    }
+
+    @FXML
+    public void mostrarAbaAlugueis() {
+        lblTituloSecao.setText("📄 Meus Aluguéis (Histórico do Cliente)");
+        paneItens.setVisible(false);
+        paneAlugueis.setVisible(true);
+        paneMultas.setVisible(false);
+
+        destacarBotaoNav(btnNavAlugueis, btnNavItens, btnNavMultas);
         carregarMeusAlugueis();
+    }
+
+    @FXML
+    public void mostrarAbaMultas() {
+        lblTituloSecao.setText("⚠️ Minhas Multas");
+        paneItens.setVisible(false);
+        paneAlugueis.setVisible(false);
+        paneMultas.setVisible(true);
+
+        destacarBotaoNav(btnNavMultas, btnNavItens, btnNavAlugueis);
         carregarMultasPendentes();
+    }
+
+    private void destacarBotaoNav(Button ativo, Button... inativos) {
+        ativo.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;");
+        for (Button btn : inativos) {
+            btn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;");
+        }
     }
 
     @FXML
@@ -141,7 +171,8 @@ public class MenuClienteController {
             }
 
             for (Item item : itens.values()) {
-                containerCardsItens.getChildren().add(criarCardItem(item));
+                VBox card = criarCardItem(item);
+                containerCardsItens.getChildren().add(card);
             }
         } catch (RuntimeException e) {
             logger.error("Falha ao listar itens disponíveis: {}", e.getMessage(), e);
@@ -162,33 +193,24 @@ public class MenuClienteController {
         Label lblId = new Label("ID: " + item.getId());
         lblId.setStyle("-fx-font-size: 11px; -fx-text-fill: #7f8c8d;");
 
-        Label lblValor = new Label(formatarMoeda(item.getTaxaDiaria()) + " / dia");
+        Label lblValor = new Label(String.format("R$ %.2f / dia", item.getTaxaDiaria()));
         lblValor.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #27ae60;");
 
         Button btnAlugar = new Button("Alugar");
         btnAlugar.setMaxWidth(Double.MAX_VALUE);
         btnAlugar.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;");
-        btnAlugar.setOnAction(e -> solicitarAluguel(item));
 
         card.getChildren().addAll(lblNome, lblId, lblValor, btnAlugar);
         return card;
-    }
-
-    private void solicitarAluguel(Item item) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Aluguel");
-        alert.setHeaderText(null);
-        alert.setContentText("O aluguel de \"" + item.getNome() + "\" ainda não está disponível pela interface.");
-        alert.showAndWait();
     }
 
     @FXML
     public void carregarMeusAlugueis() {
         try {
             Map<String, ContratoAluguel> contratos = facade.consultarHistoricoCliente(usuarioLogado.getId());
-            tblAlugueis.setItems(contratos == null
-                    ? FXCollections.emptyObservableList()
-                    : FXCollections.observableArrayList(contratos.values()));
+            if (contratos != null) {
+                tblAlugueis.setItems(FXCollections.observableArrayList(contratos.values()));
+            }
         } catch (RuntimeException e) {
             logger.error("Falha ao buscar histórico do cliente '{}': {}", usuarioLogado.getId(), e.getMessage(), e);
             exibirAlertaErro("Erro", "Erro ao buscar histórico: " + e.getMessage());
@@ -198,22 +220,22 @@ public class MenuClienteController {
     @FXML
     public void carregarMultasPendentes() {
         try {
-            String clienteId = usuarioLogado.getId();
-
-            if (facade.possuiMultaPendente(clienteId)) {
-                bannerMultas.setStyle("-fx-background-color: #f8d7da; -fx-border-color: #f5c6cb; -fx-border-radius: 5; -fx-background-radius: 5;");
-                lblBannerMulta.setText("🚨 Você possui multas pendentes! Regularize a sua situação.");
-                lblBannerMulta.setStyle("-fx-text-fill: #721c24; -fx-font-weight: bold;");
-            } else {
+            boolean temMulta = facade.possuiMultaPendente(usuarioLogado.getId());
+            if (!temMulta) {
                 bannerMultas.setStyle("-fx-background-color: #d4edda; -fx-border-color: #c3e6cb; -fx-border-radius: 5; -fx-background-radius: 5;");
                 lblBannerMulta.setText("✅ Você não possui multas pendentes no momento.");
                 lblBannerMulta.setStyle("-fx-text-fill: #155724; -fx-font-weight: bold;");
-            }
+                tblMultas.setItems(FXCollections.emptyObservableList());
+            } else {
+                bannerMultas.setStyle("-fx-background-color: #f8d7da; -fx-border-color: #f5c6cb; -fx-border-radius: 5; -fx-background-radius: 5;");
+                lblBannerMulta.setText("🚨 Você possui multas pendentes! Regularize a sua situação.");
+                lblBannerMulta.setStyle("-fx-text-fill: #721c24; -fx-font-weight: bold;");
 
-            Map<String, Multa> multas = facade.listarMultaPorCliente(clienteId);
-            tblMultas.setItems(multas == null
-                    ? FXCollections.emptyObservableList()
-                    : FXCollections.observableArrayList(multas.values()));
+                Map<String, Multa> multas = facade.listarMultaPorCliente(usuarioLogado.getId());
+                if (multas != null) {
+                    tblMultas.setItems(FXCollections.observableArrayList(multas.values()));
+                }
+            }
         } catch (RuntimeException e) {
             logger.error("Falha ao verificar multas do cliente '{}': {}", usuarioLogado.getId(), e.getMessage(), e);
             exibirAlertaErro("Erro", "Erro ao verificar multas: " + e.getMessage());
@@ -222,11 +244,8 @@ public class MenuClienteController {
 
     @FXML
     public void handleSair() {
-        navigator.showLogin();
-    }
-
-    private static String formatarMoeda(BigDecimal valor) {
-        return valor == null ? "R$ 0,00" : String.format("R$ %.2f", valor);
+        Stage stage = (Stage) lblBoasVindas.getScene().getWindow();
+        stage.close();
     }
 
     private void exibirAlertaErro(String titulo, String mensagem) {
