@@ -19,6 +19,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -34,22 +36,18 @@ public class MenuClienteController {
     private ILojaFacade facade;
     private Cliente usuarioLogado;
 
-    // PAGEHEADER E PILLNAV
     @FXML private Label lblBoasVindas;
     @FXML private Label lblTituloSecao;
     @FXML private Button btnNavItens;
     @FXML private Button btnNavAlugueis;
     @FXML private Button btnNavMultas;
 
-    // PAINÉIS DAS ABAS
     @FXML private VBox paneItens;
     @FXML private VBox paneAlugueis;
     @FXML private VBox paneMultas;
 
-    // ITENS DISPONÍVEIS
     @FXML private FlowPane containerCardsItens;
 
-    // ALUGUÉIS
     @FXML private TableView<ContratoAluguel> tblAlugueis;
     @FXML private TableColumn<ContratoAluguel, String> colContratoId;
     @FXML private TableColumn<ContratoAluguel, String> colContratoItem;
@@ -57,7 +55,6 @@ public class MenuClienteController {
     @FXML private TableColumn<ContratoAluguel, Object> colContratoValorTotal;
     @FXML private TableColumn<ContratoAluguel, Object> colContratoDevolucaoEfetiva;
 
-    // MULTAS
     @FXML private HBox bannerMultas;
     @FXML private Label lblBannerMulta;
     @FXML private TableView<Multa> tblMultas;
@@ -118,7 +115,6 @@ public class MenuClienteController {
         });
     }
 
-    // NAVEGAÇÃO ENTRE ABAS
     @FXML
     public void mostrarAbaItens() {
         lblTituloSecao.setText("📦 Itens Disponíveis para Aluguel");
@@ -166,6 +162,7 @@ public class MenuClienteController {
             Map<String, Item> itens = facade.listarItensDisponiveis();
             if (itens == null || itens.isEmpty()) {
                 Label lblVazio = new Label("Não há itens disponíveis para aluguel no momento.");
+                lblVazio.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14px;");
                 containerCardsItens.getChildren().add(lblVazio);
                 return;
             }
@@ -175,33 +172,52 @@ public class MenuClienteController {
                 containerCardsItens.getChildren().add(card);
             }
         } catch (RuntimeException e) {
-            logger.error("Falha ao listar itens disponíveis: {}", e.getMessage(), e);
-            exibirAlertaErro("Erro", "Erro ao listar itens: " + e.getMessage());
+            logger.error("Falha ao listar itens do CSV: {}", e.getMessage(), e);
+            exibirAlertaErro("Erro", "Falha ao carregar itens disponíveis: " + e.getMessage());
         }
     }
 
     private VBox criarCardItem(Item item) {
-        VBox card = new VBox(8);
-        card.setPrefSize(200, 140);
-        card.setPadding(new Insets(12));
-        card.setStyle("-fx-background-color: #ffffff; -fx-border-color: #dcdcdc; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        VBox card = new VBox(10);
+        card.setPrefSize(260, 155);
+        card.setPadding(new Insets(16));
+        card.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10;");
+
+        Label lblId = new Label("#" + item.getId());
+        lblId.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #4f46e5;");
 
         Label lblNome = new Label(item.getNome());
-        lblNome.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2c3e50;");
+        lblNome.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0f172a;");
         lblNome.setWrapText(true);
 
-        Label lblId = new Label("ID: " + item.getId());
-        lblId.setStyle("-fx-font-size: 11px; -fx-text-fill: #7f8c8d;");
+        HBox precoBox = new HBox();
+        Label lblValorTexto = new Label("Valor Diário:");
+        lblValorTexto.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px;");
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label lblValor = new Label(String.format("R$ %.2f / dia", item.getTaxaDiaria()));
-        lblValor.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #27ae60;");
+        Label lblValor = new Label(String.format("R$ %.2f", item.getTaxaDiaria()));
+        lblValor.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #059669;");
 
-        Button btnAlugar = new Button("Alugar");
+        precoBox.getChildren().addAll(lblValorTexto, spacer, lblValor);
+
+        Button btnAlugar = new Button("Solicitar Aluguel");
         btnAlugar.setMaxWidth(Double.MAX_VALUE);
-        btnAlugar.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;");
+        btnAlugar.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+        
+        btnAlugar.setOnAction(e -> solicitarAluguelItem(item));
 
-        card.getChildren().addAll(lblNome, lblId, lblValor, btnAlugar);
+        card.getChildren().addAll(lblId, lblNome, precoBox, btnAlugar);
         return card;
+    }
+
+    private void solicitarAluguelItem(Item item) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Solicitação de Aluguel");
+        alert.setHeaderText("Item Selecionado: " + item.getNome());
+        alert.setContentText("Solicitação enviada com sucesso para o item #" + item.getId() + " (Taxa: R$ " + item.getTaxaDiaria() + "/dia).");
+        alert.showAndWait();
     }
 
     @FXML
