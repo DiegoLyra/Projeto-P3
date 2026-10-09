@@ -1,150 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="550.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.MenuClienteController">
-   <top>
-      <VBox spacing="5.0" BorderPane.alignment="CENTER">
-         <children>
-            <Label fx:id="lblBoasVindas" text="ÁREA DO CLIENTE" textFill="#2c3e50">
-               <font>
-                  <Font name="System Bold" size="18.0" />
-               </font>
-            </Label>
-         </children>
+<VBox prefHeight="650.0" prefWidth="950.0" spacing="20.0" style="-fx-background-color: #f4f6f8;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.MenuClienteController">
+   <padding>
+      <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+   </padding>
+   <children>
+      
+      <HBox alignment="CENTER_LEFT" style="-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);">
          <padding>
-            <Insets bottom="10.0" left="15.0" right="15.0" top="15.0" />
+            <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
          </padding>
-      </VBox>
-   </top>
-
-   <center>
-      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-        <tabs>
-          <!-- ABA 1: ITENS DISPONÍVEIS (CARDS) -->
-          <Tab text="Itens Disponíveis">
-            <content>
-              <VBox spacing="10.0">
-                 <children>
-                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-                       <content>
-                          <FlowPane fx:id="containerCardsItens" hgap="15.0" vgap="15.0">
-                             <padding>
-                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                             </padding>
-                          </FlowPane>
-                       </content>
-                    </ScrollPane>
-                    <HBox alignment="CENTER_RIGHT">
-                       <children>
-                          <Button onAction="#carregarItensDisponiveis" text="Atualizar Itens" />
-                       </children>
-                    </HBox>
-                 </children>
-                 <padding>
-                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                 </padding>
-              </VBox>
-            </content>
-          </Tab>
-
-          <!-- ABA 2: MEUS ALUGUÉIS (STATUS, VALOR TOTAL E DEVOLUÇÃO EFETIVA) -->
-          <Tab text="Meus Aluguéis">
-            <content>
-              <VBox spacing="10.0">
-                 <children>
-                    <TableView fx:id="tblAlugueis" VBox.vgrow="ALWAYS">
-                      <columns>
-                        <TableColumn fx:id="colContratoId" prefWidth="90.0" text="ID Contrato" />
-                        <TableColumn fx:id="colContratoItem" prefWidth="180.0" text="Item" />
-                        <TableColumn fx:id="colContratoStatus" prefWidth="110.0" text="Status" />
-                        <TableColumn fx:id="colContratoValorTotal" prefWidth="110.0" text="Valor Total" />
-                        <TableColumn fx:id="colContratoDevolucaoEfetiva" prefWidth="160.0" text="Devolução Efetiva" />
-                      </columns>
-                       <columnResizePolicy>
-                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                       </columnResizePolicy>
-                    </TableView>
-                    <HBox alignment="CENTER_RIGHT">
-                       <children>
-                          <Button onAction="#carregarMeusAlugueis" text="Atualizar Histórico" />
-                       </children>
-                    </HBox>
-                 </children>
-                 <padding>
-                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                 </padding>
-              </VBox>
-            </content>
-          </Tab>
-
-          <!-- ABA 3: MINHAS MULTAS (BANNER DE AVISO + TABELA) -->
-          <Tab text="Minhas Multas">
-             <content>
-                <VBox spacing="10.0">
-                   <children>
-                      <!-- BANNER DE AVISO -->
-                      <HBox fx:id="bannerMultas" alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #fff3cd; -fx-border-color: #ffebaa; -fx-border-radius: 5; -fx-background-radius: 5;">
-                         <children>
-                            <Label fx:id="lblBannerMulta" text="⚠️ Atenção: Verifique se você possui multas pendentes de pagamento." textFill="#856404">
-                               <font>
-                                  <Font name="System Bold" size="13.0" />
-                               </font>
-                            </Label>
-                         </children>
-                         <padding>
-                            <Insets bottom="12.0" left="15.0" right="15.0" top="12.0" />
-                         </padding>
-                      </HBox>
-
-                      <!-- TABELA DE MULTAS -->
-                      <TableView fx:id="tblMultas" VBox.vgrow="ALWAYS">
-                        <columns>
-                          <TableColumn fx:id="colMultaId" prefWidth="90.0" text="ID Multa" />
-                          <TableColumn fx:id="colMultaMotivo" prefWidth="250.0" text="Motivo" />
-                          <TableColumn fx:id="colMultaValor" prefWidth="120.0" text="Valor Total" />
-                          <TableColumn fx:id="colMultaStatus" prefWidth="140.0" text="Status" />
-                        </columns>
-                         <columnResizePolicy>
-                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                         </columnResizePolicy>
-                      </TableView>
-                      <HBox alignment="CENTER_RIGHT">
-                         <children>
-                            <Button onAction="#carregarMultasPendentes" text="Atualizar Multas" />
-                         </children>
-                      </HBox>
-                   </children>
-                   <padding>
-                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                   </padding>
-                </VBox>
-             </content>
-          </Tab>
-        </tabs>
-      </TabPane>
-   </center>
-
-   <bottom>
-      <HBox alignment="CENTER_RIGHT" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" onAction="#handleSair" text="Sair / Desconectar" />
+            <HBox alignment="CENTER_LEFT" spacing="15.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <StackPane prefHeight="48.0" prefWidth="48.0" style="-fx-background-color: #e0e7ff; -fx-background-radius: 10;">
+                     <children>
+                        <Label text="👤" textFill="#4f46e5">
+                           <font>
+                              <Font size="20.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </StackPane>
+                  <VBox alignment="CENTER_LEFT" spacing="2.0">
+                     <children>
+                        <Label fx:id="lblBoasVindas" text="ÁREA DO CLIENTE" textFill="#1e293b">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Label>
+                        <Label text="PAINEL DE ACOMPANHAMENTO E ALUGUÉIS" textFill="#64748b">
+                           <font>
+                              <Font name="System Bold" size="10.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            
+            <HBox spacing="8.0">
+               <children>
+                  <Button fx:id="btnNavItens" onAction="#mostrarAbaItens" style="-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="📦 1 - Itens Disponíveis" />
+                  <Button fx:id="btnNavAlugueis" onAction="#mostrarAbaAlugueis" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="📄 2 - Meus Aluguéis" />
+                  <Button fx:id="btnNavMultas" onAction="#mostrarAbaMultas" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="⚠️ 3 - Minhas Multas" />
+               </children>
+            </HBox>
          </children>
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
       </HBox>
-   </bottom>
-</BorderPane>
+
+      <VBox style="-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <children>
+
+            <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
+               <children>
+                  <Label fx:id="lblTituloSecao" text="📦 Itens Disponíveis para Aluguel" textFill="#1e293b">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+
+            <StackPane VBox.vgrow="ALWAYS">
+               <children>
+                  <VBox fx:id="paneItens" spacing="10.0">
+                     <children>
+                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                           <content>
+                              <FlowPane fx:id="containerCardsItens" hgap="15.0" vgap="15.0" />
+                           </content>
+                        </ScrollPane>
+                     </children>
+                  </VBox>
+
+                  <VBox fx:id="paneAlugueis" spacing="10.0" visible="false">
+                     <children>
+                        <TableView fx:id="tblAlugueis" VBox.vgrow="ALWAYS">
+                          <columns>
+                            <TableColumn fx:id="colContratoId" prefWidth="120.0" text="ID Contrato" />
+                            <TableColumn fx:id="colContratoItem" prefWidth="200.0" text="Item Alugado" />
+                            <TableColumn fx:id="colContratoRetirada" prefWidth="110.0" text="Retirada" />
+                            <TableColumn fx:id="colContratoDevolucao" prefWidth="110.0" text="Devolução Efetiva" />
+                            <TableColumn fx:id="colContratoValorTotal" prefWidth="110.0" text="Valor Total" />
+                            <TableColumn fx:id="colContratoStatus" prefWidth="120.0" text="Status" />
+                          </columns>
+                           <columnResizePolicy>
+                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
+                        </TableView>
+                     </children>
+                  </VBox>
+
+                  <VBox fx:id="paneMultas" spacing="15.0" visible="false">
+                     <children>
+                        <HBox fx:id="bannerMultas" alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f0fdf4; -fx-border-color: #bbf7d0; -fx-border-radius: 8; -fx-background-radius: 8;">
+                           <padding>
+                              <Insets bottom="12.0" left="15.0" right="15.0" top="12.0" />
+                           </padding>
+                           <children>
+                              <Label fx:id="lblBannerMulta" text="✅ Você não possui multas pendentes no momento." textFill="#166534">
+                                 <font>
+                                    <Font name="System Bold" size="13.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
+
+                        <TableView fx:id="tblMultas" VBox.vgrow="ALWAYS">
+                          <columns>
+                            <TableColumn fx:id="colMultaId" prefWidth="80.0" text="ID" />
+                            <TableColumn fx:id="colMultaMotivo" prefWidth="220.0" text="Motivo" />
+                            <TableColumn fx:id="colMultaDias" prefWidth="100.0" text="Dias Atraso" />
+                            <TableColumn fx:id="colMultaValor" prefWidth="110.0" text="Valor Total" />
+                            <TableColumn fx:id="colMultaStatus" prefWidth="130.0" text="Status" />
+                          </columns>
+                           <columnResizePolicy>
+                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
+                        </TableView>
+                     </children>
+                  </VBox>
+               </children>
+            </StackPane>
+
+         </children>
+      </VBox>
+
+      <HBox alignment="CENTER_RIGHT">
+         <children>
+            <Button onAction="#handleSair" style="-fx-background-color: #cbd5e1; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" text="Sair / Desconectar" />
+         </children>
+      </HBox>
+   </children>
+</VBox>
