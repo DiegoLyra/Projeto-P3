@@ -4,6 +4,8 @@ import com.loja.business.interfaces.IUsuarioBusiness;
 import com.loja.exceptions.UsuarioException;
 import com.loja.model.Usuario;
 import com.loja.repositories.interfaces.IUsuarioRepository;
+import java.util.Map;
+import java.util.Objects;
 
 import java.util.Map;
 
@@ -16,6 +18,9 @@ public class UsuarioBusiness implements IUsuarioBusiness {
 
     @Override
     public void cadastrar(Usuario usuario) {
+        UsuarioValidador.validarEmail(usuario.getLogin());
+        UsuarioValidador.validarSenha(usuario.getSenha());
+
         if (usuarioRepository.buscarPorEmail(usuario.getLogin()) != null) {
             throw new UsuarioException("Login já cadastrado: " + usuario.getLogin());
         }
@@ -57,6 +62,14 @@ public class UsuarioBusiness implements IUsuarioBusiness {
         if (existente == null) {
             throw new UsuarioException("Usuário não encontrado");
         }
+
+        if (!Objects.equals(dados.getLogin(), existente.getLogin())) {
+            UsuarioValidador.validarEmail(dados.getLogin());
+        }
+        if (!Objects.equals(dados.getSenha(), existente.getSenha())) {
+            UsuarioValidador.validarSenha(dados.getSenha());
+        }
+
         existente.setNome(dados.getNome());
         existente.setLogin(dados.getLogin());
         existente.setSenha(dados.getSenha());

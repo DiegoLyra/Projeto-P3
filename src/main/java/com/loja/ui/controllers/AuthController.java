@@ -27,7 +27,6 @@ import javafx.util.Duration;
 public class AuthController {
 
     private static final double LARGURA_MINIMA_PAINEL_MARCA = 760;
-    private static final int TAMANHO_MINIMO_SENHA = 3;
 
     private static final double DESLOCAMENTO = 28;
     private static final Duration DURACAO_SAIDA = Duration.millis(120);
@@ -213,9 +212,6 @@ public class AuthController {
     private String validar(String nome, String email, String senha, String confirmar) {
         if (nome.isEmpty() || email.isEmpty() || senha.isEmpty()) {
             return "Preencha todos os campos.";
-        }
-        if (senha.length() < TAMANHO_MINIMO_SENHA) {
-            return "A senha deve ter pelo menos " + TAMANHO_MINIMO_SENHA + " caracteres.";
         }
         if (!senha.equals(confirmar)) {
             return "As senhas não conferem.";
