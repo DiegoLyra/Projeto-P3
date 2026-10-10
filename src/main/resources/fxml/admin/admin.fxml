@@ -88,8 +88,9 @@
                                    <FormField fx:id="fUsuarioNome" labelText="Nome" prefWidth="210.0">
                                       <TextField promptText="Nome completo" />
                                    </FormField>
-                                   <FormField fx:id="fUsuarioEmail" labelText="Email / Login" prefWidth="210.0">
-                                      <TextField promptText="email@loja.com" />
+                                   <FormField fx:id="fUsuarioLogin" labelText="Login" prefWidth="210.0">
+                                       <TextField promptText="Ex: maria.oliveira" />
+                                    </FormField>
                                    </FormField>
                                    <FormField fx:id="fUsuarioSenha" labelText="Senha" prefWidth="210.0">
                                       <PasswordField promptText="********" />
@@ -118,7 +119,7 @@
                                    <TableColumn fx:id="colUsuarioId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
                                    <TableColumn fx:id="colUsuarioPerfil" prefWidth="130.0" text="Perfil" />
                                    <TableColumn fx:id="colUsuarioNome" prefWidth="170.0" text="Nome" />
-                                   <TableColumn fx:id="colUsuarioEmail" prefWidth="190.0" text="Email" />
+                                   <TableColumn fx:id="colUsuarioLogin" prefWidth="190.0" text="Login" />
                                    <TableColumn fx:id="colUsuarioCargo" prefWidth="110.0" text="Cargo" />
                                    <TableColumn fx:id="colUsuarioSituacao" prefWidth="100.0" text="Situação" />
                                    <TableColumn fx:id="colUsuarioAcoes" prefWidth="170.0" sortable="false" text="Ações" />
