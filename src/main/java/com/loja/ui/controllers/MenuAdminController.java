@@ -9,15 +9,19 @@ import org.slf4j.LoggerFactory;
 
 import com.loja.model.Administrador;
 import com.loja.model.Categoria;
+import com.loja.model.Cliente;
 import com.loja.model.Fornecedor;
+import com.loja.model.Funcionario;
 import com.loja.model.Item;
 import com.loja.model.Usuario;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.ui.components.Banner;
+import com.loja.ui.components.EmptyState;
 import com.loja.ui.components.FormField;
 import com.loja.ui.components.PillNav;
 import com.loja.ui.components.StatusBadge;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -72,7 +76,7 @@ public class MenuAdminController {
    @FXML private FormField fUsuarioId;
    @FXML private ComboBox<String> cbUsuarioPerfil;
    @FXML private FormField fUsuarioNome;
-   @FXML private FormField fUsuarioEmail;
+   @FXML private FormField fUsuarioLogin;
    @FXML private FormField fUsuarioSenha;
    @FXML private FormField fUsuarioCargo;
    @FXML private Button btnSalvarUsuario;
@@ -84,7 +88,7 @@ public class MenuAdminController {
    @FXML private TableColumn<Usuario, String> colUsuarioId;
    @FXML private TableColumn<Usuario, String> colUsuarioPerfil;
    @FXML private TableColumn<Usuario, String> colUsuarioNome;
-   @FXML private TableColumn<Usuario, String> colUsuarioEmail;
+   @FXML private TableColumn<Usuario, String> colUsuarioLogin;
    @FXML private TableColumn<Usuario, String> colUsuarioCargo;
    @FXML private TableColumn<Usuario, String> colUsuarioSituacao;
    @FXML private TableColumn<Usuario, Void> colUsuarioAcoes;
@@ -183,6 +187,7 @@ public class MenuAdminController {
 
 
        configurarTabelas();
+       limparUsuario();
    }
 
 
@@ -213,6 +218,20 @@ public class MenuAdminController {
 
    private void configurarTabelas() {
 
+        // Usuários
+        tblUsuarios.setItems(usuarios);
+        tblUsuarios.setPlaceholder(new EmptyState("Nenhum usuário cadastrado."));
+        colUsuarioId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
+        colUsuarioPerfil.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getPerfil()));
+        colUsuarioPerfil.setCellFactory(col -> new BadgeCell<>(s -> StatusBadge.StatusType.INFO));
+        colUsuarioNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
+        colUsuarioLogin.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getLogin()));
+        colUsuarioCargo.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue() instanceof Funcionario f && f.getCargo() != null && !f.getCargo().isBlank() ? f.getCargo() : "-"));
+        colUsuarioSituacao.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().isAtivo() ? "ATIVO" : "INATIVO"));
+        colUsuarioSituacao.setCellFactory(col -> new BadgeCell<>(s ->
+                s.equals("ATIVO") ? StatusBadge.StatusType.SUCCESS : StatusBadge.StatusType.DANGER));
+        colUsuarioAcoes.setCellFactory(col -> new AcoesCell<>("Desativar", this::editarUsuario, this::desativarUsuario));
 
    }
 
@@ -221,7 +240,7 @@ public class MenuAdminController {
 
    private void carregarTudo() {
        try {
-          
+          usuarios.setAll(facade.listarUsuario().values());
        } catch (RuntimeException e) {
            logger.error("Falha ao carregar dados do painel administrativo: {}", e.getMessage(), e);
            exibirAlertaErro("Erro", "Falha ao carregar dados: " + e.getMessage());
@@ -229,10 +248,91 @@ public class MenuAdminController {
    }
 
 
-   @FXML public void alterarPerfil() { }
-   @FXML public void salvarUsuario() { }
-   @FXML public void cancelarUsuario() { }
+   @FXML public void alterarPerfil() {
+        
+        boolean funcionario = "FUNCIONARIO".equals(cbUsuarioPerfil.getValue());
+        fUsuarioCargo.setVisible(funcionario);
+        fUsuarioCargo.setManaged(funcionario);
+        if (!funcionario) fUsuarioCargo.setText("");
+    
+    }
 
+   @FXML public void salvarUsuario() {
+
+        String id = fUsuarioId.getText().trim();
+        String nome = fUsuarioNome.getText().trim();
+        String login = fUsuarioLogin.getText().trim();
+        String senha = fUsuarioSenha.getText();
+        String cargo = fUsuarioCargo.getText().trim();
+
+        if (id.isEmpty() || nome.isEmpty() || login.isEmpty() || senha.isEmpty()) {
+            formUsuario.aviso("Preencha os campos obrigatórios!", Banner.BannerType.DANGER);
+            return;
+        }
+
+        boolean edicao = formUsuario.emEdicao();
+        executar(formUsuario, edicao ? "Usuário atualizado!" : "Usuário cadastrado!", () -> {
+            if (edicao) {
+                Usuario u = facade.buscarUsuario(formUsuario.idEditando);
+                u.setNome(nome);
+                u.setLogin(login);
+                u.setSenha(senha);
+                if (u instanceof Funcionario f) f.setCargo(cargo);
+                facade.atualizarUsuario(u.getId(), u);
+            } else {
+                switch (cbUsuarioPerfil.getValue()) {
+                    case "FUNCIONARIO" -> facade.cadastrarFuncionario(new Funcionario(id, nome, login, senha, cargo));
+                    case "ADMINISTRADOR" -> facade.cadastrarAdm(new Administrador(id, nome, login, senha));
+                    default -> facade.cadastrarCliente(new Cliente(id, nome, login, senha));
+                }
+            }
+            usuarios.setAll(facade.listarUsuario().values());
+            limparUsuario();
+        });
+
+    }
+
+   @FXML public void cancelarUsuario() {
+
+        limparUsuario();
+        formUsuario.limparAviso();
+
+    }
+
+    private void limparUsuario() {
+        formUsuario.sairEdicao();
+        fUsuarioNome.setText("");
+        fUsuarioLogin.setText("");
+        fUsuarioSenha.setText("");
+        cbUsuarioPerfil.setDisable(false);
+        cbUsuarioPerfil.setValue("CLIENTE");
+        alterarPerfil();
+    }
+
+    private void editarUsuario(Usuario u) {
+        formUsuario.entrarEdicao(u.getId());
+        cbUsuarioPerfil.setValue(u.getPerfil());
+        cbUsuarioPerfil.setDisable(true); // o tipo (classe) do usuário não muda na edição
+        alterarPerfil();
+        fUsuarioNome.setText(u.getNome());
+        fUsuarioLogin.setText(u.getLogin());
+        fUsuarioSenha.setText(u.getSenha());
+        if (u instanceof Funcionario f) fUsuarioCargo.setText(f.getCargo());
+    }
+
+    private void desativarUsuario(Usuario u) {
+        if (!u.isAtivo()) {
+            formUsuario.aviso("Este usuário já está desativado.", Banner.BannerType.WARNING);
+            return;
+        }
+        if (confirmar("Deseja desativar o usuário " + u.getNome() + "?")) {
+            executar(formUsuario, "Usuário desativado!", () -> {
+                facade.desativarUsuario(u.getId());
+                usuarios.setAll(facade.listarUsuario().values());
+                if (u.getId().equals(formUsuario.idEditando)) limparUsuario();
+            });
+        }
+    }
 
    @FXML public void salvarItem() { }
    @FXML public void cancelarItem() { }
