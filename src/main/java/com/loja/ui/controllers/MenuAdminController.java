@@ -232,7 +232,13 @@ public class MenuAdminController {
         colUsuarioSituacao.setCellFactory(col -> new BadgeCell<>(s ->
                 s.equals("ATIVO") ? StatusBadge.StatusType.SUCCESS : StatusBadge.StatusType.DANGER));
         colUsuarioAcoes.setCellFactory(col -> new AcoesCell<>("Desativar", this::editarUsuario, this::desativarUsuario));
-
+        
+        //Categorias
+        tblCategorias.setItems(categorias);
+        tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
+        colCategoriaId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
+        colCategoriaNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
+        colCategoriaAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarCategoria, this::removerCategoria));
    }
 
 
@@ -241,6 +247,7 @@ public class MenuAdminController {
    private void carregarTudo() {
        try {
           usuarios.setAll(facade.listarUsuario().values());
+          categorias.setAll(facade.listarCategoria().values());
        } catch (RuntimeException e) {
            logger.error("Falha ao carregar dados do painel administrativo: {}", e.getMessage(), e);
            exibirAlertaErro("Erro", "Falha ao carregar dados: " + e.getMessage());
@@ -338,9 +345,58 @@ public class MenuAdminController {
    @FXML public void cancelarItem() { }
 
 
-   @FXML public void salvarCategoria() { }
-   @FXML public void cancelarCategoria() { }
+   @FXML public void salvarCategoria() {
 
+    String id = fCategoriaId.getText().trim();
+        String nome = fCategoriaNome.getText().trim();
+
+        if (id.isEmpty() || nome.isEmpty()) {
+            formCategoria.aviso("Preencha todos os campos!", Banner.BannerType.DANGER);
+            return;
+        }
+
+        boolean edicao = formCategoria.emEdicao();
+        executar(formCategoria, edicao ? "Categoria atualizada!" : "Categoria cadastrada!", () -> {
+            if (edicao) {
+                Categoria c = facade.buscarCategoria(formCategoria.idEditando);
+                c.setNome(nome);
+                facade.atualizarCategoria(c);
+            } else {
+                facade.cadastrarCategoria(new Categoria(id, nome));
+            }
+            categorias.setAll(facade.listarCategoria().values());
+            itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome da categoria
+            limparCategoria();
+        });
+
+    }
+
+   @FXML public void cancelarCategoria() {
+
+        limparCategoria();
+        formCategoria.limparAviso();
+
+    }
+
+    private void limparCategoria() {
+        formCategoria.sairEdicao();
+        fCategoriaNome.setText("");
+    }
+
+    private void editarCategoria(Categoria c) {
+        formCategoria.entrarEdicao(c.getId());
+        fCategoriaNome.setText(c.getNome());
+    }
+
+    private void removerCategoria(Categoria c) {
+        if (confirmar("Deseja remover a categoria " + c.getNome() + "?")) {
+            executar(formCategoria, "Categoria removida!", () -> {
+                facade.deletarCategoria(c.getId());
+                categorias.setAll(facade.listarCategoria().values());
+                if (c.getId().equals(formCategoria.idEditando)) limparCategoria();
+            });
+        }
+    }
 
    @FXML public void salvarFornecedor() { }
    @FXML public void cancelarFornecedor() { }
