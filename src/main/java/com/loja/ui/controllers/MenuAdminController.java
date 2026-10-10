@@ -239,6 +239,15 @@ public class MenuAdminController {
         colCategoriaId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
         colCategoriaNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
         colCategoriaAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarCategoria, this::removerCategoria));
+
+        //Fornecedores
+        tblFornecedores.setItems(fornecedores);
+        tblFornecedores.setPlaceholder(new EmptyState("Nenhum fornecedor cadastrado."));
+        colFornecedorId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
+        colFornecedorNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
+        colFornecedorCnpj.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCnpj()));
+        colFornecedorTelefone.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTelefone()));
+        colFornecedorAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarFornecedor, this::removerFornecedor));
    }
 
 
@@ -248,6 +257,7 @@ public class MenuAdminController {
        try {
           usuarios.setAll(facade.listarUsuario().values());
           categorias.setAll(facade.listarCategoria().values());
+          fornecedores.setAll(facade.listarFornecedor().values());
        } catch (RuntimeException e) {
            logger.error("Falha ao carregar dados do painel administrativo: {}", e.getMessage(), e);
            exibirAlertaErro("Erro", "Falha ao carregar dados: " + e.getMessage());
@@ -398,8 +408,66 @@ public class MenuAdminController {
         }
     }
 
-   @FXML public void salvarFornecedor() { }
-   @FXML public void cancelarFornecedor() { }
+   @FXML public void salvarFornecedor() { 
+
+        String id = fFornecedorId.getText().trim();
+        String nome = fFornecedorNome.getText().trim();
+        String cnpj = fFornecedorCnpj.getText().trim();
+        String telefone = fFornecedorTelefone.getText().trim();
+
+        if (id.isEmpty() || nome.isEmpty() || cnpj.isEmpty()) {
+            formFornecedor.aviso("Preencha os campos obrigatórios!", Banner.BannerType.DANGER);
+            return;
+        }
+
+        boolean edicao = formFornecedor.emEdicao();
+        executar(formFornecedor, edicao ? "Fornecedor atualizado!" : "Fornecedor cadastrado!", () -> {
+            if (edicao) {
+                Fornecedor f = facade.buscarFornecedor(formFornecedor.idEditando);
+                f.setNome(nome);
+                f.setCnpj(cnpj);
+                f.setTelefone(telefone);
+                facade.atualizarFornecedor(f);
+            } else {
+                facade.cadastrarFornecedor(new Fornecedor(id, nome, cnpj, telefone));
+            }
+            fornecedores.setAll(facade.listarFornecedor().values());
+            itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome do fornecedor
+            limparFornecedor();
+        });
+
+   }
+
+   @FXML public void cancelarFornecedor() { 
+
+        limparFornecedor();
+        formFornecedor.limparAviso();
+
+   }
+
+   private void limparFornecedor() {
+        formFornecedor.sairEdicao();
+        fFornecedorNome.setText("");
+        fFornecedorCnpj.setText("");
+        fFornecedorTelefone.setText("");
+    }
+
+    private void editarFornecedor(Fornecedor f) {
+        formFornecedor.entrarEdicao(f.getId());
+        fFornecedorNome.setText(f.getNome());
+        fFornecedorCnpj.setText(f.getCnpj());
+        fFornecedorTelefone.setText(f.getTelefone());
+    }
+
+    private void removerFornecedor(Fornecedor f) {
+        if (confirmar("Deseja remover o fornecedor " + f.getNome() + "?")) {
+            executar(formFornecedor, "Fornecedor removido!", () -> {
+                facade.deletarFornecedor(f.getId());
+                fornecedores.setAll(facade.listarFornecedor().values());
+                if (f.getId().equals(formFornecedor.idEditando)) limparFornecedor();
+            });
+        }
+    }
 
 
    @FXML
