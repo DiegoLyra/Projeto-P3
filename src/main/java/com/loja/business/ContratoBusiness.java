@@ -65,8 +65,7 @@ public class ContratoBusiness implements IContratoBusiness {
         item.setHistorico(true);
         itemBusiness.atualizar(item);
 
-        cliente.setHistorico(true);
-        usuarioBusiness.atualizar(cliente);
+        usuarioBusiness.registrarHistorico(clienteId);
 
         repo.salvar(contrato);
         return contrato;

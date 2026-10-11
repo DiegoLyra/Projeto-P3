@@ -139,16 +139,48 @@ class LojaFacadeTest {
     }
 
     @Test
-    @DisplayName("desativarUsuario: deve buscar, desativar e atualizar o usuário")
-    void desativarUsuario_deveDesativarEAtualizar() {
-        Cliente cliente = new Cliente("1", "João", "joao@email.com", "123");
-        cliente.setAtivo(true);
-        when(usuarioBusiness.buscarPorId("1")).thenReturn(cliente);
+    @DisplayName("atualizarUsuario: deve lançar exceção quando o id não corresponde ao usuário")
+    void atualizarUsuario_deveLancarExcecao_quandoIdDivergente() {
+        Cliente cliente = new Cliente("2", "João", "joao@email.com", "Senha@123");
 
+        assertThrows(IllegalArgumentException.class, () -> facade.atualizarUsuario("1", cliente));
+        assertThrows(IllegalArgumentException.class, () -> facade.atualizarUsuario(null, cliente));
+        verifyNoInteractions(usuarioBusiness);
+    }
+
+    @Test
+    @DisplayName("atualizarUsuario: deve delegar quando o id confere")
+    void atualizarUsuario_deveDelegar_quandoIdConfere() {
+        Cliente cliente = new Cliente("1", "João", "joao@email.com", "Senha@123");
+
+        facade.atualizarUsuario("1", cliente);
+
+        verify(usuarioBusiness).atualizar(cliente);
+    }
+
+    @Test
+    @DisplayName("encerrarSessao: deve delegar para usuarioBusiness")
+    void encerrarSessao_deveDelegar() {
+        facade.encerrarSessao();
+
+        verify(usuarioBusiness).encerrarSessao();
+    }
+
+    @Test
+    @DisplayName("desativarUsuario: deve delegar para usuarioBusiness")
+    void desativarUsuario_deveDelegar() {
         facade.desativarUsuario("1");
 
-        assertFalse(cliente.isAtivo());
-        verify(usuarioBusiness).atualizar(cliente);
+        verify(usuarioBusiness).desativar("1");
+    }
+
+    @Test
+    @DisplayName("cadastrarCliente(nome, email, senha): deve delegar para usuarioBusiness")
+    void cadastrarClienteComDados_deveDelegar() {
+        Cliente esperado = new Cliente("USR001", "João", "joao@email.com", "Senha@123");
+        when(usuarioBusiness.cadastrarCliente("João", "joao@email.com", "Senha@123")).thenReturn(esperado);
+
+        assertSame(esperado, facade.cadastrarCliente("João", "joao@email.com", "Senha@123"));
     }
 
     @Test
