@@ -1,6 +1,7 @@
 package com.loja.ui.controllers;
 
 
+import java.math.BigDecimal;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -169,7 +170,7 @@ public class MenuAdminController {
        navModulos.addTab("Fornecedores", false, () -> mostrarPainel(paneFornecedores));
 
 
-       cbUsuarioPerfil.setItems(FXCollections.observableArrayList("CLIENTE", "FUNCIONARIO", "ADMINISTRADOR"));
+       cbUsuarioPerfil.setItems(FXCollections.observableArrayList("CLIENTE", "FUNCIONÁRIO", "ADMINISTRADOR"));
        cbItemCategoria.setItems(categorias);
        cbItemCategoria.setConverter(conversor(c -> c.getId() + " - " + c.getNome()));
        cbItemFornecedor.setItems(fornecedores);
@@ -248,6 +249,30 @@ public class MenuAdminController {
         colFornecedorCnpj.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCnpj()));
         colFornecedorTelefone.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTelefone()));
         colFornecedorAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarFornecedor, this::removerFornecedor));
+
+        //Itens
+
+        tblItens.setItems(itens);
+        tblItens.setPlaceholder(new EmptyState("Nenhum item cadastrado."));
+        colItemId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
+        colItemNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
+        colItemStatus.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getStatus())));
+        colItemStatus.setCellFactory(col -> new BadgeCell<>(s -> switch (s.toUpperCase()) {
+            case "DISPONIVEL" -> StatusBadge.StatusType.SUCCESS;
+            case "ALUGADO" -> StatusBadge.StatusType.WARNING;
+            case "MANUTENCAO", "INDISPONIVEL" -> StatusBadge.StatusType.DANGER;
+            default -> StatusBadge.StatusType.INFO;
+        }));
+        colItemCategoria.setCellValueFactory(c -> {
+            Categoria cat = c.getValue().getCategoria();
+            return new SimpleStringProperty(cat != null ? cat.getNome() : "-");
+        });
+        colItemFornecedor.setCellValueFactory(c -> {
+            Fornecedor f = c.getValue().getFornecedor();
+            return new SimpleStringProperty(f != null ? f.getNome() : "-");
+        });
+        colItemTaxa.setCellValueFactory(c -> new SimpleStringProperty(String.format("R$ %.2f", c.getValue().getTaxaDiaria())));
+        colItemAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarItem, this::removerItem));
    }
 
 
@@ -258,6 +283,7 @@ public class MenuAdminController {
           usuarios.setAll(facade.listarUsuario().values());
           categorias.setAll(facade.listarCategoria().values());
           fornecedores.setAll(facade.listarFornecedor().values());
+          itens.setAll(facade.listarItem().values());
        } catch (RuntimeException e) {
            logger.error("Falha ao carregar dados do painel administrativo: {}", e.getMessage(), e);
            exibirAlertaErro("Erro", "Falha ao carregar dados: " + e.getMessage());
@@ -283,7 +309,7 @@ public class MenuAdminController {
         String cargo = fUsuarioCargo.getText().trim();
 
         if (id.isEmpty() || nome.isEmpty() || login.isEmpty() || senha.isEmpty()) {
-            formUsuario.aviso("Preencha os campos obrigatórios!", Banner.BannerType.DANGER);
+            formUsuario.aviso("Preencha os campos obrigatórios", Banner.BannerType.DANGER);
             return;
         }
 
@@ -351,8 +377,85 @@ public class MenuAdminController {
         }
     }
 
-   @FXML public void salvarItem() { }
-   @FXML public void cancelarItem() { }
+   @FXML public void salvarItem() { 
+
+        String id = fItemId.getText().trim();
+        String nome = fItemNome.getText().trim();
+        Categoria categoria = cbItemCategoria.getValue();
+        Fornecedor fornecedor = cbItemFornecedor.getValue();
+
+        if (id.isEmpty() || nome.isEmpty() || categoria == null || fornecedor == null
+                || fItemTaxa.getText().isBlank() || fItemReposicao.getText().isBlank()) {
+            formItem.aviso("Preencha os campos obrigatórios!", Banner.BannerType.DANGER);
+            return;
+        }
+
+        BigDecimal taxa;
+        BigDecimal reposicao;
+        try {
+            taxa = new BigDecimal(fItemTaxa.getText().trim().replace(",", "."));
+            reposicao = new BigDecimal(fItemReposicao.getText().trim().replace(",", "."));
+        } catch (NumberFormatException e) {
+            formItem.aviso("Taxa diária e valor de reposição devem ser números.", Banner.BannerType.DANGER);
+            return;
+        }
+
+        boolean edicao = formItem.emEdicao();
+        executar(formItem, edicao ? "Item atualizado!" : "Item cadastrado!", () -> {
+            if (edicao) {
+                // Altera o objeto existente: o status não muda (a facade proíbe mudá-lo aqui)
+                Item item = facade.buscarItem(formItem.idEditando);
+                item.setNome(nome);
+                item.setCategoria(categoria);
+                item.setFornecedor(fornecedor);
+                item.setTaxaDiaria(taxa);
+                item.setValorReposicao(reposicao);
+                facade.atualizarItem(item);
+            } else {
+                facade.cadastrarItem(new Item(id, nome, taxa, reposicao, "DISPONIVEL", categoria, fornecedor));
+            }
+            itens.setAll(facade.listarItem().values());
+            limparItem();
+        });
+
+   }
+
+   @FXML public void cancelarItem() { 
+
+        limparItem();
+        formItem.limparAviso();
+
+   }
+
+   private void limparItem() {
+        formItem.sairEdicao();
+        fItemNome.setText("");
+        fItemTaxa.setText("");
+        fItemReposicao.setText("");
+        cbItemCategoria.setValue(null);
+        cbItemFornecedor.setValue(null);
+    }
+
+    private void editarItem(Item i) {
+        formItem.entrarEdicao(i.getId());
+        fItemNome.setText(i.getNome());
+        cbItemCategoria.setValue(i.getCategoria() == null ? null :
+                categorias.stream().filter(c -> c.getId().equals(i.getCategoria().getId())).findFirst().orElse(null));
+        cbItemFornecedor.setValue(i.getFornecedor() == null ? null :
+                fornecedores.stream().filter(f -> f.getId().equals(i.getFornecedor().getId())).findFirst().orElse(null));
+        fItemTaxa.setText(String.valueOf(i.getTaxaDiaria()));
+        fItemReposicao.setText(String.valueOf(i.getValorReposicao()));
+    }
+
+    private void removerItem(Item i) {
+        if (confirmar("Deseja remover o item " + i.getNome() + "?")) {
+            executar(formItem, "Item removido!", () -> {
+                facade.deletarItem(i.getId());
+                itens.setAll(facade.listarItem().values());
+                if (i.getId().equals(formItem.idEditando)) limparItem();
+            });
+        }
+    }
 
 
    @FXML public void salvarCategoria() {
