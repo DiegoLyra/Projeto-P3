@@ -4,6 +4,7 @@ import com.loja.model.Administrador;
 import com.loja.model.Cliente;
 import com.loja.model.Funcionario;
 import com.loja.model.Usuario;
+import com.loja.exceptions.UsuarioException;
 import com.loja.repositories.UsuarioRepositoryFake;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,8 @@ class UsuarioBusinessTest {
 
     private UsuarioRepositoryFake repositorio;
     private UsuarioBusiness business;
+    private static final String SENHA_OK = "Senha@123";
+    private static final String SENHA_NOVA = "Outra@456";
 
     @BeforeEach
     void setUp() {
@@ -27,7 +30,7 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("cadastrar: deve salvar usuário quando login não existe")
     void cadastrar_deveSalvar_quandoLoginNaoExiste() {
-        Cliente cliente = new Cliente("1", "João", "joao@email.com", "123");
+        Cliente cliente = new Cliente("1", "João", "joao@email.com", SENHA_OK);
 
         business.cadastrar(cliente);
 
@@ -37,8 +40,8 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("cadastrar: deve lançar exceção quando login já está cadastrado")
     void cadastrar_deveLancarExcecao_quandoLoginJaExiste() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
-        Cliente duplicado = new Cliente("2", "João 2", "joao@email.com", "456");
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
+        Cliente duplicado = new Cliente("2", "João 2", "joao@email.com", SENHA_NOVA);
 
         assertThrows(RuntimeException.class, () -> business.cadastrar(duplicado));
         assertNull(repositorio.buscar("2"));
@@ -47,8 +50,8 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("cadastrar: deve permitir logins diferentes")
     void cadastrar_devePermitir_loginsDiferentes() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
-        business.cadastrar(new Cliente("2", "Maria", "maria@email.com", "456"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
+        business.cadastrar(new Cliente("2", "Maria", "maria@email.com", SENHA_NOVA));
 
         assertEquals(2, business.listar().size());
     }
@@ -56,7 +59,7 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("buscarPorId: deve retornar usuário quando id existe")
     void buscarPorId_deveRetornarUsuario_quandoIdExiste() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
         Usuario resultado = business.buscarPorId("1");
 
@@ -72,7 +75,7 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("buscarPorEmail: deve retornar usuário quando email existe")
     void buscarPorEmail_deveRetornarUsuario_quandoEmailExiste() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
         Usuario resultado = business.buscarPorEmail("joao@email.com");
 
@@ -90,9 +93,9 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("autenticar: deve retornar usuário quando credenciais corretas")
     void autenticar_deveRetornarUsuario_quandoCredenciaisCorretas() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "senha123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
-        Usuario resultado = business.autenticar("joao@email.com", "senha123");
+        Usuario resultado = business.autenticar("joao@email.com", SENHA_OK);
 
         assertNotNull(resultado);
         assertEquals("João", resultado.getNome());
@@ -101,7 +104,7 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("autenticar: deve lançar exceção quando senha está errada")
     void autenticar_deveLancarExcecao_quandoSenhaErrada() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "senha123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
         assertThrows(RuntimeException.class,
                 () -> business.autenticar("joao@email.com", "senhaErrada"));
@@ -111,15 +114,15 @@ class UsuarioBusinessTest {
     @DisplayName("autenticar: deve lançar exceção quando email não existe")
     void autenticar_deveLancarExcecao_quandoEmailNaoExiste() {
         assertThrows(RuntimeException.class,
-                () -> business.autenticar("naoexiste@email.com", "123"));
+                () -> business.autenticar("naoexiste@email.com", SENHA_OK));
     }
 
     @Test
     @DisplayName("autenticar: deve ser case-insensitive no email")
     void autenticar_deveFuncionar_comEmailEmCaseDiferente() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
-        Usuario resultado = business.autenticar("JOAO@EMAIL.COM", "123");
+        Usuario resultado = business.autenticar("JOAO@EMAIL.COM", SENHA_OK);
 
         assertNotNull(resultado);
     }
@@ -127,14 +130,14 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("atualizar: deve alterar nome, login e senha")
     void atualizar_deveAlterarDados_quandoUsuarioExiste() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
-        business.atualizar(new Cliente("1", "João Novo", "novo@email.com", "456"));
+        business.atualizar(new Cliente("1", "João Novo", "novo@email.com", SENHA_NOVA));
 
         Usuario atualizado = repositorio.buscar("1");
         assertEquals("João Novo", atualizado.getNome());
         assertEquals("novo@email.com", atualizado.getLogin());
-        assertEquals("456", atualizado.getSenha());
+        assertEquals(SENHA_NOVA, atualizado.getSenha());
     }
 
     @Test
@@ -148,7 +151,7 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("deletar: deve remover usuário existente")
     void deletar_deveRemoverUsuario_quandoExiste() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
         business.deletar("1");
 
@@ -164,8 +167,8 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("listar: deve retornar todos os usuários cadastrados")
     void listar_deveRetornarTodosOsUsuarios() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
-        business.cadastrar(new Administrador("2", "Carlos", "carlos@email.com", "abc", 1, "TI"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
+        business.cadastrar(new Administrador("2", "Carlos", "carlos@email.com", SENHA_OK, 1, "TI"));
 
         Map<String, Usuario> resultado = business.listar();
 
@@ -181,9 +184,9 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("listarPorPerfil: deve retornar apenas clientes")
     void listarPorPerfil_deveRetornarApenasClientes() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
-        business.cadastrar(new Cliente("2", "Maria", "maria@email.com", "456"));
-        business.cadastrar(new Administrador("3", "Carlos", "carlos@email.com", "abc", 1, "TI"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
+        business.cadastrar(new Cliente("2", "Maria", "maria@email.com", SENHA_NOVA));
+        business.cadastrar(new Administrador("3", "Carlos", "carlos@email.com", SENHA_OK, 1, "TI"));
 
         Map<String, Usuario> clientes = business.listarPorPerfil("CLIENTE");
 
@@ -196,8 +199,8 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("listarPorPerfil: deve retornar apenas funcionários")
     void listarPorPerfil_deveRetornarApenasFuncionarios() {
-        business.cadastrar(new Funcionario("1", "Ana", "ana@email.com", "123", "Caixa"));
-        business.cadastrar(new Cliente("2", "João", "joao@email.com", "456"));
+        business.cadastrar(new Funcionario("1", "Ana", "ana@email.com", SENHA_OK, "Caixa"));
+        business.cadastrar(new Cliente("2", "João", "joao@email.com", SENHA_NOVA));
 
         Map<String, Usuario> funcionarios = business.listarPorPerfil("FUNCIONARIO");
 
@@ -208,10 +211,31 @@ class UsuarioBusinessTest {
     @Test
     @DisplayName("listarPorPerfil: deve retornar vazio quando perfil não tem usuários")
     void listarPorPerfil_deveRetornarVazio_quandoNenhumNoPerfil() {
-        business.cadastrar(new Cliente("1", "João", "joao@email.com", "123"));
+        business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
         Map<String, Usuario> admins = business.listarPorPerfil("ADMINISTRADOR");
 
         assertTrue(admins.isEmpty());
+    }
+
+    @Test
+    @DisplayName("cadastrar: deve rejeitar e-mail em formato inválido")
+    void cadastrar_deveLancarExcecao_quandoEmailInvalido() {
+        assertThrows(UsuarioException.class,
+                () -> business.cadastrar(new Cliente("1", "João", "joao", SENHA_OK)));
+    }
+
+    @Test
+    @DisplayName("cadastrar: deve rejeitar senha fraca")
+    void cadastrar_deveLancarExcecao_quandoSenhaFraca() {
+        assertThrows(UsuarioException.class,
+                () -> business.cadastrar(new Cliente("1", "João", "joao@email.com", "123")));
+    }
+
+    @Test
+    @DisplayName("atualizar: não deve bloquear usuário antigo quando login e senha não mudaram")
+    void atualizar_devePermitir_quandoLoginESenhaNaoMudaram() {
+        repositorio.salvar(new Cliente("1", "João", "admin", "123")); // simula conta antiga, que veio do CSV
+        assertDoesNotThrow(() -> business.atualizar(new Cliente("1", "João Novo", "admin", "123")));
     }
 }

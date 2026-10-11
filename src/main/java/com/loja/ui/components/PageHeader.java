@@ -12,7 +12,7 @@ public class PageHeader extends HBox {
     private final Label titleLabel = new Label();
     private final Label subtitleLabel = new Label();
 
-    public PageHeader(String title, String subtitle) {
+    public PageHeader() {
         super();
         setAlignment(Pos.CENTER_LEFT);
         setPadding(new Insets(0, 0, 16, 0));
@@ -20,10 +20,7 @@ public class PageHeader extends HBox {
 
         VBox textContainer = new VBox(4);
 
-        titleLabel.setText(title != null ? title.toUpperCase() : "");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;");
-
-        subtitleLabel.setText(subtitle != null ? subtitle.toUpperCase() : "");
         subtitleLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280; -fx-font-weight: 600;");
 
         textContainer.getChildren().addAll(titleLabel, subtitleLabel);
@@ -32,8 +29,22 @@ public class PageHeader extends HBox {
         getChildren().add(textContainer);
     }
 
+    public PageHeader(String title, String subtitle) {
+        this();
+        setTitle(title);
+        setSubtitle(subtitle);
+    }
+
+    public String getTitle() {
+        return titleLabel.getText();
+    }
+
     public void setTitle(String title) {
         titleLabel.setText(title != null ? title.toUpperCase() : "");
+    }
+
+    public String getSubtitle() {
+        return subtitleLabel.getText();
     }
 
     public void setSubtitle(String subtitle) {

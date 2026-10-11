@@ -1,0 +1,336 @@
+<?import com.loja.ui.components.Card?>
+<?import com.loja.ui.components.FormField?>
+<?import com.loja.ui.components.PillNav?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+
+<VBox prefHeight="700.0" prefWidth="1050.0" spacing="20.0" style="-fx-background-color: #f4f6f8;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.controllers.MenuAdminController">
+  <padding>
+     <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+  </padding>
+  <children>
+
+
+     <!--CABEÇALHO-->
+     <HBox alignment="CENTER_LEFT" style="-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);">
+        <padding>
+           <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
+        </padding>
+        <children>
+           <HBox alignment="CENTER_LEFT" spacing="15.0" HBox.hgrow="ALWAYS">
+              <children>
+                 <StackPane prefHeight="48.0" prefWidth="48.0" style="-fx-background-color: #e0e7ff; -fx-background-radius: 10;">
+                    <children>
+                       <Label text="🛠" textFill="#4f46e5">
+                          <font>
+                             <Font size="20.0" />
+                          </font>
+                       </Label>
+                    </children>
+                 </StackPane>
+                 <VBox alignment="CENTER_LEFT" spacing="2.0">
+                    <children>
+                       <Label fx:id="lblBoasVindas" text="PAINEL ADMINISTRATIVO" textFill="#1e293b">
+                          <font>
+                             <Font name="System Bold" size="16.0" />
+                          </font>
+                       </Label>
+                       <Label text="GERENCIAMENTO COMPLETO DE RECURSOS DA LOJA" textFill="#64748b">
+                          <font>
+                             <Font name="System Bold" size="10.0" />
+                          </font>
+                       </Label>
+                    </children>
+                 </VBox>
+              </children>
+           </HBox>
+
+
+           <!-- Abas criadas no controller (PillNav.addTab) -->
+           <PillNav fx:id="navModulos" />
+        </children>
+     </HBox>
+
+
+     <!--CONTEÚDO-->
+     <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+        <content>
+           <StackPane>
+              <children>
+
+
+                 <!--USUÁRIOS-->
+                 <VBox fx:id="paneUsuarios" spacing="20.0">
+                    <children>
+                       <Card>
+                          <children>
+                             <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                   <Label fx:id="lblFormUsuario" text="Cadastrar Novo Usuário" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                   <Region HBox.hgrow="ALWAYS" />
+                                   <HBox fx:id="badgeUsuario" />
+                                </children>
+                             </HBox>
+                             <FlowPane hgap="16.0" vgap="14.0">
+                                <children>
+                                   <FormField fx:id="fUsuarioId" labelText="ID" prefWidth="210.0">
+                                      <TextField promptText="Ex: C01" />
+                                   </FormField>
+                                   <VBox spacing="6.0" prefWidth="210.0">
+                                      <children>
+                                         <Label text="TIPO / PERFIL" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #4b5563;" />
+                                         <ComboBox fx:id="cbUsuarioPerfil" onAction="#alterarPerfil" maxWidth="Infinity" style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-font-size: 13px;" />
+                                      </children>
+                                   </VBox>
+                                   <FormField fx:id="fUsuarioNome" labelText="Nome" prefWidth="210.0">
+                                      <TextField promptText="Nome completo" />
+                                   </FormField>
+                                   <FormField fx:id="fUsuarioLogin" labelText="Login" prefWidth="210.0">
+                                       <TextField promptText="Ex: maria.oliveira" />
+                                    </FormField>
+                                   </FormField>
+                                   <FormField fx:id="fUsuarioSenha" labelText="Senha" prefWidth="210.0">
+                                      <PasswordField promptText="********" />
+                                   </FormField>
+                                   <FormField fx:id="fUsuarioCargo" labelText="Cargo" prefWidth="210.0">
+                                      <TextField promptText="Ex: Atendente" />
+                                   </FormField>
+                                </children>
+                             </FlowPane>
+                             <HBox spacing="8.0" maxWidth="440.0">
+                                <children>
+                                   <Button fx:id="btnSalvarUsuario" onAction="#salvarUsuario" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                   <Button fx:id="btnCancelarUsuario" onAction="#cancelarUsuario" text="Cancelar" />
+                                </children>
+                             </HBox>
+                             <VBox fx:id="feedbackUsuario" />
+                          </children>
+                       </Card>
+
+
+                       <Card>
+                          <children>
+                             <Label text="Listar Usuários" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                             <TableView fx:id="tblUsuarios" prefHeight="280.0">
+                                <columns>
+                                   <TableColumn fx:id="colUsuarioId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
+                                   <TableColumn fx:id="colUsuarioPerfil" prefWidth="130.0" text="Perfil" />
+                                   <TableColumn fx:id="colUsuarioNome" prefWidth="170.0" text="Nome" />
+                                   <TableColumn fx:id="colUsuarioLogin" prefWidth="190.0" text="Login" />
+                                   <TableColumn fx:id="colUsuarioCargo" prefWidth="110.0" text="Cargo" />
+                                   <TableColumn fx:id="colUsuarioSituacao" prefWidth="100.0" text="Situação" />
+                                   <TableColumn fx:id="colUsuarioAcoes" prefWidth="170.0" sortable="false" text="Ações" />
+                                </columns>
+                                <columnResizePolicy>
+                                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                </columnResizePolicy>
+                             </TableView>
+                          </children>
+                       </Card>
+                    </children>
+                 </VBox>
+
+
+                 <!--ITENS-->
+                 <VBox fx:id="paneItens" spacing="20.0" visible="false" managed="false">
+                    <children>
+                       <Card>
+                          <children>
+                             <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                   <Label fx:id="lblFormItem" text="Cadastrar Novo Item" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                   <Region HBox.hgrow="ALWAYS" />
+                                   <HBox fx:id="badgeItem" />
+                                </children>
+                             </HBox>
+                             <FlowPane hgap="16.0" vgap="14.0">
+                                <children>
+                                   <FormField fx:id="fItemId" labelText="ID" prefWidth="210.0">
+                                      <TextField promptText="Ex: I01" />
+                                   </FormField>
+                                   <FormField fx:id="fItemNome" labelText="Nome" prefWidth="210.0">
+                                      <TextField promptText="Nome do item" />
+                                   </FormField>
+                                   <VBox spacing="6.0" prefWidth="210.0">
+                                      <children>
+                                         <Label text="CATEGORIA" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #4b5563;" />
+                                         <ComboBox fx:id="cbItemCategoria" promptText="Selecione" maxWidth="Infinity" style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-font-size: 13px;" />
+                                      </children>
+                                   </VBox>
+                                   <VBox spacing="6.0" prefWidth="210.0">
+                                      <children>
+                                         <Label text="FORNECEDOR" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #4b5563;" />
+                                         <ComboBox fx:id="cbItemFornecedor" promptText="Selecione" maxWidth="Infinity" style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-font-size: 13px;" />
+                                      </children>
+                                   </VBox>
+                                   <FormField fx:id="fItemTaxa" labelText="Taxa Diária (R$)" prefWidth="210.0">
+                                      <TextField promptText="0.00" />
+                                   </FormField>
+                                   <FormField fx:id="fItemReposicao" labelText="Valor Reposição (R$)" prefWidth="210.0">
+                                      <TextField promptText="0.00" />
+                                   </FormField>
+                                </children>
+                             </FlowPane>
+                             <HBox spacing="8.0" maxWidth="440.0">
+                                <children>
+                                   <Button fx:id="btnSalvarItem" onAction="#salvarItem" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                   <Button fx:id="btnCancelarItem" onAction="#cancelarItem" text="Cancelar" />
+                                </children>
+                             </HBox>
+                             <VBox fx:id="feedbackItem" />
+                          </children>
+                       </Card>
+
+
+                       <Card>
+                          <children>
+                             <Label text="Listar Itens" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                             <TableView fx:id="tblItens" prefHeight="280.0">
+                                <columns>
+                                   <TableColumn fx:id="colItemId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
+                                   <TableColumn fx:id="colItemNome" prefWidth="170.0" text="Nome" />
+                                   <TableColumn fx:id="colItemStatus" prefWidth="120.0" text="Status" />
+                                   <TableColumn fx:id="colItemCategoria" prefWidth="110.0" text="Categoria" />
+                                   <TableColumn fx:id="colItemFornecedor" prefWidth="130.0" text="Fornecedor" />
+                                   <TableColumn fx:id="colItemTaxa" prefWidth="100.0" text="Taxa Diária" />
+                                   <TableColumn fx:id="colItemAcoes" prefWidth="170.0" sortable="false" text="Ações" />
+                                </columns>
+                                <columnResizePolicy>
+                                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                </columnResizePolicy>
+                             </TableView>
+                          </children>
+                       </Card>
+                    </children>
+                 </VBox>
+
+
+                 <!--CATEGORIAS-->
+                 <VBox fx:id="paneCategorias" spacing="20.0" visible="false" managed="false">
+                    <children>
+                       <Card>
+                          <children>
+                             <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                   <Label fx:id="lblFormCategoria" text="Cadastrar Nova Categoria" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                   <Region HBox.hgrow="ALWAYS" />
+                                   <HBox fx:id="badgeCategoria" />
+                                </children>
+                             </HBox>
+                             <FlowPane hgap="16.0" vgap="14.0">
+                                <children>
+                                   <FormField fx:id="fCategoriaId" labelText="ID" prefWidth="210.0">
+                                      <TextField promptText="Ex: CAT01" />
+                                   </FormField>
+                                   <FormField fx:id="fCategoriaNome" labelText="Nome" prefWidth="210.0">
+                                      <TextField promptText="Nome da categoria" />
+                                   </FormField>
+                                </children>
+                             </FlowPane>
+                             <HBox spacing="8.0" maxWidth="440.0">
+                                <children>
+                                   <Button fx:id="btnSalvarCategoria" onAction="#salvarCategoria" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                   <Button fx:id="btnCancelarCategoria" onAction="#cancelarCategoria" text="Cancelar" />
+                                </children>
+                             </HBox>
+                             <VBox fx:id="feedbackCategoria" />
+                          </children>
+                       </Card>
+
+
+                       <Card>
+                          <children>
+                             <Label text="Listar Categorias" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                             <TableView fx:id="tblCategorias" prefHeight="280.0">
+                                <columns>
+                                   <TableColumn fx:id="colCategoriaId" prefWidth="100.0" text="ID" style="-fx-font-family: monospace;" />
+                                   <TableColumn fx:id="colCategoriaNome" prefWidth="300.0" text="Nome" />
+                                   <TableColumn fx:id="colCategoriaAcoes" prefWidth="170.0" sortable="false" text="Ações" />
+                                </columns>
+                                <columnResizePolicy>
+                                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                </columnResizePolicy>
+                             </TableView>
+                          </children>
+                       </Card>
+                    </children>
+                 </VBox>
+
+
+                 <!--FORNECEDORES-->
+                 <VBox fx:id="paneFornecedores" spacing="20.0" visible="false" managed="false">
+                    <children>
+                       <Card>
+                          <children>
+                             <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                   <Label fx:id="lblFormFornecedor" text="Cadastrar Novo Fornecedor" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                   <Region HBox.hgrow="ALWAYS" />
+                                   <HBox fx:id="badgeFornecedor" />
+                                </children>
+                             </HBox>
+                             <FlowPane hgap="16.0" vgap="14.0">
+                                <children>
+                                   <FormField fx:id="fFornecedorId" labelText="ID" prefWidth="210.0">
+                                      <TextField promptText="Ex: F01" />
+                                   </FormField>
+                                   <FormField fx:id="fFornecedorNome" labelText="Nome" prefWidth="210.0">
+                                      <TextField promptText="Nome da empresa" />
+                                   </FormField>
+                                   <FormField fx:id="fFornecedorCnpj" labelText="CNPJ" prefWidth="210.0">
+                                      <TextField promptText="00.000.000/0001-00" />
+                                   </FormField>
+                                   <FormField fx:id="fFornecedorTelefone" labelText="Telefone" prefWidth="210.0">
+                                      <TextField promptText="(00) 00000-0000" />
+                                   </FormField>
+                                </children>
+                             </FlowPane>
+                             <HBox spacing="8.0" maxWidth="440.0">
+                                <children>
+                                   <Button fx:id="btnSalvarFornecedor" onAction="#salvarFornecedor" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                   <Button fx:id="btnCancelarFornecedor" onAction="#cancelarFornecedor" text="Cancelar" />
+                                </children>
+                             </HBox>
+                             <VBox fx:id="feedbackFornecedor" />
+                          </children>
+                       </Card>
+
+
+                       <Card>
+                          <children>
+                             <Label text="Listar Fornecedores" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                             <TableView fx:id="tblFornecedores" prefHeight="280.0">
+                                <columns>
+                                   <TableColumn fx:id="colFornecedorId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
+                                   <TableColumn fx:id="colFornecedorNome" prefWidth="200.0" text="Nome" />
+                                   <TableColumn fx:id="colFornecedorCnpj" prefWidth="160.0" text="CNPJ" />
+                                   <TableColumn fx:id="colFornecedorTelefone" prefWidth="140.0" text="Telefone" />
+                                   <TableColumn fx:id="colFornecedorAcoes" prefWidth="170.0" sortable="false" text="Ações" />
+                                </columns>
+                                <columnResizePolicy>
+                                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                </columnResizePolicy>
+                             </TableView>
+                          </children>
+                       </Card>
+                    </children>
+                 </VBox>
+
+
+              </children>
+           </StackPane>
+        </content>
+     </ScrollPane>
+
+
+     <HBox alignment="CENTER_RIGHT">
+        <children>
+           <Button onAction="#handleSair" style="-fx-background-color: #cbd5e1; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" text="Sair / Desconectar" />
+        </children>
+     </HBox>
+  </children>
+</VBox>
+
