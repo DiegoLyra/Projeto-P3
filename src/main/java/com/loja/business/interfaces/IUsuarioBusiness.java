@@ -1,10 +1,15 @@
 package com.loja.business.interfaces;
 
+import com.loja.model.Cliente;
 import com.loja.model.Usuario;
 import java.util.Map;
 
 public interface IUsuarioBusiness {
     void cadastrar(Usuario usuario);
+
+    Cliente cadastrarCliente(String nome, String email, String senha);
+
+    void desativar(String id);
 
     void deletar(String id);
 
@@ -19,6 +24,12 @@ public interface IUsuarioBusiness {
     Usuario buscarPorId(String id);
 
     Usuario autenticar(String email, String senha);
+
+    Usuario getUsuarioAtual();
+
+    void encerrarSessao();
+
+    void registrarHistorico(String clienteId);
 
     public void salvarDados();
 }

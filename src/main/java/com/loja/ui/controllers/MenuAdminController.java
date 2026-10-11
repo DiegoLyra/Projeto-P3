@@ -21,6 +21,7 @@ import com.loja.ui.components.EmptyState;
 import com.loja.ui.components.FormField;
 import com.loja.ui.components.PillNav;
 import com.loja.ui.components.StatusBadge;
+import com.loja.ui.navigation.Navigator;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -38,186 +39,189 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 
 public class MenuAdminController {
 
 
-   private static final Logger logger = LoggerFactory.getLogger(MenuAdminController.class);
+    private static final Logger logger = LoggerFactory.getLogger(MenuAdminController.class);
 
 
-   private ILojaFacade facade;
-   private Administrador usuarioLogado;
+    private final ILojaFacade facade;
+    private final Navigator navigator;
+    private Administrador usuarioLogado;
 
 
-   // Listas que alimentam as tabelas e os ComboBox
-   private final ObservableList<Usuario> usuarios = FXCollections.observableArrayList();
-   private final ObservableList<Item> itens = FXCollections.observableArrayList();
-   private final ObservableList<Categoria> categorias = FXCollections.observableArrayList();
-   private final ObservableList<Fornecedor> fornecedores = FXCollections.observableArrayList();
+    // Listas que alimentam as tabelas e os ComboBox
+    private final ObservableList<Usuario> usuarios = FXCollections.observableArrayList();
+    private final ObservableList<Item> itens = FXCollections.observableArrayList();
+    private final ObservableList<Categoria> categorias = FXCollections.observableArrayList();
+    private final ObservableList<Fornecedor> fornecedores = FXCollections.observableArrayList();
 
 
-   // Cabeçalho e Navegação
-   @FXML private Label lblBoasVindas;
-   @FXML private PillNav navModulos;
+    // Cabeçalho e Navegação
+    @FXML private Label lblBoasVindas;
+    @FXML private PillNav navModulos;
 
 
-   // Painéis de Conteúdo
-   @FXML private VBox paneUsuarios;
-   @FXML private VBox paneItens;
-   @FXML private VBox paneCategorias;
-   @FXML private VBox paneFornecedores;
+    // Painéis de Conteúdo
+    @FXML private VBox paneUsuarios;
+    @FXML private VBox paneItens;
+    @FXML private VBox paneCategorias;
+    @FXML private VBox paneFornecedores;
 
 
-   // Usuários
-   @FXML private Label lblFormUsuario;
-   @FXML private HBox badgeUsuario;
-   @FXML private FormField fUsuarioId;
-   @FXML private ComboBox<String> cbUsuarioPerfil;
-   @FXML private FormField fUsuarioNome;
-   @FXML private FormField fUsuarioLogin;
-   @FXML private FormField fUsuarioSenha;
-   @FXML private FormField fUsuarioCargo;
-   @FXML private Button btnSalvarUsuario;
-   @FXML private Button btnCancelarUsuario;
-   @FXML private VBox feedbackUsuario;
+    // Usuários
+    @FXML private Label lblFormUsuario;
+    @FXML private HBox badgeUsuario;
+    @FXML private FormField fUsuarioId;
+    @FXML private ComboBox<String> cbUsuarioPerfil;
+    @FXML private FormField fUsuarioNome;
+    @FXML private FormField fUsuarioLogin;
+    @FXML private FormField fUsuarioSenha;
+    @FXML private FormField fUsuarioCargo;
+    @FXML private Button btnSalvarUsuario;
+    @FXML private Button btnCancelarUsuario;
+    @FXML private VBox feedbackUsuario;
 
 
-   @FXML private TableView<Usuario> tblUsuarios;
-   @FXML private TableColumn<Usuario, String> colUsuarioId;
-   @FXML private TableColumn<Usuario, String> colUsuarioPerfil;
-   @FXML private TableColumn<Usuario, String> colUsuarioNome;
-   @FXML private TableColumn<Usuario, String> colUsuarioLogin;
-   @FXML private TableColumn<Usuario, String> colUsuarioCargo;
-   @FXML private TableColumn<Usuario, String> colUsuarioSituacao;
-   @FXML private TableColumn<Usuario, Void> colUsuarioAcoes;
+    @FXML private TableView<Usuario> tblUsuarios;
+    @FXML private TableColumn<Usuario, String> colUsuarioId;
+    @FXML private TableColumn<Usuario, String> colUsuarioPerfil;
+    @FXML private TableColumn<Usuario, String> colUsuarioNome;
+    @FXML private TableColumn<Usuario, String> colUsuarioLogin;
+    @FXML private TableColumn<Usuario, String> colUsuarioCargo;
+    @FXML private TableColumn<Usuario, String> colUsuarioSituacao;
+    @FXML private TableColumn<Usuario, Void> colUsuarioAcoes;
 
 
-   // Itens
-   @FXML private Label lblFormItem;
-   @FXML private HBox badgeItem;
-   @FXML private FormField fItemId;
-   @FXML private FormField fItemNome;
-   @FXML private ComboBox<Categoria> cbItemCategoria;
-   @FXML private ComboBox<Fornecedor> cbItemFornecedor;
-   @FXML private FormField fItemTaxa;
-   @FXML private FormField fItemReposicao;
-   @FXML private Button btnSalvarItem;
-   @FXML private Button btnCancelarItem;
-   @FXML private VBox feedbackItem;
+    // Itens
+    @FXML private Label lblFormItem;
+    @FXML private HBox badgeItem;
+    @FXML private FormField fItemId;
+    @FXML private FormField fItemNome;
+    @FXML private ComboBox<Categoria> cbItemCategoria;
+    @FXML private ComboBox<Fornecedor> cbItemFornecedor;
+    @FXML private FormField fItemTaxa;
+    @FXML private FormField fItemReposicao;
+    @FXML private Button btnSalvarItem;
+    @FXML private Button btnCancelarItem;
+    @FXML private VBox feedbackItem;
 
 
-   @FXML private TableView<Item> tblItens;
-   @FXML private TableColumn<Item, String> colItemId;
-   @FXML private TableColumn<Item, String> colItemNome;
-   @FXML private TableColumn<Item, String> colItemStatus;
-   @FXML private TableColumn<Item, String> colItemCategoria;
-   @FXML private TableColumn<Item, String> colItemFornecedor;
-   @FXML private TableColumn<Item, String> colItemTaxa;
-   @FXML private TableColumn<Item, Void> colItemAcoes;
+    @FXML private TableView<Item> tblItens;
+    @FXML private TableColumn<Item, String> colItemId;
+    @FXML private TableColumn<Item, String> colItemNome;
+    @FXML private TableColumn<Item, String> colItemStatus;
+    @FXML private TableColumn<Item, String> colItemCategoria;
+    @FXML private TableColumn<Item, String> colItemFornecedor;
+    @FXML private TableColumn<Item, String> colItemTaxa;
+    @FXML private TableColumn<Item, Void> colItemAcoes;
 
 
-   // Categorias
-   @FXML private Label lblFormCategoria;
-   @FXML private HBox badgeCategoria;
-   @FXML private FormField fCategoriaId;
-   @FXML private FormField fCategoriaNome;
-   @FXML private Button btnSalvarCategoria;
-   @FXML private Button btnCancelarCategoria;
-   @FXML private VBox feedbackCategoria;
+    // Categorias
+    @FXML private Label lblFormCategoria;
+    @FXML private HBox badgeCategoria;
+    @FXML private FormField fCategoriaId;
+    @FXML private FormField fCategoriaNome;
+    @FXML private Button btnSalvarCategoria;
+    @FXML private Button btnCancelarCategoria;
+    @FXML private VBox feedbackCategoria;
 
 
-   @FXML private TableView<Categoria> tblCategorias;
-   @FXML private TableColumn<Categoria, String> colCategoriaId;
-   @FXML private TableColumn<Categoria, String> colCategoriaNome;
-   @FXML private TableColumn<Categoria, Void> colCategoriaAcoes;
+    @FXML private TableView<Categoria> tblCategorias;
+    @FXML private TableColumn<Categoria, String> colCategoriaId;
+    @FXML private TableColumn<Categoria, String> colCategoriaNome;
+    @FXML private TableColumn<Categoria, Void> colCategoriaAcoes;
 
 
-   // Fornecedores
-   @FXML private Label lblFormFornecedor;
-   @FXML private HBox badgeFornecedor;
-   @FXML private FormField fFornecedorId;
-   @FXML private FormField fFornecedorNome;
-   @FXML private FormField fFornecedorCnpj;
-   @FXML private FormField fFornecedorTelefone;
-   @FXML private Button btnSalvarFornecedor;
-   @FXML private Button btnCancelarFornecedor;
-   @FXML private VBox feedbackFornecedor;
+    // Fornecedores
+    @FXML private Label lblFormFornecedor;
+    @FXML private HBox badgeFornecedor;
+    @FXML private FormField fFornecedorId;
+    @FXML private FormField fFornecedorNome;
+    @FXML private FormField fFornecedorCnpj;
+    @FXML private FormField fFornecedorTelefone;
+    @FXML private Button btnSalvarFornecedor;
+    @FXML private Button btnCancelarFornecedor;
+    @FXML private VBox feedbackFornecedor;
 
 
-   @FXML private TableView<Fornecedor> tblFornecedores;
-   @FXML private TableColumn<Fornecedor, String> colFornecedorId;
-   @FXML private TableColumn<Fornecedor, String> colFornecedorNome;
-   @FXML private TableColumn<Fornecedor, String> colFornecedorCnpj;
-   @FXML private TableColumn<Fornecedor, String> colFornecedorTelefone;
-   @FXML private TableColumn<Fornecedor, Void> colFornecedorAcoes;
+    @FXML private TableView<Fornecedor> tblFornecedores;
+    @FXML private TableColumn<Fornecedor, String> colFornecedorId;
+    @FXML private TableColumn<Fornecedor, String> colFornecedorNome;
+    @FXML private TableColumn<Fornecedor, String> colFornecedorCnpj;
+    @FXML private TableColumn<Fornecedor, String> colFornecedorTelefone;
+    @FXML private TableColumn<Fornecedor, Void> colFornecedorAcoes;
 
 
-   // Controle "Cadastrar <-> Modo de Edição" de cada formulário
-   private FormState formUsuario;
-   private FormState formItem;
-   private FormState formCategoria;
-   private FormState formFornecedor;
+    // Controle "Cadastrar <-> Modo de Edição" de cada formulário
+    private FormState formUsuario;
+    private FormState formItem;
+    private FormState formCategoria;
+    private FormState formFornecedor;
 
 
-   @FXML
-   public void initialize() {
-       navModulos.addTab("Usuários", true, () -> mostrarPainel(paneUsuarios));
-       navModulos.addTab("Itens", false, () -> mostrarPainel(paneItens));
-       navModulos.addTab("Categorias", false, () -> mostrarPainel(paneCategorias));
-       navModulos.addTab("Fornecedores", false, () -> mostrarPainel(paneFornecedores));
+    // Construtor exigido pelo Navigator (controllerFactory)
+    public MenuAdminController(ILojaFacade facade, Navigator navigator) {
+        this.facade = facade;
+        this.navigator = navigator;
+    }
 
 
-       cbUsuarioPerfil.setItems(FXCollections.observableArrayList("CLIENTE", "FUNCIONÁRIO", "ADMINISTRADOR"));
-       cbItemCategoria.setItems(categorias);
-       cbItemCategoria.setConverter(conversor(c -> c.getId() + " - " + c.getNome()));
-       cbItemFornecedor.setItems(fornecedores);
-       cbItemFornecedor.setConverter(conversor(f -> f.getId() + " - " + f.getNome()));
+    @FXML
+    public void initialize() {
+        if (!(navigator.getUsuarioLogado() instanceof Administrador admin)) {
+            throw new IllegalStateException("A tela administrativa exige um usuário Administrador logado.");
+        }
+        this.usuarioLogado = admin;
+
+        navModulos.addTab("Usuários", true, () -> mostrarPainel(paneUsuarios));
+        navModulos.addTab("Itens", false, () -> mostrarPainel(paneItens));
+        navModulos.addTab("Categorias", false, () -> mostrarPainel(paneCategorias));
+        navModulos.addTab("Fornecedores", false, () -> mostrarPainel(paneFornecedores));
 
 
-       formUsuario = new FormState(lblFormUsuario, badgeUsuario, btnSalvarUsuario, btnCancelarUsuario, feedbackUsuario,
-               fUsuarioId, "Cadastrar Novo Usuário", "Atualizar Usuário", "Cadastrar Usuário");
-       formItem = new FormState(lblFormItem, badgeItem, btnSalvarItem, btnCancelarItem, feedbackItem,
-               fItemId, "Cadastrar Novo Item", "Atualizar Item", "Cadastrar Item");
-       formCategoria = new FormState(lblFormCategoria, badgeCategoria, btnSalvarCategoria, btnCancelarCategoria, feedbackCategoria,
-               fCategoriaId, "Cadastrar Nova Categoria", "Atualizar Categoria", "Cadastrar Categoria");
-       formFornecedor = new FormState(lblFormFornecedor, badgeFornecedor, btnSalvarFornecedor, btnCancelarFornecedor, feedbackFornecedor,
-               fFornecedorId, "Cadastrar Novo Fornecedor", "Atualizar Fornecedor", "Cadastrar Fornecedor");
+        cbUsuarioPerfil.setItems(FXCollections.observableArrayList("CLIENTE", "FUNCIONARIO", "ADMINISTRADOR"));
+        cbItemCategoria.setItems(categorias);
+        cbItemCategoria.setConverter(conversor(c -> c.getId() + " - " + c.getNome()));
+        cbItemFornecedor.setItems(fornecedores);
+        cbItemFornecedor.setConverter(conversor(f -> f.getId() + " - " + f.getNome()));
 
 
-       configurarTabelas();
-       limparUsuario();
-   }
+        formUsuario = new FormState(lblFormUsuario, badgeUsuario, btnSalvarUsuario, btnCancelarUsuario, feedbackUsuario,
+                fUsuarioId, "Cadastrar Novo Usuário", "Atualizar Usuário", "Cadastrar Usuário");
+        formItem = new FormState(lblFormItem, badgeItem, btnSalvarItem, btnCancelarItem, feedbackItem,
+                fItemId, "Cadastrar Novo Item", "Atualizar Item", "Cadastrar Item");
+        formCategoria = new FormState(lblFormCategoria, badgeCategoria, btnSalvarCategoria, btnCancelarCategoria, feedbackCategoria,
+                fCategoriaId, "Cadastrar Nova Categoria", "Atualizar Categoria", "Cadastrar Categoria");
+        formFornecedor = new FormState(lblFormFornecedor, badgeFornecedor, btnSalvarFornecedor, btnCancelarFornecedor, feedbackFornecedor,
+                fFornecedorId, "Cadastrar Novo Fornecedor", "Atualizar Fornecedor", "Cadastrar Fornecedor");
 
 
-   public void initData(ILojaFacade facade, Administrador usuarioLogado) {
-       this.facade = facade;
-       this.usuarioLogado = usuarioLogado;
+        configurarTabelas();
+        limparUsuario();
+
+        if (usuarioLogado.getNome() != null) {
+            lblBoasVindas.setText("PAINEL ADMINISTRATIVO: " + usuarioLogado.getNome().toUpperCase());
+        }
+        carregarTudo();
+    }
 
 
-       if (usuarioLogado != null && usuarioLogado.getNome() != null) {
-           lblBoasVindas.setText("PAINEL ADMINISTRATIVO: " + usuarioLogado.getNome().toUpperCase());
-       }
+    private void mostrarPainel(VBox painel) {
+        for (VBox p : new VBox[]{paneUsuarios, paneItens, paneCategorias, paneFornecedores}) {
+            p.setVisible(p == painel);
+            p.setManaged(p == painel);
+        }
+    }
 
 
-       carregarTudo();
-   }
+    //tabelas
 
 
-   private void mostrarPainel(VBox painel) {
-       for (VBox p : new VBox[]{paneUsuarios, paneItens, paneCategorias, paneFornecedores}) {
-           p.setVisible(p == painel);
-           p.setManaged(p == painel);
-       }
-   }
-
-
-   //tabelas
-
-
-   private void configurarTabelas() {
+    private void configurarTabelas() {
 
         // Usuários
         tblUsuarios.setItems(usuarios);
@@ -233,7 +237,7 @@ public class MenuAdminController {
         colUsuarioSituacao.setCellFactory(col -> new BadgeCell<>(s ->
                 s.equals("ATIVO") ? StatusBadge.StatusType.SUCCESS : StatusBadge.StatusType.DANGER));
         colUsuarioAcoes.setCellFactory(col -> new AcoesCell<>("Desativar", this::editarUsuario, this::desativarUsuario));
-        
+
         //Categorias
         tblCategorias.setItems(categorias);
         tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
@@ -273,42 +277,41 @@ public class MenuAdminController {
         });
         colItemTaxa.setCellValueFactory(c -> new SimpleStringProperty(String.format("R$ %.2f", c.getValue().getTaxaDiaria())));
         colItemAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarItem, this::removerItem));
-   }
+    }
 
 
 
 
-   private void carregarTudo() {
-       try {
-          usuarios.setAll(facade.listarUsuario().values());
-          categorias.setAll(facade.listarCategoria().values());
-          fornecedores.setAll(facade.listarFornecedor().values());
-          itens.setAll(facade.listarItem().values());
-       } catch (RuntimeException e) {
-           logger.error("Falha ao carregar dados do painel administrativo: {}", e.getMessage(), e);
-           exibirAlertaErro("Erro", "Falha ao carregar dados: " + e.getMessage());
-       }
-   }
+    private void carregarTudo() {
+        try {
+            usuarios.setAll(facade.listarUsuario().values());
+            categorias.setAll(facade.listarCategoria().values());
+            fornecedores.setAll(facade.listarFornecedor().values());
+            itens.setAll(facade.listarItem().values());
+        } catch (RuntimeException e) {
+            logger.error("Falha ao carregar dados do painel administrativo: {}", e.getMessage(), e);
+            exibirAlertaErro("Erro", "Não foi possível carregar os dados. Consulte o log.");
+        }
+    }
 
 
-   @FXML public void alterarPerfil() {
-        
+    @FXML public void alterarPerfil() {
+
         boolean funcionario = "FUNCIONARIO".equals(cbUsuarioPerfil.getValue());
         fUsuarioCargo.setVisible(funcionario);
         fUsuarioCargo.setManaged(funcionario);
         if (!funcionario) fUsuarioCargo.setText("");
-    
+
     }
 
-   @FXML public void salvarUsuario() {
+    @FXML public void salvarUsuario() {
 
-        String id = fUsuarioId.getText().trim();
         String nome = fUsuarioNome.getText().trim();
         String login = fUsuarioLogin.getText().trim();
         String senha = fUsuarioSenha.getText();
         String cargo = fUsuarioCargo.getText().trim();
 
-        if (id.isEmpty() || nome.isEmpty() || login.isEmpty() || senha.isEmpty()) {
+        if (nome.isEmpty() || login.isEmpty() || senha.isEmpty()) {
             formUsuario.aviso("Preencha os campos obrigatórios", Banner.BannerType.DANGER);
             return;
         }
@@ -316,17 +319,16 @@ public class MenuAdminController {
         boolean edicao = formUsuario.emEdicao();
         executar(formUsuario, edicao ? "Usuário atualizado!" : "Usuário cadastrado!", () -> {
             if (edicao) {
-                Usuario u = facade.buscarUsuario(formUsuario.idEditando);
-                u.setNome(nome);
-                u.setLogin(login);
-                u.setSenha(senha);
-                if (u instanceof Funcionario f) f.setCargo(cargo);
-                facade.atualizarUsuario(u.getId(), u);
+                // Nunca altera o objeto persistido: envia uma cópia para o Business validar e aplicar
+                Usuario atual = facade.buscarUsuario(formUsuario.idEditando);
+                Usuario novo = copiaComNovosDados(atual, nome, login, senha, cargo);
+                facade.atualizarUsuario(atual.getId(), novo);
             } else {
+                // O ID é gerado pela camada de negócio
                 switch (cbUsuarioPerfil.getValue()) {
-                    case "FUNCIONARIO" -> facade.cadastrarFuncionario(new Funcionario(id, nome, login, senha, cargo));
-                    case "ADMINISTRADOR" -> facade.cadastrarAdm(new Administrador(id, nome, login, senha));
-                    default -> facade.cadastrarCliente(new Cliente(id, nome, login, senha));
+                    case "FUNCIONARIO" -> facade.cadastrarFuncionario(new Funcionario(null, nome, login, senha, cargo));
+                    case "ADMINISTRADOR" -> facade.cadastrarAdm(new Administrador(null, nome, login, senha));
+                    default -> facade.cadastrarCliente(nome, login, senha);
                 }
             }
             usuarios.setAll(facade.listarUsuario().values());
@@ -335,15 +337,30 @@ public class MenuAdminController {
 
     }
 
-   @FXML public void cancelarUsuario() {
+    @FXML public void cancelarUsuario() {
 
         limparUsuario();
         formUsuario.limparAviso();
 
     }
 
+    private Usuario copiaComNovosDados(Usuario atual, String nome, String login, String senha, String cargo) {
+        String id = atual.getId();
+        Usuario copia;
+        if (atual instanceof Funcionario) {
+            copia = new Funcionario(id, nome, login, senha, cargo);
+        } else if (atual instanceof Administrador a) {
+            copia = new Administrador(id, nome, login, senha, a.getNivelAcesso(), a.getDepartamento());
+        } else {
+            copia = new Cliente(id, nome, login, senha);
+        }
+        copia.setAtivo(atual.isAtivo());
+        return copia;
+    }
+
     private void limparUsuario() {
         formUsuario.sairEdicao();
+        fUsuarioId.getInputField().setDisable(true); // ID automático no cadastro
         fUsuarioNome.setText("");
         fUsuarioLogin.setText("");
         fUsuarioSenha.setText("");
@@ -377,7 +394,7 @@ public class MenuAdminController {
         }
     }
 
-   @FXML public void salvarItem() { 
+    @FXML public void salvarItem() {
 
         String id = fItemId.getText().trim();
         String nome = fItemNome.getText().trim();
@@ -418,16 +435,16 @@ public class MenuAdminController {
             limparItem();
         });
 
-   }
+    }
 
-   @FXML public void cancelarItem() { 
+    @FXML public void cancelarItem() {
 
         limparItem();
         formItem.limparAviso();
 
-   }
+    }
 
-   private void limparItem() {
+    private void limparItem() {
         formItem.sairEdicao();
         fItemNome.setText("");
         fItemTaxa.setText("");
@@ -458,9 +475,9 @@ public class MenuAdminController {
     }
 
 
-   @FXML public void salvarCategoria() {
+    @FXML public void salvarCategoria() {
 
-    String id = fCategoriaId.getText().trim();
+        String id = fCategoriaId.getText().trim();
         String nome = fCategoriaNome.getText().trim();
 
         if (id.isEmpty() || nome.isEmpty()) {
@@ -484,7 +501,7 @@ public class MenuAdminController {
 
     }
 
-   @FXML public void cancelarCategoria() {
+    @FXML public void cancelarCategoria() {
 
         limparCategoria();
         formCategoria.limparAviso();
@@ -511,7 +528,7 @@ public class MenuAdminController {
         }
     }
 
-   @FXML public void salvarFornecedor() { 
+    @FXML public void salvarFornecedor() {
 
         String id = fFornecedorId.getText().trim();
         String nome = fFornecedorNome.getText().trim();
@@ -539,16 +556,16 @@ public class MenuAdminController {
             limparFornecedor();
         });
 
-   }
+    }
 
-   @FXML public void cancelarFornecedor() { 
+    @FXML public void cancelarFornecedor() {
 
         limparFornecedor();
         formFornecedor.limparAviso();
 
-   }
+    }
 
-   private void limparFornecedor() {
+    private void limparFornecedor() {
         formFornecedor.sairEdicao();
         fFornecedorNome.setText("");
         fFornecedorCnpj.setText("");
@@ -573,183 +590,192 @@ public class MenuAdminController {
     }
 
 
-   @FXML
-   public void handleSair() {
-       Stage stage = (Stage) lblBoasVindas.getScene().getWindow();
-       stage.close();
-   }
+    @FXML
+    public void handleSair() {
+        navigator.showLogin();
+    }
 
 
-   //Executa uma ação da facade e mostra o resultado no Banner do formulário
-   private void executar(FormState form, String msgSucesso, Runnable acao) {
-       try {
-           acao.run();
-           form.aviso(msgSucesso, Banner.BannerType.SUCCESS);
-       } catch (RuntimeException e) {
-           logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
-           form.aviso(e.getMessage() != null ? e.getMessage() : "Erro inesperado.", Banner.BannerType.DANGER);
-       }
-   }
+    //Executa uma ação da facade e mostra o resultado no Banner do formulário
+    private void executar(FormState form, String msgSucesso, Runnable acao) {
+        try {
+            acao.run();
+            form.aviso(msgSucesso, Banner.BannerType.SUCCESS);
+        } catch (RuntimeException e) {
+            logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
+            form.aviso(mensagemSegura(e), Banner.BannerType.DANGER);
+        }
+    }
 
 
-   private boolean confirmar(String mensagem) {
-       Alert alert = new Alert(Alert.AlertType.CONFIRMATION, mensagem, ButtonType.YES, ButtonType.NO);
-       alert.setTitle("Confirmação");
-       alert.setHeaderText(null);
-       return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
-   }
+    //Só exibe mensagens escritas para o usuário; qualquer outra falha vai para o log
+    private String mensagemSegura(RuntimeException e) {
+        boolean mensagemDeNegocio = e instanceof IllegalArgumentException
+                || e.getClass().getPackageName().equals("com.loja.exceptions");
+        return mensagemDeNegocio && e.getMessage() != null
+                ? e.getMessage()
+                : "Ocorreu um erro inesperado. Consulte o log.";
+    }
 
 
-   private void exibirAlertaErro(String titulo, String mensagem) {
-       Alert alert = new Alert(Alert.AlertType.ERROR);
-       alert.setTitle(titulo);
-       alert.setHeaderText(null);
-       alert.setContentText(mensagem);
-       alert.showAndWait();
-   }
+    private boolean confirmar(String mensagem) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, mensagem, ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Confirmação");
+        alert.setHeaderText(null);
+        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
+    }
 
 
-   private static <T> StringConverter<T> conversor(Function<T, String> texto) {
-       return new StringConverter<>() {
-           @Override public String toString(T obj) { return obj == null ? "" : texto.apply(obj); }
-           @Override public T fromString(String s) { return null; }
-       };
-   }
+    private void exibirAlertaErro(String titulo, String mensagem) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensagem);
+        alert.showAndWait();
+    }
 
 
-   //Alterna um formulário entre "Cadastrar" e "Modo de Edição".
-   private static class FormState {
-       private static final String BOTAO = "-fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand; -fx-background-color: ";
+    private static <T> StringConverter<T> conversor(Function<T, String> texto) {
+        return new StringConverter<>() {
+            @Override public String toString(T obj) { return obj == null ? "" : texto.apply(obj); }
+            @Override public T fromString(String s) { return null; }
+        };
+    }
 
 
-       private final Label titulo;
-       private final HBox badge;
-       private final Button btnSalvar;
-       private final Button btnCancelar;
-       private final VBox feedback;
-       private final FormField campoId;
-       private final String tituloNovo;
-       private final String tituloEdicao;
-       private final String textoSalvar;
-       private String idEditando;
+    //Alterna um formulário entre "Cadastrar" e "Modo de Edição".
+    private static class FormState {
+        private static final String BOTAO = "-fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand; -fx-background-color: ";
 
 
-       FormState(Label titulo, HBox badge, Button btnSalvar, Button btnCancelar, VBox feedback,
-                 FormField campoId, String tituloNovo, String tituloEdicao, String textoSalvar) {
-           this.titulo = titulo;
-           this.badge = badge;
-           this.btnSalvar = btnSalvar;
-           this.btnCancelar = btnCancelar;
-           this.feedback = feedback;
-           this.campoId = campoId;
-           this.tituloNovo = tituloNovo;
-           this.tituloEdicao = tituloEdicao;
-           this.textoSalvar = textoSalvar;
+        private final Label titulo;
+        private final HBox badge;
+        private final Button btnSalvar;
+        private final Button btnCancelar;
+        private final VBox feedback;
+        private final FormField campoId;
+        private final String tituloNovo;
+        private final String tituloEdicao;
+        private final String textoSalvar;
+        private String idEditando;
 
 
-           badge.getChildren().add(new StatusBadge("Modo de Edição", StatusBadge.StatusType.WARNING));
-           btnCancelar.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;");
-           sairEdicao();
-       }
+        FormState(Label titulo, HBox badge, Button btnSalvar, Button btnCancelar, VBox feedback,
+                  FormField campoId, String tituloNovo, String tituloEdicao, String textoSalvar) {
+            this.titulo = titulo;
+            this.badge = badge;
+            this.btnSalvar = btnSalvar;
+            this.btnCancelar = btnCancelar;
+            this.feedback = feedback;
+            this.campoId = campoId;
+            this.tituloNovo = tituloNovo;
+            this.tituloEdicao = tituloEdicao;
+            this.textoSalvar = textoSalvar;
 
 
-       boolean emEdicao() {
-           return idEditando != null;
-       }
+            badge.getChildren().add(new StatusBadge("Modo de Edição", StatusBadge.StatusType.WARNING));
+            btnCancelar.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;");
+            sairEdicao();
+        }
 
 
-       void entrarEdicao(String id) {
-           idEditando = id;
-           campoId.setText(id);
-           campoId.getInputField().setDisable(true);
-           titulo.setText(tituloEdicao);
-           btnSalvar.setText("Salvar Alterações");
-           btnSalvar.setStyle(BOTAO + "#d97706;");
-           exibir(true);
-           limparAviso();
-       }
+        boolean emEdicao() {
+            return idEditando != null;
+        }
 
 
-       void sairEdicao() {
-           idEditando = null;
-           campoId.setText("");
-           campoId.getInputField().setDisable(false);
-           titulo.setText(tituloNovo);
-           btnSalvar.setText(textoSalvar);
-           btnSalvar.setStyle(BOTAO + "#4f46e5;");
-           exibir(false);
-       }
+        void entrarEdicao(String id) {
+            idEditando = id;
+            campoId.setText(id);
+            campoId.getInputField().setDisable(true);
+            titulo.setText(tituloEdicao);
+            btnSalvar.setText("Salvar Alterações");
+            btnSalvar.setStyle(BOTAO + "#d97706;");
+            exibir(true);
+            limparAviso();
+        }
 
 
-       void aviso(String mensagem, Banner.BannerType tipo) {
-           feedback.getChildren().setAll(new Banner(mensagem, tipo));
-       }
+        void sairEdicao() {
+            idEditando = null;
+            campoId.setText("");
+            campoId.getInputField().setDisable(false);
+            titulo.setText(tituloNovo);
+            btnSalvar.setText(textoSalvar);
+            btnSalvar.setStyle(BOTAO + "#4f46e5;");
+            exibir(false);
+        }
 
 
-       void limparAviso() {
-           feedback.getChildren().clear();
-       }
+        void aviso(String mensagem, Banner.BannerType tipo) {
+            feedback.getChildren().setAll(new Banner(mensagem, tipo));
+        }
 
 
-       private void exibir(boolean edicao) {
-           badge.setVisible(edicao);
-           badge.setManaged(edicao);
-           btnCancelar.setVisible(edicao);
-           btnCancelar.setManaged(edicao);
-       }
-   }
+        void limparAviso() {
+            feedback.getChildren().clear();
+        }
 
 
-   //Célula que mostra o texto dentro de um StatusBadge.
-   private static class BadgeCell<T> extends TableCell<T, String> {
-       private final Function<String, StatusBadge.StatusType> tipo;
+        private void exibir(boolean edicao) {
+            badge.setVisible(edicao);
+            badge.setManaged(edicao);
+            btnCancelar.setVisible(edicao);
+            btnCancelar.setManaged(edicao);
+        }
+    }
 
 
-       BadgeCell(Function<String, StatusBadge.StatusType> tipo) {
-           this.tipo = tipo;
-       }
+    //Célula que mostra o texto dentro de um StatusBadge.
+    private static class BadgeCell<T> extends TableCell<T, String> {
+        private final Function<String, StatusBadge.StatusType> tipo;
 
 
-       @Override
-       protected void updateItem(String item, boolean empty) {
-           super.updateItem(item, empty);
-           setText(null);
-           if (empty || item == null) {
-               setGraphic(null);
-               return;
-           }
-           StatusBadge badge = new StatusBadge(item, tipo.apply(item));
-           badge.setMaxWidth(Region.USE_PREF_SIZE);
-           setGraphic(badge);
-       }
-   }
+        BadgeCell(Function<String, StatusBadge.StatusType> tipo) {
+            this.tipo = tipo;
+        }
 
 
-   //Célula com os botões "Editar" e "Remover/Desativar"
-   private static class AcoesCell<T> extends TableCell<T, Void> {
-       private final HBox box;
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(null);
+            if (empty || item == null) {
+                setGraphic(null);
+                return;
+            }
+            StatusBadge badge = new StatusBadge(item, tipo.apply(item));
+            badge.setMaxWidth(Region.USE_PREF_SIZE);
+            setGraphic(badge);
+        }
+    }
 
 
-       AcoesCell(String textoRemover, Consumer<T> onEditar, Consumer<T> onRemover) {
-           Button editar = new Button("Editar");
-           editar.setStyle("-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
-           editar.setOnAction(e -> onEditar.accept(getTableView().getItems().get(getIndex())));
+    //Célula com os botões "Editar" e "Remover/Desativar"
+    private static class AcoesCell<T> extends TableCell<T, Void> {
+        private final HBox box;
 
 
-           Button remover = new Button(textoRemover);
-           remover.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: #dc2626; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
-           remover.setOnAction(e -> onRemover.accept(getTableView().getItems().get(getIndex())));
+        AcoesCell(String textoRemover, Consumer<T> onEditar, Consumer<T> onRemover) {
+            Button editar = new Button("Editar");
+            editar.setStyle("-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
+            editar.setOnAction(e -> onEditar.accept(getTableView().getItems().get(getIndex())));
 
 
-           box = new HBox(6, editar, remover);
-           box.setAlignment(Pos.CENTER);
-       }
+            Button remover = new Button(textoRemover);
+            remover.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: #dc2626; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
+            remover.setOnAction(e -> onRemover.accept(getTableView().getItems().get(getIndex())));
 
 
-       @Override
-       protected void updateItem(Void item, boolean empty) {
-           super.updateItem(item, empty);
-           setGraphic(empty ? null : box);
-       }
-   }
+            box = new HBox(6, editar, remover);
+            box.setAlignment(Pos.CENTER);
+        }
+
+
+        @Override
+        protected void updateItem(Void item, boolean empty) {
+            super.updateItem(item, empty);
+            setGraphic(empty ? null : box);
+        }
+    }
 }
