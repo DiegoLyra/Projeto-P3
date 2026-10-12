@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.loja.ui.controllers.MenuFuncionarioController"
+            prefWidth="1200.0"
+            prefHeight="750.0"
+            style="-fx-background-color: #f8fafc;">
+
+    <!-- CABEÇALHO FIXO (BRANCO E AZUL) -->
+    <top>
+        <VBox style="-fx-background-color: #ffffff; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 6, 0, 0, 2);">
+            <HBox alignment="CENTER_LEFT" spacing="14.0">
+                <padding>
+                    <Insets top="20.0" right="28.0" bottom="16.0" left="28.0"/>
+                </padding>
+                
+                <StackPane prefHeight="48.0" prefWidth="48.0" style="-fx-background-color: #eff6ff; -fx-background-radius: 10;">
+                    <children>
+                        <Label text="👤" style="-fx-font-size: 22px;"/>
+                    </children>
+                </StackPane>
+
+                <VBox spacing="4.0">
+                    <!-- ID Adicionado para dinamizar o nome no Java -->
+                    <Label fx:id="lblNomeFuncionario" 
+                           text="PAINEL DO FUNCIONÁRIO"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1e3a8a;"/>
+                    <Label text="Gestão Operacional, Contratos e Clientes"
+                           style="-fx-font-size: 13px; -fx-text-fill: #64748b;"/>
+                </VBox>
+            </HBox>
+
+            <Separator/>
+
+            <!-- MENU DE NAVEGAÇÃO EM TONS AZUIS -->
+            <FlowPane hgap="8.0" vgap="8.0" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets top="12.0" right="24.0" bottom="14.0" left="24.0"/>
+                </padding>
+
+                <Button text="Aluguel" onAction="#abrirAluguel"
+                        style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                <Button text="Devolução" onAction="#abrirDevolucao"
+                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                <Button text="Novo Cliente" onAction="#abrirNovoCliente"
+                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                <Button text="Disponíveis" onAction="#abrirDisponiveis"
+                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                <Button text="Contratos Ativos" onAction="#abrirContratosAtivos"
+                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                <Button text="Histórico Cliente" onAction="#abrirHistorico"
+                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                <Button text="Multas" onAction="#abrirMultas"
+                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+            </FlowPane>
+        </VBox>
+    </top>
+
+    <!-- ÁREA DE CONTEÚDO DINÂMICO -->
+    <center>
+        <StackPane fx:id="conteudoArea" style="-fx-padding: 20;" />
+    </center>
+
+</BorderPane>
