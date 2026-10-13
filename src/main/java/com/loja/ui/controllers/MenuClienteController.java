@@ -10,6 +10,7 @@ import com.loja.ui.navigation.Navigator;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -33,11 +34,10 @@ public class MenuClienteController {
     private final Navigator navigator;
     private Cliente usuarioLogado;
 
-    // Listas do Modelo
     private final ObservableList<ContratoAluguel> listaContratos = FXCollections.observableArrayList();
+    private FilteredList<ContratoAluguel> listaContratosFiltrada;
     private final ObservableList<Multa> listaMultas = FXCollections.observableArrayList();
 
-    // Componentes de Cabeçalho e Pesquisa
     @FXML private Label lblBoasVindas;
     @FXML private Label lblTituloSecao;
     @FXML private TextField txtPesquisa;
@@ -45,14 +45,12 @@ public class MenuClienteController {
     @FXML private Button btnNavAlugueis;
     @FXML private Button btnNavMultas;
 
-    // Painéis de Conteúdo
     @FXML private VBox paneItens;
     @FXML private VBox paneAlugueis;
     @FXML private VBox paneMultas;
 
     @FXML private FlowPane containerCardsItens;
 
-    // Tabela e Paginação de Aluguéis
     @FXML private TableView<ContratoAluguel> tblAlugueis;
     @FXML private TableColumn<ContratoAluguel, String> colContratoId;
     @FXML private TableColumn<ContratoAluguel, String> colContratoItem;
@@ -62,7 +60,6 @@ public class MenuClienteController {
     @FXML private TableColumn<ContratoAluguel, String> colContratoStatus;
     @FXML private Pagination paginacaoAlugueis;
 
-    // Tabela e Paginação de Multas
     @FXML private HBox bannerMultas;
     @FXML private Label lblBannerMulta;
     @FXML private TableView<Multa> tblMultas;
@@ -90,6 +87,7 @@ public class MenuClienteController {
         }
 
         configurarTabelas();
+        configurarPesquisa();
         configurarPaginacao();
         mostrarAbaItens();
     }
@@ -163,6 +161,33 @@ public class MenuClienteController {
         });
     }
 
+    private void configurarPesquisa() {
+        listaContratosFiltrada = new FilteredList<>(listaContratos, p -> true);
+
+        txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> {
+            listaContratosFiltrada.setPredicate(contrato -> {
+                if (newValue == null || newValue.isBlank()) {
+                    return true;
+                }
+
+                String termoBusca = newValue.toLowerCase().trim();
+
+                Item item = contrato.getItem();
+                if (item != null && item.getNome() != null && item.getNome().toLowerCase().contains(termoBusca)) {
+                    return true;
+                }
+
+                if (contrato.getValorTotal() != null && contrato.getValorTotal().toString().contains(termoBusca)) {
+                    return true;
+                }
+
+                return contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca);
+            });
+
+            atualizarPaginacaoAlugueis();
+        });
+    }
+
     private void configurarPaginacao() {
         paginacaoAlugueis.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) -> 
             tblAlugueis.setItems(obterItensPaginaAlugueis(newIdx.intValue()))
@@ -175,10 +200,10 @@ public class MenuClienteController {
 
     private ObservableList<ContratoAluguel> obterItensPaginaAlugueis(int pageIndex) {
         int deIndex = pageIndex * ITENS_POR_PAGINA;
-        int paraIndex = Math.min(deIndex + ITENS_POR_PAGINA, listaContratos.size());
+        int paraIndex = Math.min(deIndex + ITENS_POR_PAGINA, listaContratosFiltrada.size());
 
-        if (deIndex >= 0 && deIndex < listaContratos.size()) {
-            return FXCollections.observableArrayList(listaContratos.subList(deIndex, paraIndex));
+        if (deIndex >= 0 && deIndex < listaContratosFiltrada.size()) {
+            return FXCollections.observableArrayList(listaContratosFiltrada.subList(deIndex, paraIndex));
         }
         return FXCollections.emptyObservableList();
     }
@@ -194,7 +219,7 @@ public class MenuClienteController {
     }
 
     private void atualizarPaginacaoAlugueis() {
-        int totalItens = listaContratos.size();
+        int totalItens = listaContratosFiltrada.size();
         int totalPaginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
         
         paginacaoAlugueis.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
