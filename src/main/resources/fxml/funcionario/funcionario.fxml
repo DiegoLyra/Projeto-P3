@@ -20,7 +20,7 @@
   <children>
 
     <!--cabeçalho-->
-      <HBox alignment="CENTER_LEFT" styleClass="caixa">
+      <HBox alignment="CENTER_LEFT" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
          <padding>
             <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
          </padding>
@@ -54,7 +54,7 @@
             </HBox>
 
             <!--menu-->
-            <FlowPane hgap="8.0" styleClass="caixaInterna" vgap="8.0">
+            <FlowPane hgap="8.0" vgap="8.0" style = "-fx-background-color: #f9fafb; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
                <children>
                   <Button fx:id="btnNavAluguel" onAction="#mostrarAbaAluguel" style="-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="➕ 1. Aluguel" />
                   <Button fx:id="btnNavDevolucao" onAction="#mostrarAbaDevolucao" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="↩️ 2. Devolução" />
@@ -71,7 +71,7 @@
 <!--aluguel-->
       <StackPane VBox.vgrow="ALWAYS">
          <children>
-      <VBox fx:id="paneAluguel" spacing="10.0" styleClass="caixa" visible="true">
+      <VBox fx:id="paneAluguel" spacing="10.0" visible="true" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="📄 Registrar novo aluguel" />
             <Label style="-fx-text-fill: gray; -fx-font-size: 12px;" text="Espelha: facade.registrarAluguel(clienteId, itemId, dataRetirada, dataPrevDevolucao)" />
@@ -88,7 +88,7 @@
                   <DatePicker fx:id="datePrevDevolucao" promptText="DD/MM/AAAA" />
               </children>
           </HBox>
-          <Button fx:id="btnDevoFirmarContrato" onAction="#firmarAluguel" styleClass="boataoAzul" text="Finalizar devolução e verificar multas." />
+          <Button fx:id="btnDevoFirmarContrato" onAction="#firmarAluguel" style = "-fx-background-color: #1d4ed8; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="Finalizar devolução e verificar multas." />
          </children>
       </VBox>
          </children>
@@ -97,14 +97,14 @@
          <children>
        
       <!--devolução-->
-      <VBox fx:id="paneDevolucao" spacing="10.0" styleClass="caixa" visible="true">
+      <VBox fx:id="paneDevolucao" spacing="10.0" visible="true" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="📦 Processar Devolução de Item" />
             <Label style="-fx-text-fill: gray; -fx-font-size: 12px;" text="Espelha: facade.processarDevolucao(contratoId)" />
             <Separator />
             <Label text="Id do contrato de aluguel:" />
             <TextField fx:id="txtContratoId" promptText="Ex: CAT-101" />
-            <Button fx:id="btnDevoFinalizarMultas" onAction="#finalizarDevolucao" styleClass="boataoAzul" text="Finalizar devolução e verificar multas." />
+            <Button fx:id="btnDevoFinalizarMultas" onAction="#finalizarDevolucao" text="Finalizar devolução e verificar multas."     Style = "-fx-background-color: #1d4ed8; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" />
          </children>
       </VBox>
          </children>
@@ -113,7 +113,7 @@
          <children>
       
       <!-- novo cliente-->
-      <VBox fx:id="paneNovoClient" spacing="10.0" styleClass="caixa" visible="true">
+      <VBox fx:id="paneNovoClient" spacing="10.0" visible="true" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="👤 Cadastrar novo cliente" />
             <Label style="-fx-text-fill: gray; -fx-font-size: 12px;" text="Espelha: facade.cadastrarCliente(novoCliente)" />
@@ -130,7 +130,7 @@
             <TextField fx:id="txtClienteEmail" promptText="Ex: bartolomeu@exemplo.com" />
             <Label text="Senha de acesso:" />
             <PasswordField fx:id="txtClienteSenha" promptText="••••••••" />
-          <Button fx:id="btnDevoCadastrarCliente" onAction="#cadastrarCliente" styleClass="boataoAzul" text="Salvar Cliente no Sistema" />
+          <Button fx:id="btnDevoCadastrarCliente" onAction="#cadastrarCliente" text="Salvar Cliente no Sistema" Style = "-fx-background-color: #1d4ed8; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" />
          </children>
       </VBox>
          </children>
@@ -139,7 +139,7 @@
          <children>
       
       <!--disponiveis-->
-      <VBox fx:id="paneDisponiveis" spacing="10.0" styleClass="caixa" visible="true">
+      <VBox fx:id="paneDisponiveis" spacing="10.0" visible="true" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="📦 Relatório de itens disponíveis" />
             <Label style="-fx-text-fill: gray; -fx-font-size: 12px;" text="Espelha: facade.listarItensDisponiveis()" />
@@ -153,7 +153,7 @@
          <children>
       
       <!--ativos-->
-      <VBox fx:id="paneAtivos" spacing="10.0" styleClass="caixa" visible="true">
+      <VBox fx:id="paneAtivos" spacing="10.0" visible="true" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="📄 Relatório de contratos ativos" />
             <Label style="-fx-text-fill: gray; -fx-font-size: 12px;" text="Espelha: facade.gerarRelatorioItensAlugados()" />
@@ -167,7 +167,7 @@
          <children>
       
       <!--historico-->
-      <VBox fx:id="paneHistoric" spacing="10.0" styleClass="caixa" visible="true">    
+      <VBox fx:id="paneHistoric" spacing="10.0" visible="true" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">    
           <children>
               <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="🔎 Histórico de contratos por cliente" />
               <Label style="-fx-text-fill: gray; -fx-font-size: 12px;" text="Espelha: facade.consultarHistoricoCliente(id)" />
@@ -175,7 +175,7 @@
           <HBox fx:id="buscaInterno" spacing="10.0">
               <children>
                   <TextField fx:id="txtClienteIdParaHistorico" promptText="Digite o ID do cliente (Ex: C01)" />
-                  <Button fx:id="btnDevoBuscarHistorico" onAction="#buscarHistorico" styleClass="boataoAzul" text="Buscar" />
+                  <Button fx:id="btnDevoBuscarHistorico" onAction="#buscarHistorico" text="Buscar" Style = "-fx-background-color: #1d4ed8; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;"/>
               </children>
           </HBox>
       
@@ -189,14 +189,14 @@
          <children>
       
       <!--multas-->
-      <VBox fx:id="paneMultas" spacing="10.0" styleClass="caixa" visible="true">
+      <VBox fx:id="paneMultas" spacing="10.0" visible="true" style = "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2); -fx-padding: 20px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="⚠️ Quitar Multa Financeira" />
             <Label style="-fx-text-fill: gray; -fx-font-size: 12px;" text="Espelha: facade.quitarMulta(multaId)" />
             <Separator />
             <Label text="ID DA MULTA:" />
             <TextField fx:id="txtMultaId" promptText="Ex: M01" />
-            <Button fx:id="btnDevoQuitarMultas" onAction="#quitarMulta" styleClass="boataoAzul" text="Dar baixa e quitar multa" />
+            <Button fx:id="btnDevoQuitarMultas" onAction="#quitarMulta" text="Dar baixa e quitar multa"     Style = "-fx-background-color: #1d4ed8; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" />
          </children>
       </VBox>
          </children>
