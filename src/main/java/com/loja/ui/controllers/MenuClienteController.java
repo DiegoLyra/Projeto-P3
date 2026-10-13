@@ -9,19 +9,11 @@ import com.loja.ui.navigation.Navigator;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,14 +27,20 @@ public class MenuClienteController {
 
     private static final Logger logger = LoggerFactory.getLogger(MenuClienteController.class);
     private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final int ITENS_POR_PAGINA = 5;
 
     private final ILojaFacade facade;
     private final Navigator navigator;
     private Cliente usuarioLogado;
 
-    // Componentes de Cabeçalho e Navegação
+    // Listas do Modelo
+    private final ObservableList<ContratoAluguel> listaContratos = FXCollections.observableArrayList();
+    private final ObservableList<Multa> listaMultas = FXCollections.observableArrayList();
+
+    // Componentes de Cabeçalho e Pesquisa
     @FXML private Label lblBoasVindas;
     @FXML private Label lblTituloSecao;
+    @FXML private TextField txtPesquisa;
     @FXML private Button btnNavItens;
     @FXML private Button btnNavAlugueis;
     @FXML private Button btnNavMultas;
@@ -54,6 +52,7 @@ public class MenuClienteController {
 
     @FXML private FlowPane containerCardsItens;
 
+    // Tabela e Paginação de Aluguéis
     @FXML private TableView<ContratoAluguel> tblAlugueis;
     @FXML private TableColumn<ContratoAluguel, String> colContratoId;
     @FXML private TableColumn<ContratoAluguel, String> colContratoItem;
@@ -61,7 +60,9 @@ public class MenuClienteController {
     @FXML private TableColumn<ContratoAluguel, String> colContratoDevolucao;
     @FXML private TableColumn<ContratoAluguel, String> colContratoValorTotal;
     @FXML private TableColumn<ContratoAluguel, String> colContratoStatus;
+    @FXML private Pagination paginacaoAlugueis;
 
+    // Tabela e Paginação de Multas
     @FXML private HBox bannerMultas;
     @FXML private Label lblBannerMulta;
     @FXML private TableView<Multa> tblMultas;
@@ -70,6 +71,7 @@ public class MenuClienteController {
     @FXML private TableColumn<Multa, String> colMultaDias;
     @FXML private TableColumn<Multa, String> colMultaValor;
     @FXML private TableColumn<Multa, String> colMultaStatus;
+    @FXML private Pagination paginacaoMultas;
 
     public MenuClienteController(ILojaFacade facade, Navigator navigator) {
         this.facade = facade;
@@ -88,6 +90,7 @@ public class MenuClienteController {
         }
 
         configurarTabelas();
+        configurarPaginacao();
         mostrarAbaItens();
     }
 
@@ -160,9 +163,62 @@ public class MenuClienteController {
         });
     }
 
+    private void configurarPaginacao() {
+        paginacaoAlugueis.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) -> 
+            tblAlugueis.setItems(obterItensPaginaAlugueis(newIdx.intValue()))
+        );
+
+        paginacaoMultas.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) -> 
+            tblMultas.setItems(obterItensPaginaMultas(newIdx.intValue()))
+        );
+    }
+
+    private ObservableList<ContratoAluguel> obterItensPaginaAlugueis(int pageIndex) {
+        int deIndex = pageIndex * ITENS_POR_PAGINA;
+        int paraIndex = Math.min(deIndex + ITENS_POR_PAGINA, listaContratos.size());
+
+        if (deIndex >= 0 && deIndex < listaContratos.size()) {
+            return FXCollections.observableArrayList(listaContratos.subList(deIndex, paraIndex));
+        }
+        return FXCollections.emptyObservableList();
+    }
+
+    private ObservableList<Multa> obterItensPaginaMultas(int pageIndex) {
+        int deIndex = pageIndex * ITENS_POR_PAGINA;
+        int paraIndex = Math.min(deIndex + ITENS_POR_PAGINA, listaMultas.size());
+
+        if (deIndex >= 0 && deIndex < listaMultas.size()) {
+            return FXCollections.observableArrayList(listaMultas.subList(deIndex, paraIndex));
+        }
+        return FXCollections.emptyObservableList();
+    }
+
+    private void atualizarPaginacaoAlugueis() {
+        int totalItens = listaContratos.size();
+        int totalPaginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
+        
+        paginacaoAlugueis.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
+        
+        int paginaAtual = Math.min(paginacaoAlugueis.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
+        paginacaoAlugueis.setCurrentPageIndex(paginaAtual);
+        tblAlugueis.setItems(obterItensPaginaAlugueis(paginaAtual));
+    }
+
+    private void atualizarPaginacaoMultas() {
+        int totalItens = listaMultas.size();
+        int totalPaginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
+        
+        paginacaoMultas.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
+        
+        int paginaAtual = Math.min(paginacaoMultas.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
+        paginacaoMultas.setCurrentPageIndex(paginaAtual);
+        tblMultas.setItems(obterItensPaginaMultas(paginaAtual));
+    }
+
     @FXML
     public void mostrarAbaItens() {
         lblTituloSecao.setText("📦 Itens Disponíveis para Aluguel");
+        txtPesquisa.setVisible(false);
         alternarPaineis(paneItens);
         destacarBotaoNav(btnNavItens, btnNavAlugueis, btnNavMultas);
         carregarItensDisponiveis();
@@ -171,6 +227,7 @@ public class MenuClienteController {
     @FXML
     public void mostrarAbaAlugueis() {
         lblTituloSecao.setText("📄 Meus Aluguéis (Histórico do Cliente)");
+        txtPesquisa.setVisible(true);
         alternarPaineis(paneAlugueis);
         destacarBotaoNav(btnNavAlugueis, btnNavItens, btnNavMultas);
         carregarMeusAlugueis();
@@ -179,6 +236,7 @@ public class MenuClienteController {
     @FXML
     public void mostrarAbaMultas() {
         lblTituloSecao.setText("⚠️ Minhas Multas");
+        txtPesquisa.setVisible(false);
         alternarPaineis(paneMultas);
         destacarBotaoNav(btnNavMultas, btnNavItens, btnNavAlugueis);
         carregarMultasPendentes();
@@ -246,27 +304,24 @@ public class MenuClienteController {
         Button btnAlugar = new Button("Solicitar Aluguel");
         btnAlugar.setMaxWidth(Double.MAX_VALUE);
         btnAlugar.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
-        btnAlugar.setOnAction(e -> solicitarAluguelItem(item));
 
         card.getChildren().addAll(lblId, lblNome, precoBox, btnAlugar);
         return card;
     }
 
-    private void solicitarAluguelItem(Item item) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Solicitação de Aluguel");
-        alert.setHeaderText("Item Selecionado: " + item.getNome());
-        alert.setContentText("Solicitação enviada com sucesso para o item #" + item.getId() + " (Taxa: R$ " + item.getTaxaDiaria() + "/dia).");
-        alert.showAndWait();
-    }
-
     @FXML
     public void carregarMeusAlugueis() {
         try {
+            if (usuarioLogado == null || usuarioLogado.getId() == null) return;
+
             Map<String, ContratoAluguel> contratos = facade.consultarHistoricoCliente(usuarioLogado.getId());
-            tblAlugueis.setItems(contratos == null
-                    ? FXCollections.emptyObservableList()
-                    : FXCollections.observableArrayList(contratos.values()));
+            listaContratos.clear();
+            if (contratos != null && !contratos.isEmpty()) {
+                listaContratos.addAll(contratos.values());
+            }
+
+            atualizarPaginacaoAlugueis();
+
         } catch (RuntimeException e) {
             logger.error("Falha ao consultar histórico do cliente '{}': {}", usuarioLogado.getId(), e.getMessage(), e);
             exibirAlertaErro("Erro", "Erro ao carregar histórico de aluguéis: " + e.getMessage());
@@ -276,6 +331,8 @@ public class MenuClienteController {
     @FXML
     public void carregarMultasPendentes() {
         try {
+            if (usuarioLogado == null || usuarioLogado.getId() == null) return;
+
             String clienteId = usuarioLogado.getId();
 
             if (facade.possuiMultaPendente(clienteId)) {
@@ -289,9 +346,13 @@ public class MenuClienteController {
             }
 
             Map<String, Multa> multas = facade.listarMultaPorCliente(clienteId);
-            tblMultas.setItems(multas == null
-                    ? FXCollections.emptyObservableList()
-                    : FXCollections.observableArrayList(multas.values()));
+            listaMultas.clear();
+            if (multas != null && !multas.isEmpty()) {
+                listaMultas.addAll(multas.values());
+            }
+
+            atualizarPaginacaoMultas();
+
         } catch (RuntimeException e) {
             logger.error("Falha ao consultar multas do cliente '{}': {}", usuarioLogado.getId(), e.getMessage(), e);
             exibirAlertaErro("Erro", "Erro ao carregar multas: " + e.getMessage());
