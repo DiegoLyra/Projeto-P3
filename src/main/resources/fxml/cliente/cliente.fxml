@@ -5,12 +5,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="650.0" prefWidth="950.0" spacing="20.0" style="-fx-background-color: #f4f6f8;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.controllers.MenuClienteController">
+<VBox prefHeight="700.0" prefWidth="980.0" spacing="20.0" style="-fx-background-color: #f4f6f8;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.controllers.MenuClienteController">
    <padding>
       <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
    </padding>
    <children>
-      
+
       <HBox alignment="CENTER_LEFT" style="-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);">
          <padding>
             <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
@@ -60,18 +60,22 @@
          </padding>
          <children>
 
-            <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
+            <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 0 0 15 0;">
                <children>
-                  <Label fx:id="lblTituloSecao" text="📦 Itens Disponíveis para Aluguel" textFill="#1e293b">
+                  <Label fx:id="lblTituloSecao" text="📦 Itens Disponíveis para Aluguel" textFill="#1e293b" HBox.hgrow="ALWAYS">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font>
                   </Label>
+                  <Region HBox.hgrow="ALWAYS" />
+ 
+                  <TextField fx:id="txtPesquisa" promptText="🔍 Pesquisar por nome ou valor..." prefWidth="280.0" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #cbd5e1; -fx-padding: 6 12;" visible="false" />
                </children>
             </HBox>
 
             <StackPane VBox.vgrow="ALWAYS">
                <children>
+
                   <VBox fx:id="paneItens" spacing="10.0">
                      <children>
                         <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
@@ -97,6 +101,8 @@
                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                            </columnResizePolicy>
                         </TableView>
+
+                        <Pagination fx:id="paginacaoAlugueis" maxPageIndicatorCount="5" pageCount="1" prefHeight="45.0" />
                      </children>
                   </VBox>
 
@@ -127,8 +133,11 @@
                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                            </columnResizePolicy>
                         </TableView>
+
+                        <Pagination fx:id="paginacaoMultas" maxPageIndicatorCount="5" pageCount="1" prefHeight="45.0" />
                      </children>
                   </VBox>
+
                </children>
             </StackPane>
 
