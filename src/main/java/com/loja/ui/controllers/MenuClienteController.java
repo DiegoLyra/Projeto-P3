@@ -13,8 +13,11 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 public class MenuClienteController {
@@ -329,9 +333,123 @@ public class MenuClienteController {
         Button btnAlugar = new Button("Solicitar Aluguel");
         btnAlugar.setMaxWidth(Double.MAX_VALUE);
         btnAlugar.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+        btnAlugar.setOnAction(e -> abrirModalSolicitacaoAluguel(item));
 
         card.getChildren().addAll(lblId, lblNome, precoBox, btnAlugar);
         return card;
+    }
+
+    private void abrirModalSolicitacaoAluguel(Item item) {
+        Stage modal = new Stage();
+        modal.initModality(Modality.APPLICATION_MODAL);
+        modal.setTitle("Solicitação de Aluguel - " + item.getNome());
+
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setStyle("-fx-background-color: #ffffff;");
+
+        Label lblTitulo = new Label("Alugar: " + item.getNome());
+        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #1e293b;");
+
+        DatePicker dpRetirada = new DatePicker(LocalDate.now());
+        DatePicker dpDevolucao = new DatePicker(LocalDate.now().plusDays(1));
+
+        Label lblDiarias = new Label("Duração: 1 dia(s)");
+        Label lblValorTotal = new Label("Valor Total Previsto: " + formatarMoeda(item.getTaxaDiaria()));
+        lblValorTotal.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #059669;");
+
+        Label lblMultaAviso = new Label("⚠️ Taxa de juros por atraso: R$ 5,50/dia + Multa Fixa de R$ 20,00");
+        lblMultaAviso.setStyle("-fx-text-fill: #dc2626; -fx-font-size: 11px;");
+
+        Label lblStatusConflito = new Label();
+        lblStatusConflito.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+
+        Button btnConfirmar = new Button("Confirmar Aluguel");
+        btnConfirmar.setMaxWidth(Double.MAX_VALUE);
+        btnConfirmar.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+
+        Runnable recalcular = () -> {
+            LocalDate dtInicio = dpRetirada.getValue();
+            LocalDate dtFim = dpDevolucao.getValue();
+
+            if (dtInicio == null || dtFim == null || !dtFim.isAfter(dtInicio)) {
+                lblDiarias.setText("Período inválido");
+                lblValorTotal.setText("Valor Total Previsto: R$ 0,00");
+                lblStatusConflito.setText("❌ A data de devolução deve ser posterior à data de retirada.");
+                lblStatusConflito.setStyle("-fx-text-fill: #dc2626;");
+                btnConfirmar.setDisable(true);
+                return;
+            }
+
+            long dias = ChronoUnit.DAYS.between(dtInicio, dtFim);
+            BigDecimal total = item.getTaxaDiaria().multiply(BigDecimal.valueOf(dias));
+
+            lblDiarias.setText("Duração: " + dias + " dia(s)");
+            lblValorTotal.setText("Valor Total Previsto: " + formatarMoeda(total));
+
+            boolean possuiConflito = verificarConflitoDeDatas(item.getId(), dtInicio, dtFim);
+
+            if (possuiConflito) {
+                lblStatusConflito.setText("❌ Este item já possui reserva/aluguel para o período selecionado.");
+                lblStatusConflito.setStyle("-fx-text-fill: #dc2626;");
+                btnConfirmar.setDisable(true);
+            } else {
+                lblStatusConflito.setText("✅ Período disponível para aluguel!");
+                lblStatusConflito.setStyle("-fx-text-fill: #166534;");
+                btnConfirmar.setDisable(false);
+            }
+        };
+
+        dpRetirada.valueProperty().addListener((obs, oldV, newV) -> recalcular.run());
+        dpDevolucao.valueProperty().addListener((obs, oldV, newV) -> recalcular.run());
+        recalcular.run();
+
+        btnConfirmar.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Sucesso");
+            alert.setHeaderText(null);
+            alert.setContentText("Aluguel solicitado com sucesso para o item " + item.getNome() + "!");
+            alert.showAndWait();
+            modal.close();
+        });
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.add(new Label("Data Retirada:"), 0, 0);
+        grid.add(dpRetirada, 1, 0);
+        grid.add(new Label("Data Prevista Devolução:"), 0, 1);
+        grid.add(dpDevolucao, 1, 1);
+
+        root.getChildren().addAll(lblTitulo, grid, lblDiarias, lblValorTotal, lblMultaAviso, lblStatusConflito, btnConfirmar);
+
+        Scene scene = new Scene(root, 420, 320);
+        modal.setScene(scene);
+        modal.showAndWait();
+    }
+
+    private boolean verificarConflitoDeDatas(String itemId, LocalDate inicioDesejado, LocalDate fimDesejado) {
+        try {
+            Map<String, ContratoAluguel> historico = facade.consultarHistoricoCliente(usuarioLogado.getId());
+            if (historico == null) return false;
+
+            for (ContratoAluguel c : historico.values()) {
+                if (c.getItem() != null && itemId.equalsIgnoreCase(c.getItem().getId())) {
+                    LocalDate inicioExistente = c.getDataRetirada();
+                    LocalDate fimExistente = c.getDataEfetivaDevolucao() != null ? c.getDataEfetivaDevolucao() : c.getDataPrevDevolucao();
+
+                    if (inicioExistente != null && fimExistente != null) {
+                        boolean sobrepoe = !(fimDesejado.isBefore(inicioExistente) || inicioDesejado.isAfter(fimExistente));
+                        if (sobrepoe && !"ENCERRADO".equalsIgnoreCase(String.valueOf(c.getStatus()))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (RuntimeException e) {
+            logger.error("Erro ao verificar conflito de datas: {}", e.getMessage());
+        }
+        return false;
     }
 
     @FXML
