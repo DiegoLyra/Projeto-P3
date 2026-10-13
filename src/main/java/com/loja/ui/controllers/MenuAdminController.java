@@ -47,6 +47,10 @@ public class MenuAdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(MenuAdminController.class);
 
+    private static final String PERFIL_CLIENTE = "CLIENTE";
+    private static final String PERFIL_FUNCIONARIO = "FUNCIONARIO";
+    private static final String PERFIL_ADMINISTRADOR = "ADMINISTRADOR";
+    private static final String ACAO_REMOVER = "Remover";
 
     private final ILojaFacade facade;
     private final Navigator navigator;
@@ -183,7 +187,7 @@ public class MenuAdminController {
         navModulos.addTab("Fornecedores", false, () -> mostrarPainel(paneFornecedores));
 
 
-        cbUsuarioPerfil.setItems(FXCollections.observableArrayList("CLIENTE", "FUNCIONARIO", "ADMINISTRADOR"));
+        cbUsuarioPerfil.setItems(FXCollections.observableArrayList(PERFIL_CLIENTE, PERFIL_FUNCIONARIO, PERFIL_ADMINISTRADOR));
         cbItemCategoria.setItems(categorias);
         cbItemCategoria.setConverter(conversor(c -> c.getId() + " - " + c.getNome()));
         cbItemFornecedor.setItems(fornecedores);
@@ -243,7 +247,7 @@ public class MenuAdminController {
         tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
         colCategoriaId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
         colCategoriaNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
-        colCategoriaAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarCategoria, this::removerCategoria));
+        colCategoriaAcoes.setCellFactory(col -> new AcoesCell<>(ACAO_REMOVER, this::editarCategoria, this::removerCategoria));
 
         //Fornecedores
         tblFornecedores.setItems(fornecedores);
@@ -252,7 +256,7 @@ public class MenuAdminController {
         colFornecedorNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
         colFornecedorCnpj.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCnpj()));
         colFornecedorTelefone.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTelefone()));
-        colFornecedorAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarFornecedor, this::removerFornecedor));
+        colFornecedorAcoes.setCellFactory(col -> new AcoesCell<>(ACAO_REMOVER, this::editarFornecedor, this::removerFornecedor));
 
         //Itens
 
@@ -276,7 +280,7 @@ public class MenuAdminController {
             return new SimpleStringProperty(f != null ? f.getNome() : "-");
         });
         colItemTaxa.setCellValueFactory(c -> new SimpleStringProperty(String.format("R$ %.2f", c.getValue().getTaxaDiaria())));
-        colItemAcoes.setCellFactory(col -> new AcoesCell<>("Remover", this::editarItem, this::removerItem));
+        colItemAcoes.setCellFactory(col -> new AcoesCell<>(ACAO_REMOVER, this::editarItem, this::removerItem));
     }
 
 
@@ -297,7 +301,7 @@ public class MenuAdminController {
 
     @FXML public void alterarPerfil() {
 
-        boolean funcionario = "FUNCIONARIO".equals(cbUsuarioPerfil.getValue());
+        boolean funcionario = PERFIL_FUNCIONARIO.equals(cbUsuarioPerfil.getValue());
         fUsuarioCargo.setVisible(funcionario);
         fUsuarioCargo.setManaged(funcionario);
         if (!funcionario) fUsuarioCargo.setText("");
@@ -326,8 +330,8 @@ public class MenuAdminController {
             } else {
                 // O ID é gerado pela camada de negócio
                 switch (cbUsuarioPerfil.getValue()) {
-                    case "FUNCIONARIO" -> facade.cadastrarFuncionario(new Funcionario(null, nome, login, senha, cargo));
-                    case "ADMINISTRADOR" -> facade.cadastrarAdm(new Administrador(null, nome, login, senha));
+                    case PERFIL_FUNCIONARIO -> facade.cadastrarFuncionario(new Funcionario(null, nome, login, senha, cargo));
+                    case PERFIL_ADMINISTRADOR -> facade.cadastrarAdm(new Administrador(null, nome, login, senha));
                     default -> facade.cadastrarCliente(nome, login, senha);
                 }
             }
@@ -365,7 +369,7 @@ public class MenuAdminController {
         fUsuarioLogin.setText("");
         fUsuarioSenha.setText("");
         cbUsuarioPerfil.setDisable(false);
-        cbUsuarioPerfil.setValue("CLIENTE");
+        cbUsuarioPerfil.setValue(PERFIL_CLIENTE);
         alterarPerfil();
     }
 
