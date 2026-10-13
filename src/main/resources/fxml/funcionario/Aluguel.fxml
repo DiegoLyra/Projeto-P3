@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.loja.controller.AluguelController"
+            prefWidth="1100.0"
+            prefHeight="650.0"
+            style="-fx-background-color: #f8fafc;">
+
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="18.0">
+            <padding>
+                <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>
+            </padding>
+
+            <children>
+                <VBox maxWidth="760.0" spacing="18.0"
+                      style="-fx-background-color: white;
+                             -fx-background-radius: 16;
+                             -fx-border-color: #e5e7eb;
+                             -fx-border-radius: 16;
+                             -fx-border-width: 1;">
+
+                    <padding>
+                        <Insets top="24.0" right="26.0" bottom="26.0" left="26.0"/>
+                    </padding>
+
+                    <children>
+                        <VBox spacing="6.0">
+                            <Label text="Registrar Novo Aluguel"
+                                   style="-fx-font-size: 19px;
+                                          -fx-font-weight: bold;
+                                          -fx-text-fill: #1f2937;"/>
+
+                            <Label text="Selecione o cliente, o item disponível e o período do aluguel."
+                                   wrapText="true"
+                                   style="-fx-font-size: 12px;
+                                          -fx-text-fill: #6b7280;"/>
+                        </VBox>
+
+                        <Separator/>
+
+                        <VBox spacing="7.0">
+                            <Label text="CLIENTE"
+                                   style="-fx-font-size: 11px;
+                                          -fx-font-weight: bold;
+                                          -fx-text-fill: #4b5563;"/>
+
+                            <ComboBox fx:id="clienteComboBox"
+                                      promptText="Selecione o cliente"
+                                      maxWidth="Infinity"
+                                      prefHeight="40.0"/>
+                        </VBox>
+
+                        <VBox spacing="7.0">
+                            <Label text="ITEM DISPONÍVEL"
+                                   style="-fx-font-size: 11px;
+                                          -fx-font-weight: bold;
+                                          -fx-text-fill: #4b5563;"/>
+
+                            <ComboBox fx:id="itemComboBox"
+                                      promptText="Selecione um item disponível"
+                                      maxWidth="Infinity"
+                                      prefHeight="40.0"/>
+                        </VBox>
+
+                        <GridPane hgap="16.0" vgap="7.0">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
+                                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
+                            </columnConstraints>
+
+                            <children>
+                                <Label text="DATA DE RETIRADA"
+                                       style="-fx-font-size: 11px;
+                                              -fx-font-weight: bold;
+                                              -fx-text-fill: #4b5563;"
+                                       GridPane.columnIndex="0"
+                                       GridPane.rowIndex="0"/>
+
+                                <Label text="PREVISÃO DE DEVOLUÇÃO"
+                                       style="-fx-font-size: 11px;
+                                              -fx-font-weight: bold;
+                                              -fx-text-fill: #4b5563;"
+                                       GridPane.columnIndex="1"
+                                       GridPane.rowIndex="0"/>
+
+                                <DatePicker fx:id="dataRetiradaPicker"
+                                            promptText="Data de retirada"
+                                            maxWidth="Infinity"
+                                            prefHeight="40.0"
+                                            GridPane.columnIndex="0"
+                                            GridPane.rowIndex="1"/>
+
+                                <DatePicker fx:id="dataDevolucaoPicker"
+                                            promptText="Data de devolução"
+                                            maxWidth="Infinity"
+                                            prefHeight="40.0"
+                                            GridPane.columnIndex="1"
+                                            GridPane.rowIndex="1"/>
+                            </children>
+                        </GridPane>
+
+                        <VBox spacing="12.0"
+                              style="-fx-background-color: #f9fafb;
+                                     -fx-background-radius: 12;
+                                     -fx-border-color: #e5e7eb;
+                                     -fx-border-radius: 12;">
+
+                            <padding>
+                                <Insets top="16.0" right="18.0" bottom="16.0" left="18.0"/>
+                            </padding>
+
+                            <children>
+                                <Label text="Prévia do valor do aluguel"
+                                       style="-fx-font-size: 13px;
+                                              -fx-font-weight: bold;
+                                              -fx-text-fill: #374151;"/>
+
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <Label text="Valor da diária:"
+                                           style="-fx-font-size: 12px;
+                                                  -fx-text-fill: #6b7280;"/>
+
+                                    <Region HBox.hgrow="ALWAYS"/>
+
+                                    <Label fx:id="valorDiariaLabel"
+                                           text="R$ 0,00"
+                                           style="-fx-font-size: 12px;
+                                                  -fx-text-fill: #374151;"/>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <Label text="Quantidade de dias:"
+                                           style="-fx-font-size: 12px;
+                                                  -fx-text-fill: #6b7280;"/>
+
+                                    <Region HBox.hgrow="ALWAYS"/>
+
+                                    <Label fx:id="quantidadeDiasLabel"
+                                           text="0 dia(s)"
+                                           style="-fx-font-size: 12px;
+                                                  -fx-text-fill: #374151;"/>
+                                </HBox>
+
+                                <Separator/>
+
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <Label text="VALOR TOTAL"
+                                           style="-fx-font-size: 12px;
+                                                  -fx-font-weight: bold;
+                                                  -fx-text-fill: #1f2937;"/>
+
+                                    <Region HBox.hgrow="ALWAYS"/>
+
+                                    <Label fx:id="valorTotalLabel"
+                                           text="R$ 0,00"
+                                           style="-fx-font-size: 21px;
+                                                  -fx-font-weight: bold;
+                                                  -fx-text-fill: #059669;"/>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <Label fx:id="mensagemLabel"
+                               text=""
+                               wrapText="true"
+                               style="-fx-font-size: 12px;
+                                      -fx-text-fill: #b91c1c;"/>
+
+                        <Button fx:id="registrarAluguelButton"
+                                text="Firmar Contrato de Aluguel"
+                                onAction="#handleRegistrarAluguel"
+                                maxWidth="Infinity"
+                                prefHeight="44.0"
+                                style="-fx-background-color: #2563eb;
+                                       -fx-background-radius: 10;
+                                       -fx-text-fill: white;
+                                       -fx-font-size: 13px;
+                                       -fx-font-weight: bold;
+                                       -fx-cursor: hand;"/>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </center>
+</BorderPane>
