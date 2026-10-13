@@ -1,6 +1,5 @@
 package com.loja.ui.controllers;
 
-import com.loja.model.Cliente;
 import com.loja.model.Usuario;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.ui.components.Banner;
@@ -23,11 +22,14 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private static final double LARGURA_MINIMA_PAINEL_MARCA = 760;
-    private static final int TAMANHO_MINIMO_SENHA = 3;
 
     private static final double DESLOCAMENTO = 28;
     private static final Duration DURACAO_SAIDA = Duration.millis(120);
@@ -170,12 +172,22 @@ public class AuthController {
             return;
         }
 
+        Usuario usuario;
         try {
-            Usuario usuario = facade.autenticarUsuario(email, senha);
-            navigator.showHome(usuario);
+            usuario = facade.autenticarUsuario(email, senha);
         } catch (RuntimeException e) {
             txtLoginSenha.clear();
-            mostrarBanner(e.getMessage(), Banner.BannerType.DANGER);
+            mostrarBanner(mensagemSegura(e), Banner.BannerType.DANGER);
+            return;
+        }
+
+        try {
+            navigator.showHome(usuario);
+        } catch (RuntimeException e) {
+            facade.encerrarSessao();
+            txtLoginSenha.clear();
+            logger.error("Falha ao abrir a tela do perfil {}: {}", usuario.getPerfil(), e.getMessage(), e);
+            mostrarBanner("Não foi possível abrir a tela do seu perfil.", Banner.BannerType.DANGER);
         }
     }
 
@@ -193,9 +205,7 @@ public class AuthController {
         }
 
         try {
-            Cliente cliente = new Cliente(gerarProximoId(), nome, email, senha);
-            cliente.setAtivo(true);
-            facade.cadastrarCliente(cliente);
+            facade.cadastrarCliente(nome, email, senha);
             txtRegNome.clear();
             txtRegEmail.clear();
             txtRegSenha.clear();
@@ -206,30 +216,28 @@ public class AuthController {
             nav.selectTab(0);
             mostrarBanner("Conta criada com sucesso! Faça login para continuar.", Banner.BannerType.SUCCESS);
         } catch (RuntimeException e) {
-            mostrarBanner(e.getMessage(), Banner.BannerType.DANGER);
+            mostrarBanner(mensagemSegura(e), Banner.BannerType.DANGER);
         }
+    }
+
+    private String mensagemSegura(RuntimeException e) {
+        boolean mensagemDeNegocio = e instanceof IllegalArgumentException
+                || e.getClass().getPackageName().equals("com.loja.exceptions");
+        if (mensagemDeNegocio && e.getMessage() != null) {
+            return e.getMessage();
+        }
+        logger.error("Falha inesperada na autenticação/cadastro: {}", e.getMessage(), e);
+        return "Ocorreu um erro inesperado. Tente novamente.";
     }
 
     private String validar(String nome, String email, String senha, String confirmar) {
         if (nome.isEmpty() || email.isEmpty() || senha.isEmpty()) {
             return "Preencha todos os campos.";
         }
-        if (senha.length() < TAMANHO_MINIMO_SENHA) {
-            return "A senha deve ter pelo menos " + TAMANHO_MINIMO_SENHA + " caracteres.";
-        }
         if (!senha.equals(confirmar)) {
             return "As senhas não conferem.";
         }
         return null;
-    }
-
-    private String gerarProximoId() {
-        int maior = facade.listarUsuario().keySet().stream()
-                .filter(id -> id != null && id.matches("(?i)USR\\d+"))
-                .mapToInt(id -> Integer.parseInt(id.substring(3)))
-                .max()
-                .orElse(0);
-        return String.format("USR%03d", maior + 1);
     }
 
     private static String textoOuVazio(String valor) {

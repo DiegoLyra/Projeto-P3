@@ -13,6 +13,7 @@ public interface ILojaFacade {
     public void salvarTudo();
 
     // usuario
+    public Cliente cadastrarCliente(String nome, String email, String senha);
     public void cadastrarCliente(Cliente cliente);
     public void cadastrarFuncionario(Funcionario funcionario);
     public void cadastrarAdm(Administrador adm);
@@ -22,6 +23,7 @@ public interface ILojaFacade {
     public Map<String, Usuario> listarUsuarioPorPerfil(String perfil);
     public void atualizarUsuario(String id, Usuario usuario);
     public void desativarUsuario(String id);
+    public void encerrarSessao();
 
     // contrato
     public ContratoAluguel registrarAluguel(String clienteId, String itemId, LocalDate dataRetirada, LocalDate dataPrevDevolucao);

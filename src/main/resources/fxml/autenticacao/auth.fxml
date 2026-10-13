@@ -64,7 +64,7 @@
                         </FormField>
 
                         <FormField labelText="Senha">
-                            <PasswordField fx:id="txtLoginSenha" promptText="••••••" prefHeight="44" onAction="#entrar"/>
+                            <PasswordField fx:id="txtLoginSenha" promptText="********" prefHeight="44" onAction="#entrar"/>
                         </FormField>
 
                         <Button text="Entrar" maxWidth="Infinity" prefHeight="46" onAction="#entrar"
@@ -74,19 +74,19 @@
                     <!-- REGISTER -->
                     <VBox fx:id="registerForm" spacing="18" maxWidth="Infinity" visible="false" managed="false">
                         <FormField labelText="Nome completo">
-                            <TextField fx:id="txtRegNome" prefHeight="44"/>
+                            <TextField fx:id="txtRegNome" promptText="Jackson Raniel" prefHeight="44"/>
                         </FormField>
 
                         <FormField labelText="E-mail / Login">
-                            <TextField fx:id="txtRegEmail" prefHeight="44"/>
+                            <TextField fx:id="txtRegEmail" promptText="seuemail@email.com" prefHeight="44"/>
                         </FormField>
 
                         <FormField labelText="Senha">
-                            <PasswordField fx:id="txtRegSenha" prefHeight="44"/>
+                            <PasswordField fx:id="txtRegSenha" promptText="********" prefHeight="44"/>
                         </FormField>
 
                         <FormField labelText="Confirmar senha">
-                            <PasswordField fx:id="txtRegConfirmar" prefHeight="44" onAction="#cadastrar"/>
+                            <PasswordField fx:id="txtRegConfirmar" promptText="********" prefHeight="44" onAction="#cadastrar"/>
                         </FormField>
 
                         <Button text="Criar conta" maxWidth="Infinity" prefHeight="46" onAction="#cadastrar"

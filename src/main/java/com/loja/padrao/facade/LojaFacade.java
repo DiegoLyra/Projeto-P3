@@ -148,6 +148,11 @@ public class LojaFacade implements ILojaFacade {
     }
 
     @Override
+    public Cliente cadastrarCliente(String nome, String email, String senha) {
+        return usuarioBusiness.cadastrarCliente(nome, email, senha);
+    }
+
+    @Override
     public void cadastrarFuncionario(Funcionario funcionario) {
         if (funcionario == null) throw new IllegalArgumentException("Não é possível cadastrar um funcionário nulo");
         usuarioBusiness.cadastrar(funcionario);
@@ -185,15 +190,21 @@ public class LojaFacade implements ILojaFacade {
     @Override
     public void atualizarUsuario(String id, Usuario usuario) {
         if (usuario == null) throw new IllegalArgumentException("Não é possível atualizar um usuário nulo");
+        if (id == null || !id.equalsIgnoreCase(usuario.getId())) {
+            throw new IllegalArgumentException("O ID informado não corresponde ao usuário a atualizar.");
+        }
         usuarioBusiness.atualizar(usuario);
+    }
+
+    @Override
+    public void encerrarSessao() {
+        usuarioBusiness.encerrarSessao();
     }
 
     @Override
     public void desativarUsuario(String id) {
         if (id == null || id.trim().isEmpty()) throw new IllegalArgumentException("ID inválido");
-        Usuario usuario = usuarioBusiness.buscarPorId(id);
-        usuario.setAtivo(false);
-        usuarioBusiness.atualizar(usuario);
+        usuarioBusiness.desativar(id);
     }
 
     /* =========================================================================
