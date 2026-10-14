@@ -185,6 +185,10 @@ public class MenuClienteController {
                     return true;
                 }
 
+                if (contrato.getStatus() != null && contrato.getStatus().toString().toLowerCase().contains(termoBusca)) {
+                    return true;
+                }
+
                 return contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca);
             });
 
