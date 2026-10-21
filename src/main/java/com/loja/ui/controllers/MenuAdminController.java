@@ -144,7 +144,7 @@ public class MenuAdminController {
     @FXML private Button btnCancelarCategoria;
     @FXML private VBox feedbackCategoria;
 
-
+    @FXML private TextField txtPesquisaCategorias;
     @FXML private TableView<Categoria> tblCategorias;
     @FXML private TableColumn<Categoria, String> colCategoriaId;
     @FXML private TableColumn<Categoria, String> colCategoriaNome;
@@ -316,8 +316,15 @@ public class MenuAdminController {
         }));
 
         //Categorias
-        tblCategorias.setItems(categorias);
         tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
+
+        new Pesquisa<Categoria>() {
+            @Override
+            protected String textoPesquisavel(Categoria c) {
+                return texto(c.getId(), c.getNome());
+            }
+        }.ligar(txtPesquisaCategorias, tblCategorias, categorias);
+
         colCategoriaId.setCellValueFactory(new PropertyValueFactory<Categoria, String>("id"));
         colCategoriaNome.setCellValueFactory(new PropertyValueFactory<Categoria, String>("nome"));
         colCategoriaAcoes.setCellFactory(new AcoesCellFactory<Categoria>(ACAO_REMOVER, new AcoesTabela<Categoria>() {
