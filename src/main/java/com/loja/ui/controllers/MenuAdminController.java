@@ -410,23 +410,26 @@ public class MenuAdminController {
         }
 
         boolean edicao = formUsuario.emEdicao();
-        executar(formUsuario, edicao ? "Usuário atualizado!" : "Usuário cadastrado!", () -> {
+        try {
             if (edicao) {
                 // Nunca altera o objeto persistido: envia uma cópia para o Business validar e aplicar
                 Usuario atual = facade.buscarUsuario(formUsuario.idEditando);
                 Usuario novo = copiaComNovosDados(atual, nome, login, senha, cargo);
                 facade.atualizarUsuario(atual.getId(), novo);
-            } else {
+            } else if (PERFIL_FUNCIONARIO.equals(cbUsuarioPerfil.getValue())) {
                 // O ID é gerado pela camada de negócio
-                switch (cbUsuarioPerfil.getValue()) {
-                    case PERFIL_FUNCIONARIO -> facade.cadastrarFuncionario(new Funcionario(null, nome, login, senha, cargo));
-                    case PERFIL_ADMINISTRADOR -> facade.cadastrarAdm(new Administrador(null, nome, login, senha));
-                    default -> facade.cadastrarCliente(nome, login, senha);
-                }
+                facade.cadastrarFuncionario(new Funcionario(null, nome, login, senha, cargo));
+            } else if (PERFIL_ADMINISTRADOR.equals(cbUsuarioPerfil.getValue())) {
+                facade.cadastrarAdm(new Administrador(null, nome, login, senha));
+            } else {
+                facade.cadastrarCliente(nome, login, senha);
             }
             usuarios.setAll(facade.listarUsuario().values());
             limparUsuario();
-        });
+            formUsuario.aviso(edicao ? "Usuário atualizado!" : "Usuário cadastrado!", Banner.BannerType.SUCCESS);
+        } catch (RuntimeException e) {
+            mostrarErro(formUsuario, e);
+        }
 
     }
 
@@ -479,11 +482,16 @@ public class MenuAdminController {
             return;
         }
         if (confirmar("Deseja desativar o usuário " + u.getNome() + "?")) {
-            executar(formUsuario, "Usuário desativado!", () -> {
+            try {
                 facade.desativarUsuario(u.getId());
                 usuarios.setAll(facade.listarUsuario().values());
-                if (u.getId().equals(formUsuario.idEditando)) limparUsuario();
-            });
+                if (u.getId().equals(formUsuario.idEditando)) {
+                    limparUsuario();
+                }
+                formUsuario.aviso("Usuário desativado!", Banner.BannerType.SUCCESS);
+            } catch (RuntimeException e) {
+                mostrarErro(formUsuario, e);
+            }
         }
     }
 
@@ -698,6 +706,12 @@ public class MenuAdminController {
             logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
             form.aviso(mensagemSegura(e), Banner.BannerType.DANGER);
         }
+    }
+
+    // Registra o erro no log e mostra no Banner só mensagens seguras para o usuário
+    private void mostrarErro(FormState form, RuntimeException e) {
+        logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
+        form.aviso(mensagemSegura(e), Banner.BannerType.DANGER);
     }
 
 
