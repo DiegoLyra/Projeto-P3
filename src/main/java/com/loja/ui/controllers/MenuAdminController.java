@@ -162,7 +162,7 @@ public class MenuAdminController {
     @FXML private Button btnCancelarFornecedor;
     @FXML private VBox feedbackFornecedor;
 
-
+    @FXML private TextField txtPesquisaFornecedores;
     @FXML private TableView<Fornecedor> tblFornecedores;
     @FXML private TableColumn<Fornecedor, String> colFornecedorId;
     @FXML private TableColumn<Fornecedor, String> colFornecedorNome;
@@ -340,8 +340,16 @@ public class MenuAdminController {
         }));
 
         //Fornecedores
-        tblFornecedores.setItems(fornecedores);
         tblFornecedores.setPlaceholder(new EmptyState("Nenhum fornecedor cadastrado."));
+
+        new Pesquisa<Fornecedor>() {
+            @Override
+            protected String textoPesquisavel(Fornecedor f) {
+                return texto(f.getId(), f.getNome(), f.getCnpj(), f.getTelefone(),
+                        somenteDigitos(f.getCnpj()), somenteDigitos(f.getTelefone()));
+            }
+        }.ligar(txtPesquisaFornecedores, tblFornecedores, fornecedores);
+
         colFornecedorId.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("id"));
         colFornecedorNome.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("nome"));
         colFornecedorCnpj.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("cnpj"));

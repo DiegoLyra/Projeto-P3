@@ -318,7 +318,13 @@
 
                         <Card>
                            <children>
-                              <Label text="Listar Fornecedores" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Label text="Listar Fornecedores" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <TextField fx:id="txtPesquisaFornecedores" prefWidth="320.0" promptText="🔍 Pesquisar por ID, nome, CNPJ ou telefone..." style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 8px 12px; -fx-font-size: 13px;" />
+                                 </children>
+                              </HBox>
                               <TableView fx:id="tblFornecedores" prefHeight="280.0">
                                  <columns>
                                     <TableColumn fx:id="colFornecedorId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
