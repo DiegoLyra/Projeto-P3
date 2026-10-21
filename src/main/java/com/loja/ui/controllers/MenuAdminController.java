@@ -682,7 +682,7 @@ public class MenuAdminController {
         }
 
         boolean edicao = formFornecedor.emEdicao();
-        executar(formFornecedor, edicao ? "Fornecedor atualizado!" : "Fornecedor cadastrado!", () -> {
+        try {
             if (edicao) {
                 Fornecedor f = facade.buscarFornecedor(formFornecedor.idEditando);
                 f.setNome(nome);
@@ -695,7 +695,10 @@ public class MenuAdminController {
             fornecedores.setAll(facade.listarFornecedor().values());
             itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome do fornecedor
             limparFornecedor();
-        });
+            formFornecedor.aviso(edicao ? "Fornecedor atualizado!" : "Fornecedor cadastrado!", Banner.BannerType.SUCCESS);
+        } catch (RuntimeException e) {
+            mostrarErro(formFornecedor, e);
+        }
 
     }
 
@@ -722,11 +725,16 @@ public class MenuAdminController {
 
     private void removerFornecedor(Fornecedor f) {
         if (confirmar("Deseja remover o fornecedor " + f.getNome() + "?")) {
-            executar(formFornecedor, "Fornecedor removido!", () -> {
+            try {
                 facade.deletarFornecedor(f.getId());
                 fornecedores.setAll(facade.listarFornecedor().values());
-                if (f.getId().equals(formFornecedor.idEditando)) limparFornecedor();
-            });
+                if (f.getId().equals(formFornecedor.idEditando)) {
+                    limparFornecedor();
+                }
+                formFornecedor.aviso("Fornecedor removido!", Banner.BannerType.SUCCESS);
+            } catch (RuntimeException e) {
+                mostrarErro(formFornecedor, e);
+            }
         }
     }
 
