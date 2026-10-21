@@ -41,6 +41,12 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.Callback;
+
 
 public class MenuAdminController {
 
@@ -227,60 +233,117 @@ public class MenuAdminController {
 
     private void configurarTabelas() {
 
-        // Usuários
+         //Usuários
         tblUsuarios.setItems(usuarios);
         tblUsuarios.setPlaceholder(new EmptyState("Nenhum usuário cadastrado."));
-        colUsuarioId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
-        colUsuarioPerfil.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getPerfil()));
-        colUsuarioPerfil.setCellFactory(col -> new BadgeCell<>(s -> StatusBadge.StatusType.INFO));
-        colUsuarioNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
-        colUsuarioLogin.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getLogin()));
-        colUsuarioCargo.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue() instanceof Funcionario f && f.getCargo() != null && !f.getCargo().isBlank() ? f.getCargo() : "-"));
-        colUsuarioSituacao.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().isAtivo() ? "ATIVO" : "INATIVO"));
-        colUsuarioSituacao.setCellFactory(col -> new BadgeCell<>(s ->
-                s.equals("ATIVO") ? StatusBadge.StatusType.SUCCESS : StatusBadge.StatusType.DANGER));
-        colUsuarioAcoes.setCellFactory(col -> new AcoesCell<>("Desativar", this::editarUsuario, this::desativarUsuario));
+        colUsuarioId.setCellValueFactory(new PropertyValueFactory<Usuario, String>("id"));
+        colUsuarioPerfil.setCellValueFactory(new PropertyValueFactory<Usuario, String>("perfil"));
+        colUsuarioPerfil.setCellFactory(new BadgeCellFactory<Usuario>());
+        colUsuarioNome.setCellValueFactory(new PropertyValueFactory<Usuario, String>("nome"));
+        colUsuarioLogin.setCellValueFactory(new PropertyValueFactory<Usuario, String>("login"));
+        colUsuarioCargo.setCellValueFactory(new ColunaTexto<Usuario>() {
+            @Override
+            protected String valor(Usuario u) {
+                if (u instanceof Funcionario) {
+                    String cargo = ((Funcionario) u).getCargo();
+                    if (cargo != null && !cargo.isBlank()) {
+                        return cargo;
+                    }
+                }
+                return "-";
+            }
+        });
+        colUsuarioSituacao.setCellValueFactory(new ColunaTexto<Usuario>() {
+            @Override
+            protected String valor(Usuario u) {
+                return u.isAtivo() ? "ATIVO" : "INATIVO";
+            }
+        });
+        colUsuarioSituacao.setCellFactory(new BadgeCellFactory<Usuario>());
+        colUsuarioAcoes.setCellFactory(new AcoesCellFactory<Usuario>("Desativar", new AcoesTabela<Usuario>() {
+            @Override
+            public void editar(Usuario u) {
+                editarUsuario(u);
+            }
+
+            @Override
+            public void remover(Usuario u) {
+                desativarUsuario(u);
+            }
+        }));
 
         //Categorias
         tblCategorias.setItems(categorias);
         tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
-        colCategoriaId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
-        colCategoriaNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
-        colCategoriaAcoes.setCellFactory(col -> new AcoesCell<>(ACAO_REMOVER, this::editarCategoria, this::removerCategoria));
+        colCategoriaId.setCellValueFactory(new PropertyValueFactory<Categoria, String>("id"));
+        colCategoriaNome.setCellValueFactory(new PropertyValueFactory<Categoria, String>("nome"));
+        colCategoriaAcoes.setCellFactory(new AcoesCellFactory<Categoria>("Remover", new AcoesTabela<Categoria>() {
+            @Override
+            public void editar(Categoria c) {
+                editarCategoria(c);
+            }
+
+            @Override
+            public void remover(Categoria c) {
+                removerCategoria(c);
+            }
+        }));
 
         //Fornecedores
         tblFornecedores.setItems(fornecedores);
         tblFornecedores.setPlaceholder(new EmptyState("Nenhum fornecedor cadastrado."));
-        colFornecedorId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
-        colFornecedorNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
-        colFornecedorCnpj.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCnpj()));
-        colFornecedorTelefone.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTelefone()));
-        colFornecedorAcoes.setCellFactory(col -> new AcoesCell<>(ACAO_REMOVER, this::editarFornecedor, this::removerFornecedor));
+        colFornecedorId.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("id"));
+        colFornecedorNome.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("nome"));
+        colFornecedorCnpj.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("cnpj"));
+        colFornecedorTelefone.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("telefone"));
+        colFornecedorAcoes.setCellFactory(new AcoesCellFactory<Fornecedor>("Remover", new AcoesTabela<Fornecedor>() {
+            @Override
+            public void editar(Fornecedor f) {
+                editarFornecedor(f);
+            }
+
+            @Override
+            public void remover(Fornecedor f) {
+                removerFornecedor(f);
+            }
+        }));
 
         //Itens
-
         tblItens.setItems(itens);
         tblItens.setPlaceholder(new EmptyState("Nenhum item cadastrado."));
-        colItemId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
-        colItemNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
-        colItemStatus.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getStatus())));
-        colItemStatus.setCellFactory(col -> new BadgeCell<>(s -> switch (s.toUpperCase()) {
-            case "DISPONIVEL" -> StatusBadge.StatusType.SUCCESS;
-            case "ALUGADO" -> StatusBadge.StatusType.WARNING;
-            case "MANUTENCAO", "INDISPONIVEL" -> StatusBadge.StatusType.DANGER;
-            default -> StatusBadge.StatusType.INFO;
+        colItemId.setCellValueFactory(new PropertyValueFactory<Item, String>("id"));
+        colItemNome.setCellValueFactory(new PropertyValueFactory<Item, String>("nome"));
+        colItemStatus.setCellValueFactory(new PropertyValueFactory<Item, String>("status"));
+        colItemStatus.setCellFactory(new BadgeCellFactory<Item>());
+        colItemCategoria.setCellValueFactory(new ColunaTexto<Item>() {
+            @Override
+            protected String valor(Item i) {
+                return i.getCategoria() != null ? i.getCategoria().getNome() : "-";
+            }
+        });
+        colItemFornecedor.setCellValueFactory(new ColunaTexto<Item>() {
+            @Override
+            protected String valor(Item i) {
+                return i.getFornecedor() != null ? i.getFornecedor().getNome() : "-";
+            }
+        });
+        colItemTaxa.setCellValueFactory(new ColunaTexto<Item>() {
+            @Override
+            protected String valor(Item i) {
+                return String.format("R$ %.2f", i.getTaxaDiaria());
+            }
+        });
+        colItemAcoes.setCellFactory(new AcoesCellFactory<Item>("Remover", new AcoesTabela<Item>() {
+            @Override
+            public void editar(Item i) {
+                editarItem(i);
+            }
+
+            @Override
+            public void remover(Item i) {
+                removerItem(i);
+            }
         }));
-        colItemCategoria.setCellValueFactory(c -> {
-            Categoria cat = c.getValue().getCategoria();
-            return new SimpleStringProperty(cat != null ? cat.getNome() : "-");
-        });
-        colItemFornecedor.setCellValueFactory(c -> {
-            Fornecedor f = c.getValue().getFornecedor();
-            return new SimpleStringProperty(f != null ? f.getNome() : "-");
-        });
-        colItemTaxa.setCellValueFactory(c -> new SimpleStringProperty(String.format("R$ %.2f", c.getValue().getTaxaDiaria())));
-        colItemAcoes.setCellFactory(col -> new AcoesCell<>(ACAO_REMOVER, this::editarItem, this::removerItem));
     }
 
 
@@ -638,6 +701,23 @@ public class MenuAdminController {
         alert.showAndWait();
     }
 
+    //Cor do StatusBadge
+    private static StatusBadge.StatusType tipoDoBadge(String valor) {
+        switch (valor.toUpperCase()) {
+            case "ATIVO":
+            case "DISPONIVEL":
+                return StatusBadge.StatusType.SUCCESS;
+            case "ALUGADO":
+                return StatusBadge.StatusType.WARNING;
+            case "INATIVO":
+            case "MANUTENCAO":
+            case "INDISPONIVEL":
+                return StatusBadge.StatusType.DANGER;
+            default:
+                return StatusBadge.StatusType.INFO;
+        }
+    }
+
 
     private static <T> StringConverter<T> conversor(Function<T, String> texto) {
         return new StringConverter<>() {
@@ -729,17 +809,29 @@ public class MenuAdminController {
         }
     }
 
+    //Coluna cujo texto é calculado (não vem direto de um getter)
 
-    //Célula que mostra o texto dentro de um StatusBadge.
-    private static class BadgeCell<T> extends TableCell<T, String> {
-        private final Function<String, StatusBadge.StatusType> tipo;
+    private abstract static class ColunaTexto<T>
+            implements Callback<TableColumn.CellDataFeatures<T, String>, ObservableValue<String>> {
 
-
-        BadgeCell(Function<String, StatusBadge.StatusType> tipo) {
-            this.tipo = tipo;
+        @Override
+        public ObservableValue<String> call(TableColumn.CellDataFeatures<T, String> dados) {
+            return new SimpleStringProperty(valor(dados.getValue()));
         }
 
+        protected abstract String valor(T item);
+    }
 
+    //Cria as células que mostram o texto dentro de um StatusBadge
+    private static class BadgeCellFactory<T> implements Callback<TableColumn<T, String>, TableCell<T, String>> {
+        @Override
+        public TableCell<T, String> call(TableColumn<T, String> coluna) {
+            return new BadgeCell<>();
+        }
+    }
+
+    //Célula que mostra o texto dentro de um StatusBadge
+    private static class BadgeCell<T> extends TableCell<T, String> {
         @Override
         protected void updateItem(String item, boolean empty) {
             super.updateItem(item, empty);
@@ -748,33 +840,65 @@ public class MenuAdminController {
                 setGraphic(null);
                 return;
             }
-            StatusBadge badge = new StatusBadge(item, tipo.apply(item));
+            StatusBadge badge = new StatusBadge(item, tipoDoBadge(item));
             badge.setMaxWidth(Region.USE_PREF_SIZE);
             setGraphic(badge);
         }
     }
 
+    // O que os botões da coluna "Ações" fazem em cada tabela
+    private interface AcoesTabela<T> {
+        void editar(T item);
 
-    //Célula com os botões "Editar" e "Remover/Desativar"
+        void remover(T item);
+    }
+
+    // Cria as células da coluna "Ações"
+    private static class AcoesCellFactory<T> implements Callback<TableColumn<T, Void>, TableCell<T, Void>> {
+        private final String textoRemover;
+        private final AcoesTabela<T> acoes;
+
+        AcoesCellFactory(String textoRemover, AcoesTabela<T> acoes) {
+            this.textoRemover = textoRemover;
+            this.acoes = acoes;
+        }
+
+        @Override
+        public TableCell<T, Void> call(TableColumn<T, Void> coluna) {
+            return new AcoesCell<>(textoRemover, acoes);
+        }
+    }
+
+    // Célula com os botões "Editar" e "Remover/Desativar"
     private static class AcoesCell<T> extends TableCell<T, Void> {
         private final HBox box;
 
-
-        AcoesCell(String textoRemover, Consumer<T> onEditar, Consumer<T> onRemover) {
+        AcoesCell(String textoRemover, final AcoesTabela<T> acoes) {
             Button editar = new Button("Editar");
             editar.setStyle("-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
-            editar.setOnAction(e -> onEditar.accept(getTableView().getItems().get(getIndex())));
-
+            editar.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent evento) {
+                    acoes.editar(itemDaLinha());
+                }
+            });
 
             Button remover = new Button(textoRemover);
             remover.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: #dc2626; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
-            remover.setOnAction(e -> onRemover.accept(getTableView().getItems().get(getIndex())));
-
+            remover.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent evento) {
+                    acoes.remover(itemDaLinha());
+                }
+            });
 
             box = new HBox(6, editar, remover);
             box.setAlignment(Pos.CENTER);
         }
 
+        private T itemDaLinha() {
+            return getTableView().getItems().get(getIndex());
+        }
 
         @Override
         protected void updateItem(Void item, boolean empty) {
