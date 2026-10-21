@@ -44,6 +44,14 @@ import javafx.event.EventHandler;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 
+import javafx.beans.value.ChangeListener;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
+import javafx.scene.Node;
+import javafx.scene.control.TextField;
+import java.text.Normalizer;
+import java.util.function.Predicate;
+
 
 public class MenuAdminController {
 
@@ -791,6 +799,65 @@ public class MenuAdminController {
                 return StatusBadge.StatusType.DANGER;
             default:
                 return StatusBadge.StatusType.INFO;
+        }
+    }
+
+    //Junta vários valores num texto só, ignorando os nulos
+    private static String texto(Object... partes) {
+        StringBuilder sb = new StringBuilder();
+        for (Object parte : partes) {
+            if (parte != null) {
+                sb.append(parte).append(' ');
+            }
+        }
+        return sb.toString();
+    }
+
+    //Minúsculas e sem acento
+    private static String normalizar(String valor) {
+        if (valor == null) {
+            return "";
+        }
+        return Normalizer.normalize(valor, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase()
+                .trim();
+    }
+
+    //12.345.678/0001-99" vira "12345678000199" (para achar CNPJ/telefone digitado sem pontuação)
+    private static String somenteDigitos(String valor) {
+        return valor == null ? null : valor.replaceAll("\\D", "");
+    }
+
+    //Liga um campo de pesquisa a uma tabela: filtra enquanto o usuário digita. cada aba cria uma subclasse anonima dizendo em textoPesquisavel() onde procurar.
+    private abstract static class Pesquisa<T> {
+
+        protected abstract String textoPesquisavel(T item);
+
+        void ligar(TextField campo, final TableView<T> tabela, ObservableList<T> dados) {
+            final FilteredList<T> filtrados = new FilteredList<>(dados);
+            SortedList<T> ordenados = new SortedList<>(filtrados);
+            ordenados.comparatorProperty().bind(tabela.comparatorProperty()); // mantém a ordenação por coluna
+            tabela.setItems(ordenados);
+
+            final Node vazioOriginal = tabela.getPlaceholder();
+            campo.textProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> obs, String antigo, String texto) {
+                    final String termo = normalizar(texto);
+                    filtrados.setPredicate(new Predicate<T>() {
+                        @Override
+                        public boolean test(T item) {
+                            return termo.isEmpty() || normalizar(textoPesquisavel(item)).contains(termo);
+                        }
+                    });
+                    if (termo.isEmpty()) {
+                        tabela.setPlaceholder(vazioOriginal);
+                    } else {
+                        tabela.setPlaceholder(new EmptyState("Nenhum resultado para \"" + texto.trim() + "\"."));
+                    }
+                }
+            });
         }
     }
 
