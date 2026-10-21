@@ -112,7 +112,13 @@
 
                         <Card>
                            <children>
-                              <Label text="Listar Usuários" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                              <children>
+                                 <Label text="Listar Usuários" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                 <Region HBox.hgrow="ALWAYS" />
+                                 <TextField fx:id="txtPesquisaUsuarios" prefWidth="320.0" promptText="🔍 Pesquisar por ID, nome, login, perfil ou cargo..." style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 8px 12px; -fx-font-size: 13px;" />
+                              </children>
+                           </HBox>
                               <TableView fx:id="tblUsuarios" prefHeight="280.0">
                                  <columns>
                                     <TableColumn fx:id="colUsuarioId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
