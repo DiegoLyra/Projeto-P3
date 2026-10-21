@@ -100,7 +100,7 @@ public class MenuAdminController {
     @FXML private Button btnCancelarUsuario;
     @FXML private VBox feedbackUsuario;
 
-
+    @FXML private TextField txtPesquisaUsuarios;
     @FXML private TableView<Usuario> tblUsuarios;
     @FXML private TableColumn<Usuario, String> colUsuarioId;
     @FXML private TableColumn<Usuario, String> colUsuarioPerfil;
@@ -124,7 +124,7 @@ public class MenuAdminController {
     @FXML private Button btnCancelarItem;
     @FXML private VBox feedbackItem;
 
-
+    @FXML private TextField txtPesquisaItens;
     @FXML private TableView<Item> tblItens;
     @FXML private TableColumn<Item, String> colItemId;
     @FXML private TableColumn<Item, String> colItemNome;
@@ -268,8 +268,17 @@ public class MenuAdminController {
     private void configurarTabelas() {
 
          //Usuários
-        tblUsuarios.setItems(usuarios);
         tblUsuarios.setPlaceholder(new EmptyState("Nenhum usuário cadastrado."));
+
+        new Pesquisa<Usuario>() {
+            @Override
+            protected String textoPesquisavel(Usuario u) {
+                String cargo = (u instanceof Funcionario) ? ((Funcionario) u).getCargo() : null;
+                return texto(u.getId(), u.getNome(), u.getLogin(), u.getPerfil(), cargo,
+                        u.isAtivo() ? "ativo" : "inativo");
+            }
+        }.ligar(txtPesquisaUsuarios, tblUsuarios, usuarios);
+
         colUsuarioId.setCellValueFactory(new PropertyValueFactory<Usuario, String>("id"));
         colUsuarioPerfil.setCellValueFactory(new PropertyValueFactory<Usuario, String>("perfil"));
         colUsuarioPerfil.setCellFactory(new BadgeCellFactory<Usuario>());
@@ -343,8 +352,19 @@ public class MenuAdminController {
         }));
 
         //Itens
-        tblItens.setItems(itens);
         tblItens.setPlaceholder(new EmptyState("Nenhum item cadastrado."));
+
+        new Pesquisa<Item>() {
+            @Override
+            protected String textoPesquisavel(Item i) {
+                Categoria c = i.getCategoria();
+                Fornecedor f = i.getFornecedor();
+                return texto(i.getId(), i.getNome(), i.getStatus(), i.getTaxaDiaria(),
+                        c != null ? c.getId() : null, c != null ? c.getNome() : null,
+                        f != null ? f.getId() : null, f != null ? f.getNome() : null);
+            }
+        }.ligar(txtPesquisaItens, tblItens, itens);
+
         colItemId.setCellValueFactory(new PropertyValueFactory<Item, String>("id"));
         colItemNome.setCellValueFactory(new PropertyValueFactory<Item, String>("nome"));
         colItemStatus.setCellValueFactory(new PropertyValueFactory<Item, String>("status"));
