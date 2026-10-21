@@ -744,18 +744,6 @@ public class MenuAdminController {
         navigator.showLogin();
     }
 
-
-    //Executa uma ação da facade e mostra o resultado no Banner do formulário
-    private void executar(FormState form, String msgSucesso, Runnable acao) {
-        try {
-            acao.run();
-            form.aviso(msgSucesso, Banner.BannerType.SUCCESS);
-        } catch (RuntimeException e) {
-            logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
-            form.aviso(mensagemSegura(e), Banner.BannerType.DANGER);
-        }
-    }
-
     // Registra o erro no log e mostra no Banner só mensagens seguras para o usuário
     private void mostrarErro(FormState form, RuntimeException e) {
         logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
