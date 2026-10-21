@@ -619,7 +619,7 @@ public class MenuAdminController {
         }
 
         boolean edicao = formCategoria.emEdicao();
-        executar(formCategoria, edicao ? "Categoria atualizada!" : "Categoria cadastrada!", () -> {
+        try {
             if (edicao) {
                 Categoria c = facade.buscarCategoria(formCategoria.idEditando);
                 c.setNome(nome);
@@ -630,7 +630,10 @@ public class MenuAdminController {
             categorias.setAll(facade.listarCategoria().values());
             itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome da categoria
             limparCategoria();
-        });
+            formCategoria.aviso(edicao ? "Categoria atualizada!" : "Categoria cadastrada!", Banner.BannerType.SUCCESS);
+        } catch (RuntimeException e) {
+            mostrarErro(formCategoria, e);
+        }
 
     }
 
@@ -653,11 +656,16 @@ public class MenuAdminController {
 
     private void removerCategoria(Categoria c) {
         if (confirmar("Deseja remover a categoria " + c.getNome() + "?")) {
-            executar(formCategoria, "Categoria removida!", () -> {
+            try {
                 facade.deletarCategoria(c.getId());
                 categorias.setAll(facade.listarCategoria().values());
-                if (c.getId().equals(formCategoria.idEditando)) limparCategoria();
-            });
+                if (c.getId().equals(formCategoria.idEditando)) {
+                    limparCategoria();
+                }
+                formCategoria.aviso("Categoria removida!", Banner.BannerType.SUCCESS);
+            } catch (RuntimeException e) {
+                mostrarErro(formCategoria, e);
+            }
         }
     }
 
