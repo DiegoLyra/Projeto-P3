@@ -519,7 +519,7 @@ public class MenuAdminController {
         }
 
         boolean edicao = formItem.emEdicao();
-        executar(formItem, edicao ? "Item atualizado!" : "Item cadastrado!", () -> {
+        try {
             if (edicao) {
                 // Altera o objeto existente: o status não muda (a facade proíbe mudá-lo aqui)
                 Item item = facade.buscarItem(formItem.idEditando);
@@ -534,7 +534,10 @@ public class MenuAdminController {
             }
             itens.setAll(facade.listarItem().values());
             limparItem();
-        });
+            formItem.aviso(edicao ? "Item atualizado!" : "Item cadastrado!", Banner.BannerType.SUCCESS);
+        } catch (RuntimeException e) {
+            mostrarErro(formItem, e);
+        }
 
     }
 
@@ -557,21 +560,50 @@ public class MenuAdminController {
     private void editarItem(Item i) {
         formItem.entrarEdicao(i.getId());
         fItemNome.setText(i.getNome());
-        cbItemCategoria.setValue(i.getCategoria() == null ? null :
-                categorias.stream().filter(c -> c.getId().equals(i.getCategoria().getId())).findFirst().orElse(null));
-        cbItemFornecedor.setValue(i.getFornecedor() == null ? null :
-                fornecedores.stream().filter(f -> f.getId().equals(i.getFornecedor().getId())).findFirst().orElse(null));
+        cbItemCategoria.setValue(categoriaDaLista(i.getCategoria()));
+        cbItemFornecedor.setValue(fornecedorDaLista(i.getFornecedor()));
         fItemTaxa.setText(String.valueOf(i.getTaxaDiaria()));
         fItemReposicao.setText(String.valueOf(i.getValorReposicao()));
     }
 
+    //Acha, na lista do ComboBox, a categoria com o mesmo ID
+    private Categoria categoriaDaLista(Categoria categoria) {
+        if (categoria == null) {
+            return null;
+        }
+        for (Categoria c : categorias) {
+            if (c.getId().equals(categoria.getId())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    //Acha, na lista do ComboBox, o fornecedor com o mesmo ID
+    private Fornecedor fornecedorDaLista(Fornecedor fornecedor) {
+        if (fornecedor == null) {
+            return null;
+        }
+        for (Fornecedor f : fornecedores) {
+            if (f.getId().equals(fornecedor.getId())) {
+                return f;
+            }
+        }
+        return null;
+    }
+
     private void removerItem(Item i) {
         if (confirmar("Deseja remover o item " + i.getNome() + "?")) {
-            executar(formItem, "Item removido!", () -> {
+            try {
                 facade.deletarItem(i.getId());
                 itens.setAll(facade.listarItem().values());
-                if (i.getId().equals(formItem.idEditando)) limparItem();
-            });
+                if (i.getId().equals(formItem.idEditando)) {
+                    limparItem();
+                }
+                formItem.aviso("Item removido!", Banner.BannerType.SUCCESS);
+            } catch (RuntimeException e) {
+                mostrarErro(formItem, e);
+            }
         }
     }
 
