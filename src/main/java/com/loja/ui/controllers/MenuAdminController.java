@@ -2,9 +2,6 @@ package com.loja.ui.controllers;
 
 
 import java.math.BigDecimal;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,23 +179,57 @@ public class MenuAdminController {
 
     @FXML
     public void initialize() {
-        if (!(navigator.getUsuarioLogado() instanceof Administrador admin)) {
-            throw new IllegalStateException("A tela administrativa exige um usuário Administrador logado.");
-        }
-        this.usuarioLogado = admin;
-
-        navModulos.addTab("Usuários", true, () -> mostrarPainel(paneUsuarios));
-        navModulos.addTab("Itens", false, () -> mostrarPainel(paneItens));
-        navModulos.addTab("Categorias", false, () -> mostrarPainel(paneCategorias));
-        navModulos.addTab("Fornecedores", false, () -> mostrarPainel(paneFornecedores));
-
+        navModulos.addTab("Usuários", true, new Runnable() {
+            @Override
+            public void run() {
+                mostrarPainel(paneUsuarios);
+            }
+        });
+        navModulos.addTab("Itens", false, new Runnable() {
+            @Override
+            public void run() {
+                mostrarPainel(paneItens);
+            }
+        });
+        navModulos.addTab("Categorias", false, new Runnable() {
+            @Override
+            public void run() {
+                mostrarPainel(paneCategorias);
+            }
+        });
+        navModulos.addTab("Fornecedores", false, new Runnable() {
+            @Override
+            public void run() {
+                mostrarPainel(paneFornecedores);
+            }
+        });
 
         cbUsuarioPerfil.setItems(FXCollections.observableArrayList(PERFIL_CLIENTE, PERFIL_FUNCIONARIO, PERFIL_ADMINISTRADOR));
         cbItemCategoria.setItems(categorias);
-        cbItemCategoria.setConverter(conversor(c -> c.getId() + " - " + c.getNome()));
-        cbItemFornecedor.setItems(fornecedores);
-        cbItemFornecedor.setConverter(conversor(f -> f.getId() + " - " + f.getNome()));
+        cbItemCategoria.setConverter(new StringConverter<Categoria>() {
+            @Override
+            public String toString(Categoria c) {
+                return c == null ? "" : c.getId() + " - " + c.getNome();
+            }
 
+            @Override
+            public Categoria fromString(String texto) {
+                return null; // ComboBox não editável
+            }
+        });
+
+        cbItemFornecedor.setItems(fornecedores);
+        cbItemFornecedor.setConverter(new StringConverter<Fornecedor>() {
+            @Override
+            public String toString(Fornecedor f) {
+                return f == null ? "" : f.getId() + " - " + f.getNome();
+            }
+
+            @Override
+            public Fornecedor fromString(String texto) {
+                return null; // ComboBox não editável
+            }
+        });
 
         formUsuario = new FormState(lblFormUsuario, badgeUsuario, btnSalvarUsuario, btnCancelarUsuario, feedbackUsuario,
                 fUsuarioId, "Cadastrar Novo Usuário", "Atualizar Usuário", "Cadastrar Usuário");
@@ -209,19 +240,14 @@ public class MenuAdminController {
         formFornecedor = new FormState(lblFormFornecedor, badgeFornecedor, btnSalvarFornecedor, btnCancelarFornecedor, feedbackFornecedor,
                 fFornecedorId, "Cadastrar Novo Fornecedor", "Atualizar Fornecedor", "Cadastrar Fornecedor");
 
-
         configurarTabelas();
         limparUsuario();
-
-        if (usuarioLogado.getNome() != null) {
-            lblBoasVindas.setText("PAINEL ADMINISTRATIVO: " + usuarioLogado.getNome().toUpperCase());
-        }
         carregarTudo();
     }
 
-
-    private void mostrarPainel(VBox painel) {
-        for (VBox p : new VBox[]{paneUsuarios, paneItens, paneCategorias, paneFornecedores}) {
+        private void mostrarPainel(VBox painel) {
+        VBox[] paineis = {paneUsuarios, paneItens, paneCategorias, paneFornecedores};
+        for (VBox p : paineis) {
             p.setVisible(p == painel);
             p.setManaged(p == painel);
         }
@@ -277,7 +303,7 @@ public class MenuAdminController {
         tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
         colCategoriaId.setCellValueFactory(new PropertyValueFactory<Categoria, String>("id"));
         colCategoriaNome.setCellValueFactory(new PropertyValueFactory<Categoria, String>("nome"));
-        colCategoriaAcoes.setCellFactory(new AcoesCellFactory<Categoria>("Remover", new AcoesTabela<Categoria>() {
+        colCategoriaAcoes.setCellFactory(new AcoesCellFactory<Categoria>(ACAO_REMOVER, new AcoesTabela<Categoria>() {
             @Override
             public void editar(Categoria c) {
                 editarCategoria(c);
@@ -296,7 +322,7 @@ public class MenuAdminController {
         colFornecedorNome.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("nome"));
         colFornecedorCnpj.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("cnpj"));
         colFornecedorTelefone.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("telefone"));
-        colFornecedorAcoes.setCellFactory(new AcoesCellFactory<Fornecedor>("Remover", new AcoesTabela<Fornecedor>() {
+        colFornecedorAcoes.setCellFactory(new AcoesCellFactory<Fornecedor>(ACAO_REMOVER, new AcoesTabela<Fornecedor>() {
             @Override
             public void editar(Fornecedor f) {
                 editarFornecedor(f);
@@ -333,7 +359,7 @@ public class MenuAdminController {
                 return String.format("R$ %.2f", i.getTaxaDiaria());
             }
         });
-        colItemAcoes.setCellFactory(new AcoesCellFactory<Item>("Remover", new AcoesTabela<Item>() {
+        colItemAcoes.setCellFactory(new AcoesCellFactory<Item>(ACAO_REMOVER, new AcoesTabela<Item>() {
             @Override
             public void editar(Item i) {
                 editarItem(i);
@@ -717,15 +743,6 @@ public class MenuAdminController {
                 return StatusBadge.StatusType.INFO;
         }
     }
-
-
-    private static <T> StringConverter<T> conversor(Function<T, String> texto) {
-        return new StringConverter<>() {
-            @Override public String toString(T obj) { return obj == null ? "" : texto.apply(obj); }
-            @Override public T fromString(String s) { return null; }
-        };
-    }
-
 
     //Alterna um formulário entre "Cadastrar" e "Modo de Edição".
     private static class FormState {
