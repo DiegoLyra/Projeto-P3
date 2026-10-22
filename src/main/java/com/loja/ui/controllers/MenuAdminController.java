@@ -52,6 +52,13 @@ import javafx.scene.control.TextField;
 import java.text.Normalizer;
 import java.util.function.Predicate;
 
+import javafx.scene.control.Dialog;
+import javafx.scene.control.TextArea;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
+import java.util.Map;
 
 public class MenuAdminController {
 
@@ -62,6 +69,7 @@ public class MenuAdminController {
     private static final String PERFIL_FUNCIONARIO = "FUNCIONARIO";
     private static final String PERFIL_ADMINISTRADOR = "ADMINISTRADOR";
     private static final String ACAO_REMOVER = "Remover";
+    private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ILojaFacade facade;
     private final Navigator navigator;
@@ -650,6 +658,57 @@ public class MenuAdminController {
         }
     }
 
+    // Cruza os itens disponíveis com as categorias cadastradas
+    @FXML
+    public void relatorioDisponiveisPorCategoria() {
+        try {
+            Map<String, Item> disponiveis = facade.listarItemPorStatus("DISPONIVEL");
+            Map<String, Categoria> todasCategorias = facade.listarCategoria();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== ITENS DISPONÍVEIS POR CATEGORIA: ").append(formatarData(hoje())).append(" ===\n\n");
+
+            for (Categoria categoria : todasCategorias.values()) {
+                StringBuilder linhas = new StringBuilder();
+                int quantidade = 0;
+                for (Item item : disponiveis.values()) {
+                    if (item.getCategoria() != null && categoria.getId().equals(item.getCategoria().getId())) {
+                        linhas.append(String.format("   #%-8s %-30s %s/dia%n",
+                                item.getId(), item.getNome(), formatarMoeda(item.getTaxaDiaria())));
+                        quantidade++;
+                    }
+                }
+                sb.append(categoria.getNome()).append(" (").append(quantidade).append(")\n");
+                sb.append(quantidade == 0 ? "   Nenhum item disponível.\n" : linhas.toString());
+                sb.append('\n');
+            }
+
+            // Itens disponíveis cuja categoria não está cadastrada
+            StringBuilder semCategoria = new StringBuilder();
+            for (Item item : disponiveis.values()) {
+                boolean encontrou = false;
+                if (item.getCategoria() != null) {
+                    for (Categoria categoria : todasCategorias.values()) {
+                        if (categoria.getId().equals(item.getCategoria().getId())) {
+                            encontrou = true;
+                        }
+                    }
+                }
+                if (!encontrou) {
+                    semCategoria.append(String.format("   #%-8s %s%n", item.getId(), item.getNome()));
+                }
+            }
+            if (semCategoria.length() > 0) {
+                sb.append("Sem categoria\n").append(semCategoria).append('\n');
+            }
+
+            sb.append("Total de itens disponíveis: ").append(disponiveis.size()).append('\n');
+            mostrarRelatorio("Itens disponíveis por categoria", sb.toString());
+        } catch (RuntimeException e) {
+            mostrarErro(formItem, e);
+        }
+    }
+
 
     @FXML public void salvarCategoria() {
 
@@ -818,6 +877,36 @@ public class MenuAdminController {
         alert.setHeaderText(null);
         alert.setContentText(mensagem);
         alert.showAndWait();
+    }
+
+        // Abre uma janela com o texto de um relatório (fonte monoespaçada para alinhar as colunas)
+    private void mostrarRelatorio(String titulo, String texto) {
+        TextArea area = new TextArea(texto);
+        area.setEditable(false);
+        area.setWrapText(false);
+        area.setPrefSize(680, 440);
+        area.setStyle("-fx-font-family: monospace; -fx-font-size: 13px;");
+
+        Dialog<Void> janela = new Dialog<>();
+        janela.setTitle(titulo);
+        janela.setHeaderText(titulo);
+        janela.getDialogPane().setContent(area);
+        janela.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        janela.setResizable(true);
+        janela.showAndWait();
+    }
+
+    // Data de hoje no fuso da loja
+    private static LocalDate hoje() {
+        return LocalDate.now(ZoneId.of("America/Recife"));
+    }
+
+    private static String formatarData(LocalDate data) {
+        return data == null ? "-" : data.format(FORMATO_DATA);
+    }
+
+    private static String formatarMoeda(BigDecimal valor) {
+        return valor == null ? "-" : String.format("R$ %.2f", valor);
     }
 
     //Cor do StatusBadge
