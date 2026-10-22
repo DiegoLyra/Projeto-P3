@@ -127,8 +127,7 @@
                                     <TableColumn fx:id="colUsuarioLogin" prefWidth="190.0" text="Login" />
                                     <TableColumn fx:id="colUsuarioCargo" prefWidth="110.0" text="Cargo" />
                                     <TableColumn fx:id="colUsuarioSituacao" prefWidth="100.0" text="Situação" />
-                                    <TableColumn fx:id="colUsuarioAcoes" prefWidth="170.0" sortable="false" text="Ações" />
-                                 </columns>
+                                    <TableColumn fx:id="colUsuarioAcoes" prefWidth="260.0" sortable="false" text="Ações" />                                 </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>

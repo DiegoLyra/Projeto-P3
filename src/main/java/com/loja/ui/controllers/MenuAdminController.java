@@ -57,8 +57,10 @@ import javafx.scene.control.TextArea;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-
 import java.util.Map;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Multa;
+import java.time.temporal.ChronoUnit;
 
 public class MenuAdminController {
 
@@ -311,7 +313,7 @@ public class MenuAdminController {
             }
         });
         colUsuarioSituacao.setCellFactory(new BadgeCellFactory<Usuario>());
-        colUsuarioAcoes.setCellFactory(new AcoesCellFactory<Usuario>("Desativar", new AcoesTabela<Usuario>() {
+        colUsuarioAcoes.setCellFactory(new AcoesCellFactory<Usuario>("Desativar", "Histórico", new AcoesTabela<Usuario>() {
             @Override
             public void editar(Usuario u) {
                 editarUsuario(u);
@@ -320,6 +322,16 @@ public class MenuAdminController {
             @Override
             public void remover(Usuario u) {
                 desativarUsuario(u);
+            }
+
+            @Override
+            public boolean temExtra(Usuario u) {
+                return u instanceof Cliente;
+            }
+
+            @Override
+            public void extra(Usuario u) {
+                relatorioHistoricoCliente(u);
             }
         }));
 
@@ -544,6 +556,80 @@ public class MenuAdminController {
                 mostrarErro(formUsuario, e);
             }
         }
+    }
+
+    private void relatorioHistoricoCliente(Usuario cliente) {
+        try {
+            Map<String, ContratoAluguel> contratos = facade.consultarHistoricoCliente(cliente.getId());
+            Map<String, Multa> multas = facade.listarMultaPorCliente(cliente.getId());
+            LocalDate dataHoje = hoje();
+
+            StringBuilder atuais = new StringBuilder();
+            StringBuilder encerrados = new StringBuilder();
+            StringBuilder irregularidades = new StringBuilder();
+            int qtdAtuais = 0;
+            int qtdEncerrados = 0;
+            int qtdIrregularidades = 0;
+
+            for (ContratoAluguel c : contratos.values()) {
+                LocalDate previsao = c.getDataPrevDevolucao();
+                if (c.getDataEfetivaDevolucao() == null) {
+                    atuais.append(linhaContrato(c));
+                    qtdAtuais++;
+                    if (previsao != null && dataHoje.isAfter(previsao)) {
+                        irregularidades.append(String.format("   Contrato #%s: EM ATRASO há %d dia(s) (devolução prevista para %s)%n",
+                                c.getId(), ChronoUnit.DAYS.between(previsao, dataHoje), formatarData(previsao)));
+                        qtdIrregularidades++;
+                    }
+                } else {
+                    encerrados.append(linhaContrato(c));
+                    qtdEncerrados++;
+                    if (previsao != null && c.getDataEfetivaDevolucao().isAfter(previsao)) {
+                        irregularidades.append(String.format("   Contrato #%s: devolvido com %d dia(s) de atraso%n",
+                                c.getId(), ChronoUnit.DAYS.between(previsao, c.getDataEfetivaDevolucao())));
+                        qtdIrregularidades++;
+                    }
+                }
+            }
+
+            for (Multa m : multas.values()) {
+                irregularidades.append(String.format("   Multa #%s: %s | %s | %s%n",
+                        m.getId(), m.getMotivo(), formatarMoeda(m.getValorTotal()), m.getStatus()));
+                qtdIrregularidades++;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== HISTÓRICO DO CLIENTE ===\n");
+            sb.append("Cliente : ").append(cliente.getNome()).append(" (#").append(cliente.getId()).append(")\n");
+            sb.append("Login   : ").append(cliente.getLogin()).append('\n');
+            sb.append("Gerado em ").append(formatarData(dataHoje)).append("\n\n");
+
+            sb.append("ALUGUÉIS ATUAIS (").append(qtdAtuais).append(")\n");
+            sb.append(qtdAtuais == 0 ? "   Nenhum.\n" : atuais.toString()).append('\n');
+
+            sb.append("ALUGUÉIS ENCERRADOS (").append(qtdEncerrados).append(")\n");
+            sb.append(qtdEncerrados == 0 ? "   Nenhum.\n" : encerrados.toString()).append('\n');
+
+            sb.append("IRREGULARIDADES (").append(qtdIrregularidades).append(")\n");
+            sb.append(qtdIrregularidades == 0 ? "   Nenhuma.\n" : irregularidades.toString()).append('\n');
+
+            if (facade.possuiMultaPendente(cliente.getId())) {
+                sb.append("⚠ ATENÇÃO: este cliente possui multa pendente.\n");
+            }
+
+            mostrarRelatorio("Histórico de " + cliente.getNome(), sb.toString());
+        } catch (RuntimeException e) {
+            mostrarErro(formUsuario, e);
+        }
+    }
+
+    private static String linhaContrato(ContratoAluguel c) {
+        String item = c.getItem() != null ? c.getItem().getNome() : "-";
+        String devolucao = c.getDataEfetivaDevolucao() != null
+                ? "devolvido em " + formatarData(c.getDataEfetivaDevolucao())
+                : "previsto para " + formatarData(c.getDataPrevDevolucao());
+        return String.format("   #%-8s %-25s retirada %s, %s | %s%n",
+                c.getId(), item, formatarData(c.getDataRetirada()), devolucao, formatarMoeda(c.getValorTotal()));
     }
 
     @FXML public void salvarItem() {
@@ -1109,29 +1195,47 @@ public class MenuAdminController {
         void editar(T item);
 
         void remover(T item);
+
+        // Botão extra opcional (ex.: "Histórico" só para clientes). Por padrão não aparece.
+        default boolean temExtra(T item) {
+            return false;
+        }
+
+        default void extra(T item) {
+        }
     }
 
     // Cria as células da coluna "Ações"
     private static class AcoesCellFactory<T> implements Callback<TableColumn<T, Void>, TableCell<T, Void>> {
         private final String textoRemover;
+        private final String textoExtra;
         private final AcoesTabela<T> acoes;
 
         AcoesCellFactory(String textoRemover, AcoesTabela<T> acoes) {
+            this(textoRemover, null, acoes);
+        }
+
+        AcoesCellFactory(String textoRemover, String textoExtra, AcoesTabela<T> acoes) {
             this.textoRemover = textoRemover;
+            this.textoExtra = textoExtra;
             this.acoes = acoes;
         }
 
         @Override
         public TableCell<T, Void> call(TableColumn<T, Void> coluna) {
-            return new AcoesCell<>(textoRemover, acoes);
+            return new AcoesCell<>(textoRemover, textoExtra, acoes);
         }
     }
 
     // Célula com os botões "Editar" e "Remover/Desativar"
     private static class AcoesCell<T> extends TableCell<T, Void> {
         private final HBox box;
+        private final Button extra;
+        private final AcoesTabela<T> acoes;
 
-        AcoesCell(String textoRemover, final AcoesTabela<T> acoes) {
+        AcoesCell(String textoRemover, String textoExtra, final AcoesTabela<T> acoes) {
+            this.acoes = acoes;
+
             Button editar = new Button("Editar");
             editar.setStyle("-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
             editar.setOnAction(new EventHandler<ActionEvent>() {
@@ -1152,6 +1256,20 @@ public class MenuAdminController {
 
             box = new HBox(6, editar, remover);
             box.setAlignment(Pos.CENTER);
+
+            if (textoExtra != null) {
+                extra = new Button(textoExtra);
+                extra.setStyle("-fx-background-color: #ecfdf5; -fx-text-fill: #047857; -fx-font-size: 11px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 4 10; -fx-cursor: hand;");
+                extra.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent evento) {
+                        acoes.extra(itemDaLinha());
+                    }
+                });
+                box.getChildren().add(extra);
+            } else {
+                extra = null;
+            }
         }
 
         private T itemDaLinha() {
@@ -1161,7 +1279,16 @@ public class MenuAdminController {
         @Override
         protected void updateItem(Void item, boolean empty) {
             super.updateItem(item, empty);
-            setGraphic(empty ? null : box);
+            if (empty) {
+                setGraphic(null);
+                return;
+            }
+            if (extra != null) {
+                boolean mostrar = acoes.temExtra(itemDaLinha());
+                extra.setVisible(mostrar);
+                extra.setManaged(mostrar);
+            }
+            setGraphic(box);
         }
     }
 }
