@@ -371,6 +371,33 @@
                               <TextArea fx:id="txtFaturamento" editable="false" prefHeight="170.0" promptText="Escolha o período e clique em Gerar Relatório." style="-fx-font-family: monospace; -fx-font-size: 13px;" />
                            </children>
                         </Card>
+                        <Card>
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Label text="Itens Alugados no Momento" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="lblResumoAlugados" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                                    <Button onAction="#carregarItensAlugados" text="Atualizar" style="-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblAlugados" prefHeight="300.0">
+                                 <columns>
+                                    <TableColumn fx:id="colAlugadoContrato" prefWidth="90.0" text="Contrato" />
+                                    <TableColumn fx:id="colAlugadoItem" prefWidth="160.0" text="Item" />
+                                    <TableColumn fx:id="colAlugadoCliente" prefWidth="160.0" text="Cliente" />
+                                    <TableColumn fx:id="colAlugadoRetirada" prefWidth="100.0" text="Retirada" />
+                                    <TableColumn fx:id="colAlugadoPrevisao" prefWidth="110.0" text="Prev. Devolução" />
+                                    <TableColumn fx:id="colAlugadoSituacao" prefWidth="110.0" text="Situação" />
+                                    <TableColumn fx:id="colAlugadoAtraso" prefWidth="90.0" text="Dias Atraso" />
+                                    <TableColumn fx:id="colAlugadoValor" prefWidth="100.0" text="Valor" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </Card>
                      </children>
                   </VBox>
 

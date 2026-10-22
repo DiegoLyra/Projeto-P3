@@ -84,6 +84,7 @@ public class MenuAdminController {
     private final ObservableList<Item> itens = FXCollections.observableArrayList();
     private final ObservableList<Categoria> categorias = FXCollections.observableArrayList();
     private final ObservableList<Fornecedor> fornecedores = FXCollections.observableArrayList();
+    private final ObservableList<ContratoAluguel> alugados = FXCollections.observableArrayList();
 
 
     // Cabeçalho e Navegação
@@ -181,6 +182,23 @@ public class MenuAdminController {
     @FXML private TableColumn<Fornecedor, String> colFornecedorTelefone;
     @FXML private TableColumn<Fornecedor, Void> colFornecedorAcoes;
 
+    // relatórios
+    @FXML private VBox paneRelatorios;
+    @FXML private VBox feedbackRelatorios;
+    @FXML private DatePicker dpFaturamentoInicio;
+    @FXML private DatePicker dpFaturamentoFim;
+    @FXML private TextArea txtFaturamento;
+    @FXML private Label lblResumoAlugados;
+    @FXML private TableView<ContratoAluguel> tblAlugados;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoContrato;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoItem;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoCliente;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoRetirada;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoPrevisao;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoSituacao;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoAtraso;
+    @FXML private TableColumn<ContratoAluguel, String> colAlugadoValor;
+
 
     // Controle "Cadastrar <-> Modo de Edição" de cada formulário
     private FormState formUsuario;
@@ -222,6 +240,17 @@ public class MenuAdminController {
                 mostrarPainel(paneFornecedores);
             }
         });
+        navModulos.addTab("Relatórios", false, new Runnable() {
+            @Override
+            public void run() {
+                mostrarPainel(paneRelatorios);
+                carregarItensAlugados();
+            }
+        });
+
+        // Período padrão do faturamento: do dia 1º do mês até hoje
+        dpFaturamentoInicio.setValue(hoje().withDayOfMonth(1));
+        dpFaturamentoFim.setValue(hoje());
 
         cbUsuarioPerfil.setItems(FXCollections.observableArrayList(PERFIL_CLIENTE, PERFIL_FUNCIONARIO, PERFIL_ADMINISTRADOR));
         cbItemCategoria.setItems(categorias);
@@ -265,7 +294,7 @@ public class MenuAdminController {
     }
 
         private void mostrarPainel(VBox painel) {
-        VBox[] paineis = {paneUsuarios, paneItens, paneCategorias, paneFornecedores};
+        VBox[] paineis = {paneUsuarios, paneItens, paneCategorias, paneFornecedores, paneRelatorios};
         for (VBox p : paineis) {
             p.setVisible(p == painel);
             p.setManaged(p == painel);
@@ -434,6 +463,55 @@ public class MenuAdminController {
                 removerItem(i);
             }
         }));
+
+        //relatorios
+                // Itens alugados (aba Relatórios)
+        tblAlugados.setItems(alugados);
+        tblAlugados.setPlaceholder(new EmptyState("Nenhum item alugado no momento."));
+        colAlugadoContrato.setCellValueFactory(new PropertyValueFactory<ContratoAluguel, String>("id"));
+        colAlugadoItem.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getItem() != null ? c.getItem().getNome() : "-";
+            }
+        });
+        colAlugadoCliente.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getCliente() != null ? c.getCliente().getNome() : "-";
+            }
+        });
+        colAlugadoRetirada.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return formatarData(c.getDataRetirada());
+            }
+        });
+        colAlugadoPrevisao.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return formatarData(c.getDataPrevDevolucao());
+            }
+        });
+        colAlugadoSituacao.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return estaAtrasado(c) ? "ATRASADO" : "EM DIA";
+            }
+        });
+        colAlugadoSituacao.setCellFactory(new BadgeCellFactory<ContratoAluguel>());
+        colAlugadoAtraso.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return estaAtrasado(c) ? diasDeAtraso(c) + " dia(s)" : "-";
+            }
+        });
+        colAlugadoValor.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return formatarMoeda(c.getValorTotal());
+            }
+        });
     }
 
 
@@ -927,6 +1005,58 @@ public class MenuAdminController {
         }
     }
 
+    //relatorios
+
+    @FXML
+    public void gerarFaturamento() {
+        feedbackRelatorios.getChildren().clear();
+        LocalDate inicio = dpFaturamentoInicio.getValue();
+        LocalDate fim = dpFaturamentoFim.getValue();
+
+        if (inicio == null || fim == null) {
+            avisoRelatorio("Escolha a data inicial e a data final.", Banner.BannerType.DANGER);
+            return;
+        }
+
+        try {
+            // A fachada valida o período (ex.: início depois do fim) e soma aluguéis + multas
+            txtFaturamento.setText(facade.gerarRelatorioFaturamento(inicio, fim));
+        } catch (RuntimeException e) {
+            logger.warn("Falha ao gerar relatório de faturamento: {}", e.getMessage(), e);
+            avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
+        }
+    }
+
+    private void avisoRelatorio(String mensagem, Banner.BannerType tipo) {
+        feedbackRelatorios.getChildren().setAll(new Banner(mensagem, tipo));
+    }
+
+    @FXML
+    public void carregarItensAlugados() {
+        try {
+            alugados.setAll(facade.listarContratosAtivos().values());
+            int atrasados = 0;
+            for (ContratoAluguel c : alugados) {
+                if (estaAtrasado(c)) {
+                    atrasados++;
+                }
+            }
+            lblResumoAlugados.setText("Total: " + alugados.size() + "  |  Em atraso: " + atrasados);
+        } catch (RuntimeException e) {
+            logger.warn("Falha ao carregar itens alugados: {}", e.getMessage(), e);
+            avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
+        }
+    }
+
+    private static boolean estaAtrasado(ContratoAluguel c) {
+        return c.getDataPrevDevolucao() != null && hoje().isAfter(c.getDataPrevDevolucao());
+    }
+
+    private static long diasDeAtraso(ContratoAluguel c) {
+        return estaAtrasado(c) ? ChronoUnit.DAYS.between(c.getDataPrevDevolucao(), hoje()) : 0;
+    }
+
+    //fim relatorio
 
     @FXML
     public void handleSair() {
@@ -1001,12 +1131,14 @@ public class MenuAdminController {
         switch (valor.toUpperCase()) {
             case "ATIVO":
             case "DISPONIVEL":
+            case "EM DIA":
                 return StatusBadge.StatusType.SUCCESS;
             case "ALUGADO":
                 return StatusBadge.StatusType.WARNING;
             case "INATIVO":
             case "MANUTENCAO":
             case "INDISPONIVEL":
+            case "ATRASADO":
                 return StatusBadge.StatusType.DANGER;
             default:
                 return StatusBadge.StatusType.INFO;
