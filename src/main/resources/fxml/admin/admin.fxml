@@ -342,6 +342,37 @@
                      </children>
                   </VBox>
 
+                                    <!-- RELATÓRIOS -->
+                  <VBox fx:id="paneRelatorios" spacing="20.0" visible="false" managed="false">
+                     <children>
+                        <VBox fx:id="feedbackRelatorios" />
+
+                        <Card>
+                           <children>
+                              <Label text="Faturamento por Período" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <Label text="Soma dos aluguéis encerrados e das multas quitadas no período." style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
+                              <HBox alignment="BOTTOM_LEFT" spacing="16.0">
+                                 <children>
+                                    <VBox spacing="6.0">
+                                       <children>
+                                          <Label text="DATA INICIAL" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #4b5563;" />
+                                          <DatePicker fx:id="dpFaturamentoInicio" prefWidth="180.0" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                       <children>
+                                          <Label text="DATA FINAL" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #4b5563;" />
+                                          <DatePicker fx:id="dpFaturamentoFim" prefWidth="180.0" />
+                                       </children>
+                                    </VBox>
+                                    <Button onAction="#gerarFaturamento" text="Gerar Relatório" style="-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand;" />
+                                 </children>
+                              </HBox>
+                              <TextArea fx:id="txtFaturamento" editable="false" prefHeight="170.0" promptText="Escolha o período e clique em Gerar Relatório." style="-fx-font-family: monospace; -fx-font-size: 13px;" />
+                           </children>
+                        </Card>
+                     </children>
+                  </VBox>
 
                </children>
             </StackPane>
