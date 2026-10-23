@@ -49,12 +49,12 @@ public class MenuFuncionarioController {
 
     @FXML
     private void abrirAluguel() {
-        carregarTela("/fxml/funcionario/TelaAluguel.fxml");
+        carregarTela("/fxml/funcionario/Aluguel.fxml");
     }
 
     @FXML
     private void abrirDevolucao() {
-        carregarTela("/fxml/funcionario/TelaDevolucao.fxml");
+        carregarTela("/fxml/funcionario/Devolução.fxml");
     }
 
     @FXML
