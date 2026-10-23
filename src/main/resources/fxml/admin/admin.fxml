@@ -112,7 +112,13 @@
 
                         <Card>
                            <children>
-                              <Label text="Listar Usuários" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                              <children>
+                                 <Label text="Listar Usuários" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                 <Region HBox.hgrow="ALWAYS" />
+                                 <TextField fx:id="txtPesquisaUsuarios" prefWidth="320.0" promptText="🔍 Pesquisar por ID, nome, login, perfil ou cargo..." style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 8px 12px; -fx-font-size: 13px;" />
+                              </children>
+                           </HBox>
                               <TableView fx:id="tblUsuarios" prefHeight="280.0">
                                  <columns>
                                     <TableColumn fx:id="colUsuarioId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
@@ -121,8 +127,7 @@
                                     <TableColumn fx:id="colUsuarioLogin" prefWidth="190.0" text="Login" />
                                     <TableColumn fx:id="colUsuarioCargo" prefWidth="110.0" text="Cargo" />
                                     <TableColumn fx:id="colUsuarioSituacao" prefWidth="100.0" text="Situação" />
-                                    <TableColumn fx:id="colUsuarioAcoes" prefWidth="170.0" sortable="false" text="Ações" />
-                                 </columns>
+                                    <TableColumn fx:id="colUsuarioAcoes" prefWidth="260.0" sortable="false" text="Ações" />                                 </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>
@@ -186,7 +191,14 @@
 
                         <Card>
                            <children>
-                              <Label text="Listar Itens" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Label text="Listar Itens" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Button text="Itens Disponíveis por categoria" onAction="#relatorioDisponiveisPorCategoria" style="-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;" />
+                                    <TextField fx:id="txtPesquisaItens" prefWidth="320.0" promptText="🔍 Pesquisar por ID, nome, status, categoria ou fornecedor..." style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 8px 12px; -fx-font-size: 13px;" />
+                                 </children>
+                              </HBox>
                               <TableView fx:id="tblItens" prefHeight="280.0">
                                  <columns>
                                     <TableColumn fx:id="colItemId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
@@ -242,7 +254,13 @@
 
                         <Card>
                            <children>
-                              <Label text="Listar Categorias" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Label text="Listar Categorias" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <TextField fx:id="txtPesquisaCategorias" prefWidth="320.0" promptText="🔍 Pesquisar por ID ou nome..." style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 8px 12px; -fx-font-size: 13px;" />
+                                 </children>
+                              </HBox>
                               <TableView fx:id="tblCategorias" prefHeight="280.0">
                                  <columns>
                                     <TableColumn fx:id="colCategoriaId" prefWidth="100.0" text="ID" style="-fx-font-family: monospace;" />
@@ -300,7 +318,13 @@
 
                         <Card>
                            <children>
-                              <Label text="Listar Fornecedores" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Label text="Listar Fornecedores" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <TextField fx:id="txtPesquisaFornecedores" prefWidth="320.0" promptText="🔍 Pesquisar por ID, nome, CNPJ ou telefone..." style="-fx-background-color: #ffffff; -fx-border-color: #d1d5db; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 8px 12px; -fx-font-size: 13px;" />
+                                 </children>
+                              </HBox>
                               <TableView fx:id="tblFornecedores" prefHeight="280.0">
                                  <columns>
                                     <TableColumn fx:id="colFornecedorId" prefWidth="80.0" text="ID" style="-fx-font-family: monospace;" />
@@ -318,6 +342,64 @@
                      </children>
                   </VBox>
 
+                                    <!-- RELATÓRIOS -->
+                  <VBox fx:id="paneRelatorios" spacing="20.0" visible="false" managed="false">
+                     <children>
+                        <VBox fx:id="feedbackRelatorios" />
+
+                        <Card>
+                           <children>
+                              <Label text="Faturamento por Período" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                              <Label text="Soma dos aluguéis encerrados e das multas quitadas no período." style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
+                              <HBox alignment="BOTTOM_LEFT" spacing="16.0">
+                                 <children>
+                                    <VBox spacing="6.0">
+                                       <children>
+                                          <Label text="DATA INICIAL" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #4b5563;" />
+                                          <DatePicker fx:id="dpFaturamentoInicio" prefWidth="180.0" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                       <children>
+                                          <Label text="DATA FINAL" style="-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #4b5563;" />
+                                          <DatePicker fx:id="dpFaturamentoFim" prefWidth="180.0" />
+                                       </children>
+                                    </VBox>
+                                    <Button onAction="#gerarFaturamento" text="Gerar Relatório" style="-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand;" />
+                                 </children>
+                              </HBox>
+                              <TextArea fx:id="txtFaturamento" editable="false" prefHeight="170.0" promptText="Escolha o período e clique em Gerar Relatório." style="-fx-font-family: monospace; -fx-font-size: 13px;" />
+                           </children>
+                        </Card>
+                        <Card>
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Label text="Itens Alugados no Momento" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="lblResumoAlugados" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                                    <Button onAction="#carregarItensAlugados" text="Atualizar" style="-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblAlugados" prefHeight="300.0">
+                                 <columns>
+                                    <TableColumn fx:id="colAlugadoContrato" prefWidth="90.0" text="Contrato" />
+                                    <TableColumn fx:id="colAlugadoItem" prefWidth="160.0" text="Item" />
+                                    <TableColumn fx:id="colAlugadoCliente" prefWidth="160.0" text="Cliente" />
+                                    <TableColumn fx:id="colAlugadoRetirada" prefWidth="100.0" text="Retirada" />
+                                    <TableColumn fx:id="colAlugadoPrevisao" prefWidth="110.0" text="Prev. Devolução" />
+                                    <TableColumn fx:id="colAlugadoSituacao" prefWidth="110.0" text="Situação" />
+                                    <TableColumn fx:id="colAlugadoAtraso" prefWidth="90.0" text="Dias Atraso" />
+                                    <TableColumn fx:id="colAlugadoValor" prefWidth="100.0" text="Valor" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </Card>
+                     </children>
+                  </VBox>
 
                </children>
             </StackPane>

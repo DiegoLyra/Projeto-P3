@@ -189,7 +189,29 @@ public class MenuClienteController {
                     return true;
                 }
 
-                return contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca);
+                if (contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca)) {
+                    return true;
+                }
+
+                if (contrato.getDataRetirada() != null) {
+                    String dataRetiradaStr = formatarData(contrato.getDataRetirada(), "");
+                    if (dataRetiradaStr.contains(termoBusca)) {
+                        return true;
+                    }
+                }
+
+                LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null 
+                        ? contrato.getDataEfetivaDevolucao() 
+                        : contrato.getDataPrevDevolucao();
+
+                if (dataDevolucao != null) {
+                    String dataDevolucaoStr = formatarData(dataDevolucao, "");
+                    if (dataDevolucaoStr.contains(termoBusca)) {
+                        return true;
+                    }
+                }
+
+                return false;
             });
 
             atualizarPaginacaoAlugueis();
