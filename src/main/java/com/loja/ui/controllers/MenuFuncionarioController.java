@@ -56,7 +56,7 @@ public class MenuFuncionarioController {
 
     @FXML
     private void abrirDevolucao() {
-        carregarTela("/fxml/funcionario/TelaDevolucao.fxml");
+        carregarTela("/fxml/funcionario/DevolucaoFuncionario.fxml");
     }
 
     @FXML
