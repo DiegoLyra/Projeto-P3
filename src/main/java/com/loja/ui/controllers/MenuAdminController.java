@@ -1424,4 +1424,8 @@ public class MenuAdminController {
             setGraphic(box);
         }
     }
+    @FXML
+        private void sair() {
+            navigator.showLogin();
+        }
 }
