@@ -107,6 +107,16 @@ public class MenuFuncionarioController {
 
             Parent tela = loader.load();
 
+            // Recupera o controlador da tela carregada
+            Object controlador = loader.getController();
+
+            // Passa a fachada para a tela de relatórios
+            if (controlador instanceof RelatorioFuncionarioController) {
+                ((RelatorioFuncionarioController) controlador)
+                        .setFacade(facade);
+            }
+
+            // Exibe a tela no painel central
             conteudoArea.getChildren().setAll(tela);
 
         } catch (Exception erro) {
