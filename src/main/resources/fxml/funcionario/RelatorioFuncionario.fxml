@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
@@ -21,24 +22,41 @@
                   <Insets bottom="26.0" left="26.0" right="26.0" top="26.0" />
                </padding>
                <children>
-                  <VBox spacing="6.0">
-                     <children>
-                        <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" text="Relatórios do Funcionário" />
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" text="Selecione uma das opções abaixo para visualizar os dados detalhados." wrapText="true" />
-                     </children>
-                  </VBox>
-
+                  <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" text="Faturamento por Período" />
+                  
+                  <Label style="-fx-font-size: 13px; -fx-text-fill: #6b7280;" text="Selecione o período para consultar o faturamento da loja." wrapText="true" />
+                  
                   <Separator />
 
-                  <HBox spacing="12.0">
+                  <HBox alignment="CENTER_LEFT" spacing="12.0">
                      <children>
-                        <Button onAction="#gerarDisponiveis" prefHeight="38.0" style="-fx-background-color: #2563eb; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;" text="Itens Disponíveis" />
-                        <Button onAction="#gerarContratosAtivos" prefHeight="38.0" style="-fx-background-color: #2563eb; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;" text="Contratos Ativos" />
-                        <Button onAction="#gerarHistoricoCliente" prefHeight="38.0" style="-fx-background-color: #2563eb; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;" text="Histórico do Cliente" />
+                        <VBox spacing="6.0">
+                           <children>
+                              <Label text="Data inicial" />
+                              <DatePicker fx:id="dpFaturamentoInicio" prefWidth="180.0" promptText="Data inicial" />
+                           </children>
+                        </VBox>
+                        
+                        <VBox spacing="6.0">
+                           <children>
+                              <Label text="Data final" />
+                              <DatePicker fx:id="dpFaturamentoFim" prefWidth="180.0" promptText="Data final" />
+                           </children>
+                        </VBox>
+
+                        <Button onAction="#gerarFaturamento" prefHeight="38.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" text="Gerar Faturamento" />
                      </children>
                   </HBox>
 
-                  <TextArea fx:id="txtRelatorio" editable="false" prefHeight="400.0" promptText="Selecione um relatório para visualizar os resultados." style="-fx-control-inner-background: #ffffff; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-family: 'Consolas', 'Monospaced', monospace; -fx-font-size: 13px;" wrapText="true" VBox.vgrow="ALWAYS" />
+                  <VBox fx:id="feedbackRelatorios" spacing="8.0" />
+
+                  <TextArea fx:id="txtFaturamento" editable="false" promptText="O resultado do faturamento aparecerá aqui." style="-fx-control-inner-background: #ffffff; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-family: monospace; -fx-font-size: 13px;" wrapText="true" VBox.vgrow="ALWAYS" />
+
+                  <HBox alignment="CENTER_RIGHT">
+                     <children>
+                        <Button onAction="#exportarPDF" prefHeight="38.0" style="-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" text="Exportar PDF" />
+                     </children>
+                  </HBox>
                </children>
             </VBox>
          </children>
