@@ -49,22 +49,29 @@
                     <Insets top="12.0" right="24.0" bottom="14.0" left="24.0"/>
                 </padding>
 
-                <Button text="Aluguel" onAction="#abrirAluguel"
-                        style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
-                <Button text="Devolução" onAction="#abrirDevolucao"
-                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
-                <Button text="Novo Cliente" onAction="#abrirNovoCliente"
-                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
-                <Button text="Disponíveis" onAction="#abrirDisponiveis"
-                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
-                <Button text="Contratos Ativos" onAction="#abrirContratosAtivos"
-                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
-                <Button text="Histórico Cliente" onAction="#abrirHistorico"
-                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
-                <Button text="Multas" onAction="#abrirMultas"
-                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
-                <Button text="Relatórios" onAction="#abrirRelatorios"
-                        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                <Button fx:id="btnAluguel" text="Aluguel" onAction="#abrirAluguel"
+        style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+
+<Button fx:id="btnDevolucao" text="Devolução" onAction="#abrirDevolucao"
+        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+
+<Button fx:id="btnNovoCliente" text="Novo Cliente" onAction="#abrirNovoCliente"
+        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+
+<Button fx:id="btnDisponiveis" text="Disponíveis" onAction="#abrirDisponiveis"
+        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+
+<Button fx:id="btnContratosAtivos" text="Contratos Ativos" onAction="#abrirContratosAtivos"
+        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+
+<Button fx:id="btnHistorico" text="Histórico Cliente" onAction="#abrirHistorico"
+        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+
+<Button fx:id="btnMultas" text="Multas" onAction="#abrirMultas"
+        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+
+<Button fx:id="btnRelatorios" text="Relatórios" onAction="#abrirRelatorios"
+        style="-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
             </FlowPane>
         </VBox>
     </top>

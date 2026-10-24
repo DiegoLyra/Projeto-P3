@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 
@@ -20,6 +21,30 @@ public class MenuFuncionarioController {
 
     @FXML
     private StackPane conteudoArea;
+
+    @FXML
+    private Button btnAluguel;
+
+    @FXML
+    private Button btnDevolucao;
+
+    @FXML
+    private Button btnNovoCliente;
+
+    @FXML
+    private Button btnDisponiveis;
+
+    @FXML
+    private Button btnContratosAtivos;
+
+    @FXML
+    private Button btnHistorico;
+
+    @FXML
+    private Button btnMultas;
+
+    @FXML
+    private Button btnRelatorios;
 
     private final ILojaFacade facade;
     private final Navigator navigator;
@@ -50,45 +75,103 @@ public class MenuFuncionarioController {
 
     @FXML
     private void abrirAluguel() {
-        carregarTela("/fxml/funcionario/Aluguel.fxml");
+        if (carregarTela("/fxml/funcionario/Aluguel.fxml")) {
+            atualizarBotaoSelecionado(btnAluguel);
+        }
     }
 
     @FXML
     private void abrirDevolucao() {
-        carregarTela("/fxml/funcionario/DevolucaoFuncionario.fxml");
+        if (carregarTela(
+                "/fxml/funcionario/DevolucaoFuncionario.fxml")) {
+            atualizarBotaoSelecionado(btnDevolucao);
+        }
     }
 
     @FXML
     private void abrirNovoCliente() {
-        carregarTela("/fxml/funcionario/NovoClienteFuncionario.fxml");
+        if (carregarTela(
+                "/fxml/funcionario/NovoClienteFuncionario.fxml")) {
+            atualizarBotaoSelecionado(btnNovoCliente);
+        }
     }
 
     @FXML
     private void abrirDisponiveis() {
-        carregarTela("/fxml/funcionario/ItensDisponiveisFuncionario.fxml");
+        if (carregarTela(
+                "/fxml/funcionario/ItensDisponiveisFuncionario.fxml")) {
+            atualizarBotaoSelecionado(btnDisponiveis);
+        }
     }
 
     @FXML
     private void abrirContratosAtivos() {
-        carregarTela("/fxml/funcionario/TelaContratosAtivos.fxml");
+        if (carregarTela(
+                "/fxml/funcionario/TelaContratosAtivos.fxml")) {
+            atualizarBotaoSelecionado(btnContratosAtivos);
+        }
     }
 
     @FXML
     private void abrirHistorico() {
-        carregarTela("/fxml/funcionario/TelaHistorico.fxml");
+        if (carregarTela(
+                "/fxml/funcionario/TelaHistorico.fxml")) {
+            atualizarBotaoSelecionado(btnHistorico);
+        }
     }
 
     @FXML
     private void abrirMultas() {
-        carregarTela("/fxml/funcionario/TelaMultas.fxml");
+        if (carregarTela(
+                "/fxml/funcionario/TelaMultas.fxml")) {
+            atualizarBotaoSelecionado(btnMultas);
+        }
     }
 
     @FXML
     private void abrirRelatorios() {
-        carregarTela("/fxml/funcionario/RelatorioFuncionario.fxml");
+        if (carregarTela(
+                "/fxml/funcionario/RelatorioFuncionario.fxml")) {
+            atualizarBotaoSelecionado(btnRelatorios);
+        }
     }
 
-    private void carregarTela(String caminhoFXML) {
+    private void atualizarBotaoSelecionado(Button selecionado) {
+
+        Button[] botoes = {
+            btnAluguel,
+            btnDevolucao,
+            btnNovoCliente,
+            btnDisponiveis,
+            btnContratosAtivos,
+            btnHistorico,
+            btnMultas,
+            btnRelatorios
+        };
+
+        String estiloNormal =
+                "-fx-background-color: #f1f5f9;"
+                + "-fx-text-fill: #1e293b;"
+                + "-fx-background-radius: 8;"
+                + "-fx-padding: 9 16;"
+                + "-fx-cursor: hand;";
+
+        String estiloSelecionado =
+                "-fx-background-color: #2563eb;"
+                + "-fx-text-fill: white;"
+                + "-fx-font-weight: bold;"
+                + "-fx-background-radius: 8;"
+                + "-fx-padding: 9 16;"
+                + "-fx-cursor: hand;";
+
+        for (Button botao : botoes) {
+            botao.setStyle(estiloNormal);
+        }
+
+        selecionado.setStyle(estiloSelecionado);
+    }
+
+    private boolean carregarTela(String caminhoFXML) {
         try {
             URL recurso = getClass().getResource(caminhoFXML);
 
@@ -120,8 +203,7 @@ public class MenuFuncionarioController {
                         .setFacade(facade);
             }
 
-
-            // Passa a fachada para a tela de cadastro de clientes.
+            // Passa a fachada para o cadastro de clientes.
             if (controlador instanceof NovoClienteFuncionarioController) {
                 ((NovoClienteFuncionarioController) controlador)
                         .setFacade(facade);
@@ -130,17 +212,23 @@ public class MenuFuncionarioController {
             // Exibe a tela no painel central.
             conteudoArea.getChildren().setAll(tela);
 
+            return true;
+
         } catch (Exception erro) {
             erro.printStackTrace();
 
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Erro de navegação");
-            alerta.setHeaderText("Não foi possível abrir esta tela.");
+            alerta.setHeaderText(
+                    "Não foi possível abrir esta tela."
+            );
             alerta.setContentText(
                     "Arquivo: " + caminhoFXML
                     + "\n\nMotivo: " + obterMensagemErro(erro)
             );
             alerta.showAndWait();
+
+            return false;
         }
     }
 
