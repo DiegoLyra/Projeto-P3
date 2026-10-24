@@ -1,4 +1,3 @@
-
 package com.loja.ui.controllers;
 
 import com.loja.padrao.facade.interfaces.ILojaFacade;
@@ -61,12 +60,12 @@ public class MenuFuncionarioController {
 
     @FXML
     private void abrirNovoCliente() {
-        carregarTela("/fxml/funcionario/TelaNovoCliente.fxml");
+        carregarTela("/fxml/funcionario/NovoClienteFuncionario.fxml");
     }
 
     @FXML
     private void abrirDisponiveis() {
-        carregarTela("/fxml/funcionario/TelaDisponiveis.fxml");
+        carregarTela("/fxml/funcionario/ItensDisponiveisFuncionario.fxml");
     }
 
     @FXML
@@ -107,16 +106,21 @@ public class MenuFuncionarioController {
 
             Parent tela = loader.load();
 
-            // Recupera o controlador da tela carregada
             Object controlador = loader.getController();
 
-            // Passa a fachada para a tela de relatórios
+            // Passa a fachada para a tela de relatórios.
             if (controlador instanceof RelatorioFuncionarioController) {
                 ((RelatorioFuncionarioController) controlador)
                         .setFacade(facade);
             }
 
-            // Exibe a tela no painel central
+            // Passa a fachada para a tela de itens disponíveis.
+            if (controlador instanceof ItensDisponiveisFuncionarioController) {
+                ((ItensDisponiveisFuncionarioController) controlador)
+                        .setFacade(facade);
+            }
+
+            // Exibe a tela no painel central.
             conteudoArea.getChildren().setAll(tela);
 
         } catch (Exception erro) {
