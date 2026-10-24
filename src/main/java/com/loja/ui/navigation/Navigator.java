@@ -18,7 +18,7 @@ public class Navigator {
 
     private static final String FXML_AUTH = "/fxml/autenticacao/auth.fxml";
     private static final String FXML_ADMIN = "/fxml/admin/admin.fxml";
-    private static final String FXML_FUNCIONARIO = "/fxml/funcionario/funcionario.fxml";
+    private static final String FXML_FUNCIONARIO = "/fxml/funcionario/MenuFuncionario.fxml";
     private static final String FXML_CLIENTE = "/fxml/cliente/cliente.fxml";
 
     private static final double LARGURA_INICIAL = 1200;
