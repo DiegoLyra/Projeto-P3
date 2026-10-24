@@ -14,8 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.cell.ComboBoxListCell;
-import javafx.util.StringConverter;
+import javafx.scene.control.ListCell;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -50,47 +49,49 @@ public class AluguelController {
     }
 
     @FXML
-    public void initialize() {
-        clienteComboBox.setItems(clientes);
-        itemComboBox.setItems(itens);
+public void initialize() {
+    clienteComboBox.setItems(clientes);
+    itemComboBox.setItems(itens);
 
-        // Converter para Cliente (Botão e Células da Lista)
-        StringConverter<Cliente> clienteConverter = new StringConverter<>() {
-            @Override
-            public String toString(Cliente cliente) {
-                return (cliente == null || cliente.getNome() == null) ? "" : cliente.getNome();
-            }
+    // Configuração de exibição para Cliente
+    clienteComboBox.setCellFactory(lv -> new ListCell<Cliente>() {
+        @Override
+        protected void updateItem(Cliente cliente, boolean empty) {
+            super.updateItem(cliente, empty);
+            setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
+        }
+    });
+    clienteComboBox.setButtonCell(new ListCell<Cliente>() {
+        @Override
+        protected void updateItem(Cliente cliente, boolean empty) {
+            super.updateItem(cliente, empty);
+            setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
+        }
+    });
 
-            @Override
-            public Cliente fromString(String texto) {
-                return null;
-            }
-        };
-        clienteComboBox.setConverter(clienteConverter);
-        clienteComboBox.setCellFactory(ComboBoxListCell.forListView(clienteConverter));
+    // Configuração de exibição para Item
+    itemComboBox.setCellFactory(lv -> new ListCell<Item>() {
+        @Override
+        protected void updateItem(Item item, boolean empty) {
+            super.updateItem(item, empty);
+            setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
+        }
+    });
+    itemComboBox.setButtonCell(new ListCell<Item>() {
+        @Override
+        protected void updateItem(Item item, boolean empty) {
+            super.updateItem(item, empty);
+            setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
+        }
+    });
 
-        // Converter para Item (Botão e Células da Lista)
-        StringConverter<Item> itemConverter = new StringConverter<>() {
-            @Override
-            public String toString(Item item) {
-                return (item == null || item.getNome() == null) ? "" : item.getNome();
-            }
+    // Listeners
+    dataRetiradaPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
+    dataDevolucaoPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
+    itemComboBox.valueProperty().addListener((obs, antigo, novo) -> calcularTotal());
 
-            @Override
-            public Item fromString(String texto) {
-                return null;
-            }
-        };
-        itemComboBox.setConverter(itemConverter);
-        itemComboBox.setCellFactory(ComboBoxListCell.forListView(itemConverter));
-
-        // Listeners
-        dataRetiradaPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
-        dataDevolucaoPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
-        itemComboBox.valueProperty().addListener((obs, antigo, novo) -> calcularTotal());
-
-        carregarDados();
-    }
+    carregarDados();
+}
 
     private void carregarDados() {
         try {
@@ -125,6 +126,10 @@ public class AluguelController {
         } catch (Exception e) {
             e.printStackTrace();
             mensagemLabel.setText("Erro ao carregar dados: " + e.getMessage());
+        }
+
+        for (Cliente c : clientes) {
+            System.out.println("Cliente ID: " + c.getId() + " | Nome: '" + c.getNome() + "'");
         }
     }
 

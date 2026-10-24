@@ -120,6 +120,13 @@ public class MenuFuncionarioController {
                         .setFacade(facade);
             }
 
+
+            // Passa a fachada para a tela de cadastro de clientes.
+            if (controlador instanceof NovoClienteFuncionarioController) {
+                ((NovoClienteFuncionarioController) controlador)
+                        .setFacade(facade);
+            }
+
             // Exibe a tela no painel central.
             conteudoArea.getChildren().setAll(tela);
 
