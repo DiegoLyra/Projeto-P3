@@ -1,12 +1,18 @@
-
 package com.loja.ui.controllers;
 
+import com.loja.model.ContratoAluguel;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -20,21 +26,33 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 public class RelatorioFuncionarioController {
 
-    @FXML
-    private DatePicker dpFaturamentoInicio;
+    @FXML private DatePicker dpFaturamentoInicio;
+    @FXML private DatePicker dpFaturamentoFim;
+    @FXML private VBox feedbackRelatorios;
+    @FXML private TextArea txtFaturamento;
 
-    @FXML
-    private DatePicker dpFaturamentoFim;
+    @FXML private TableView<LinhaAluguel> tabelaAlugados;
+    @FXML private TableColumn<LinhaAluguel, String> colContrato;
+    @FXML private TableColumn<LinhaAluguel, String> colItem;
+    @FXML private TableColumn<LinhaAluguel, String> colCliente;
+    @FXML private TableColumn<LinhaAluguel, String> colRetirada;
+    @FXML private TableColumn<LinhaAluguel, String> colDevolucao;
+    @FXML private TableColumn<LinhaAluguel, String> colSituacao;
+    @FXML private TableColumn<LinhaAluguel, String> colDiasAtraso;
+    @FXML private TableColumn<LinhaAluguel, String> colValor;
 
-    @FXML
-    private VBox feedbackRelatorios;
+    @FXML private Label lblTotalAlugados;
+    @FXML private Label lblTotalAtrasados;
 
-    @FXML
-    private TextArea txtFaturamento;
+    private final ObservableList<LinhaAluguel> alugueis =
+            FXCollections.observableArrayList();
 
     private ILojaFacade facade;
 
@@ -44,14 +62,33 @@ public class RelatorioFuncionarioController {
     @FXML
     public void initialize() {
         dpFaturamentoInicio.setValue(
-                LocalDate.now().withDayOfMonth(1)
-        );
+                LocalDate.now().withDayOfMonth(1));
 
         dpFaturamentoFim.setValue(LocalDate.now());
+
+        colContrato.setCellValueFactory(
+                new PropertyValueFactory<>("contrato"));
+        colItem.setCellValueFactory(
+                new PropertyValueFactory<>("item"));
+        colCliente.setCellValueFactory(
+                new PropertyValueFactory<>("cliente"));
+        colRetirada.setCellValueFactory(
+                new PropertyValueFactory<>("retirada"));
+        colDevolucao.setCellValueFactory(
+                new PropertyValueFactory<>("devolucao"));
+        colSituacao.setCellValueFactory(
+                new PropertyValueFactory<>("situacao"));
+        colDiasAtraso.setCellValueFactory(
+                new PropertyValueFactory<>("diasAtraso"));
+        colValor.setCellValueFactory(
+                new PropertyValueFactory<>("valor"));
+
+        tabelaAlugados.setItems(alugueis);
     }
 
     public void setFacade(ILojaFacade facade) {
         this.facade = facade;
+        atualizarAlugados();
     }
 
     @FXML
@@ -60,8 +97,7 @@ public class RelatorioFuncionarioController {
             mostrarAlerta(
                     Alert.AlertType.ERROR,
                     "Erro",
-                    "A fachada do sistema não foi configurada."
-            );
+                    "A fachada do sistema não foi configurada.");
             return;
         }
 
@@ -72,8 +108,7 @@ public class RelatorioFuncionarioController {
             mostrarAlerta(
                     Alert.AlertType.WARNING,
                     "Datas obrigatórias",
-                    "Selecione a data inicial e a data final."
-            );
+                    "Selecione a data inicial e a data final.");
             return;
         }
 
@@ -81,8 +116,7 @@ public class RelatorioFuncionarioController {
             mostrarAlerta(
                     Alert.AlertType.WARNING,
                     "Período inválido",
-                    "A data inicial não pode ser posterior à data final."
-            );
+                    "A data inicial não pode ser posterior à data final.");
             return;
         }
 
@@ -92,15 +126,15 @@ public class RelatorioFuncionarioController {
 
             if (relatorio == null || relatorio.isBlank()) {
                 txtFaturamento.setText(
-                        "Nenhum dado de faturamento foi retornado para o período."
-                );
+                        "Nenhum dado de faturamento foi retornado para o período.");
             } else {
                 txtFaturamento.setText(
                         "FATURAMENTO POR PERÍODO\n"
-                        + "Data inicial: " + inicio.format(FORMATO_DATA) + "\n"
-                        + "Data final: " + fim.format(FORMATO_DATA) + "\n\n"
-                        + relatorio
-                );
+                        + "Data inicial: "
+                        + inicio.format(FORMATO_DATA) + "\n"
+                        + "Data final: "
+                        + fim.format(FORMATO_DATA) + "\n\n"
+                        + relatorio);
             }
 
         } catch (RuntimeException e) {
@@ -108,8 +142,149 @@ public class RelatorioFuncionarioController {
                     Alert.AlertType.ERROR,
                     "Erro ao gerar relatório",
                     "Não foi possível consultar o faturamento: "
-                            + e.getMessage()
-            );
+                            + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void atualizarAlugados() {
+        if (facade == null) {
+            return;
+        }
+
+        try {
+            alugueis.clear();
+
+            Map<String, ContratoAluguel> contratos =
+                    facade.listarContratosAtivos();
+
+            LocalDate hoje =
+                    LocalDate.now(ZoneId.of("America/Recife"));
+
+            int atrasados = 0;
+
+            if (contratos != null) {
+                for (ContratoAluguel contrato : contratos.values()) {
+
+                    LocalDate prevista =
+                            contrato.getDataPrevDevolucao();
+
+                    boolean atrasado =
+                            prevista != null && hoje.isAfter(prevista);
+
+                    long dias = atrasado
+                            ? ChronoUnit.DAYS.between(prevista, hoje)
+                            : 0;
+
+                    if (atrasado) {
+                        atrasados++;
+                    }
+
+                    alugueis.add(new LinhaAluguel(
+                            contrato.getId(),
+
+                            contrato.getItem() == null
+                                    ? "—"
+                                    : contrato.getItem().getNome(),
+
+                            contrato.getCliente() == null
+                                    ? "—"
+                                    : contrato.getCliente().getNome(),
+
+                            formatarData(contrato.getDataRetirada()),
+                            formatarData(prevista),
+
+                            atrasado ? "Em atraso" : "Em dia",
+
+                            String.valueOf(dias),
+
+                            contrato.getValorTotal() == null
+                                    ? "—"
+                                    : "R$ " + contrato.getValorTotal()
+                    ));
+                }
+            }
+
+            lblTotalAlugados.setText(
+                    "Total: " + alugueis.size());
+
+            lblTotalAtrasados.setText(
+                    "Em atraso: " + atrasados);
+
+        } catch (RuntimeException e) {
+            mostrarAlerta(
+                    Alert.AlertType.ERROR,
+                    "Erro ao atualizar",
+                    "Não foi possível carregar os aluguéis: "
+                            + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void exportarAlugadosPDF() {
+        if (alugueis.isEmpty()) {
+            atualizarAlugados();
+
+            if (alugueis.isEmpty()) {
+                mostrarAlerta(
+                        Alert.AlertType.WARNING,
+                        "Relatório vazio",
+                        "Não há itens alugados para exportar.");
+                return;
+            }
+        }
+
+        StringBuilder conteudo = new StringBuilder();
+
+        conteudo.append("RELATÓRIO DE ITENS ALUGADOS\n");
+
+        conteudo.append("Data: ")
+                .append(LocalDate.now(
+                        ZoneId.of("America/Recife"))
+                        .format(FORMATO_DATA))
+                .append("\n\n");
+
+        conteudo.append(
+                "Contrato | Item | Cliente | Retirada | "
+                + "Prev. Devolução | Situação | Dias atraso | Valor\n");
+
+        conteudo.append(
+                "--------------------------------------------------"
+                + "------------------------------------\n");
+
+        for (LinhaAluguel linha : alugueis) {
+            conteudo.append(linha).append("\n");
+        }
+
+        conteudo.append("\n")
+                .append(lblTotalAlugados.getText())
+                .append(" | ")
+                .append(lblTotalAtrasados.getText());
+
+        File arquivo = escolherArquivoPDF(
+                "Salvar relatório de itens alugados",
+                "relatorio-itens-alugados.pdf",
+                tabelaAlugados.getScene().getWindow());
+
+        if (arquivo == null) {
+            return;
+        }
+
+        try {
+            criarPDF(arquivo, conteudo.toString());
+
+            mostrarAlerta(
+                    Alert.AlertType.INFORMATION,
+                    "PDF exportado",
+                    "Relatório salvo em:\n"
+                            + arquivo.getAbsolutePath());
+
+        } catch (IOException e) {
+            mostrarAlerta(
+                    Alert.AlertType.ERROR,
+                    "Erro ao exportar PDF",
+                    "Não foi possível salvar o arquivo: "
+                            + e.getMessage());
         }
     }
 
@@ -121,28 +296,17 @@ public class RelatorioFuncionarioController {
             mostrarAlerta(
                     Alert.AlertType.WARNING,
                     "Relatório vazio",
-                    "Gere o relatório de faturamento antes de exportar."
-            );
+                    "Gere o relatório de faturamento antes de exportar.");
             return;
         }
 
-        FileChooser seletor = new FileChooser();
-        seletor.setTitle("Salvar relatório de faturamento");
-        seletor.setInitialFileName("relatorio-faturamento.pdf");
-
-        seletor.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Arquivo PDF", "*.pdf")
-        );
-
-        Window janela = txtFaturamento.getScene().getWindow();
-        File arquivo = seletor.showSaveDialog(janela);
+        File arquivo = escolherArquivoPDF(
+                "Salvar relatório de faturamento",
+                "relatorio-faturamento.pdf",
+                txtFaturamento.getScene().getWindow());
 
         if (arquivo == null) {
             return;
-        }
-
-        if (!arquivo.getName().toLowerCase().endsWith(".pdf")) {
-            arquivo = new File(arquivo.getAbsolutePath() + ".pdf");
         }
 
         try {
@@ -151,16 +315,41 @@ public class RelatorioFuncionarioController {
             mostrarAlerta(
                     Alert.AlertType.INFORMATION,
                     "PDF exportado",
-                    "Relatório salvo em:\n" + arquivo.getAbsolutePath()
-            );
+                    "Relatório salvo em:\n"
+                            + arquivo.getAbsolutePath());
 
         } catch (IOException e) {
             mostrarAlerta(
                     Alert.AlertType.ERROR,
                     "Erro ao exportar PDF",
-                    "Não foi possível salvar o arquivo: " + e.getMessage()
-            );
+                    "Não foi possível salvar o arquivo: "
+                            + e.getMessage());
         }
+    }
+
+    private File escolherArquivoPDF(
+            String titulo,
+            String nome,
+            Window janela) {
+
+        FileChooser seletor = new FileChooser();
+
+        seletor.setTitle(titulo);
+        seletor.setInitialFileName(nome);
+
+        seletor.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(
+                        "Arquivo PDF", "*.pdf"));
+
+        File arquivo = seletor.showSaveDialog(janela);
+
+        if (arquivo != null
+                && !arquivo.getName().toLowerCase().endsWith(".pdf")) {
+            arquivo = new File(
+                    arquivo.getAbsolutePath() + ".pdf");
+        }
+
+        return arquivo;
     }
 
     private void criarPDF(File arquivo, String conteudo)
@@ -172,7 +361,9 @@ public class RelatorioFuncionarioController {
             float tamanhoFonte = 10;
             float margem = 50;
             float alturaLinha = 15;
-            float larguraUtil = PDRectangle.A4.getWidth() - 2 * margem;
+
+            float larguraUtil =
+                    PDRectangle.A4.getWidth() - 2 * margem;
 
             PDPage pagina = new PDPage(PDRectangle.A4);
             documento.addPage(pagina);
@@ -180,7 +371,8 @@ public class RelatorioFuncionarioController {
             PDPageContentStream stream =
                     new PDPageContentStream(documento, pagina);
 
-            float y = pagina.getMediaBox().getHeight() - margem;
+            float y =
+                    pagina.getMediaBox().getHeight() - margem;
 
             stream.beginText();
             stream.setFont(fonte, tamanhoFonte);
@@ -198,8 +390,7 @@ public class RelatorioFuncionarioController {
                         documento.addPage(pagina);
 
                         stream = new PDPageContentStream(
-                                documento, pagina
-                        );
+                                documento, pagina);
 
                         y = pagina.getMediaBox().getHeight() - margem;
 
@@ -240,22 +431,22 @@ public class RelatorioFuncionarioController {
         }
 
         throw new IOException(
-                "Nenhuma fonte compatível foi encontrada no computador."
-        );
+                "Nenhuma fonte compatível foi encontrada no computador.");
     }
 
     private String[] quebrarLinha(
             String linha,
             PDType0Font fonte,
             float tamanhoFonte,
-            float larguraMaxima
-    ) throws IOException {
+            float larguraMaxima) throws IOException {
 
         if (linha.isEmpty()) {
             return new String[]{""};
         }
 
-        java.util.List<String> partes = new java.util.ArrayList<>();
+        java.util.List<String> partes =
+                new java.util.ArrayList<>();
+
         StringBuilder atual = new StringBuilder();
 
         for (String palavra : linha.split(" ")) {
@@ -275,18 +466,78 @@ public class RelatorioFuncionarioController {
         }
 
         partes.add(atual.toString());
+
         return partes.toArray(new String[0]);
+    }
+
+    private String formatarData(LocalDate data) {
+        return data == null
+                ? "—"
+                : data.format(FORMATO_DATA);
     }
 
     private void mostrarAlerta(
             Alert.AlertType tipo,
             String titulo,
-            String mensagem
-    ) {
+            String mensagem) {
+
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);
         alerta.setContentText(mensagem);
         alerta.showAndWait();
+    }
+
+    public static class LinhaAluguel {
+
+        private final String contrato;
+        private final String item;
+        private final String cliente;
+        private final String retirada;
+        private final String devolucao;
+        private final String situacao;
+        private final String diasAtraso;
+        private final String valor;
+
+        public LinhaAluguel(
+                String contrato,
+                String item,
+                String cliente,
+                String retirada,
+                String devolucao,
+                String situacao,
+                String diasAtraso,
+                String valor) {
+
+            this.contrato = contrato;
+            this.item = item;
+            this.cliente = cliente;
+            this.retirada = retirada;
+            this.devolucao = devolucao;
+            this.situacao = situacao;
+            this.diasAtraso = diasAtraso;
+            this.valor = valor;
+        }
+
+        public String getContrato() { return contrato; }
+        public String getItem() { return item; }
+        public String getCliente() { return cliente; }
+        public String getRetirada() { return retirada; }
+        public String getDevolucao() { return devolucao; }
+        public String getSituacao() { return situacao; }
+        public String getDiasAtraso() { return diasAtraso; }
+        public String getValor() { return valor; }
+
+        @Override
+        public String toString() {
+            return contrato + " | "
+                    + item + " | "
+                    + cliente + " | "
+                    + retirada + " | "
+                    + devolucao + " | "
+                    + situacao + " | "
+                    + diasAtraso + " | "
+                    + valor;
+        }
     }
 }
