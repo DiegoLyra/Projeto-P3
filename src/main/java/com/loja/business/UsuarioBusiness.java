@@ -194,8 +194,9 @@ public class UsuarioBusiness implements IUsuarioBusiness {
     /* --------------------------- autorização ---------------------------- */
 
     private void exigirAdministrador() {
-        if (!(usuarioAtual instanceof Administrador)) {
-            throw new UsuarioException("Acesso negado: operação restrita a administradores.");
+    if (!(usuarioAtual instanceof Administrador)
+            && !(usuarioAtual instanceof Funcionario)) {
+        throw new UsuarioException("Acesso negado: operação restrita.");
         }
     }
 
