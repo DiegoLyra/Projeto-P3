@@ -63,6 +63,9 @@ import com.loja.model.Multa;
 import java.time.temporal.ChronoUnit;
 import javafx.scene.control.DatePicker;
 
+//ignorar pedido para colocar lambda, uma vez que o professor pediu para não ser utilizado
+@SuppressWarnings("java:S1604") 
+
 public class MenuAdminController {
 
 
