@@ -24,24 +24,49 @@ import java.util.Map;
 
 public class AluguelController {
 
-    @FXML private ComboBox<Cliente> clienteComboBox;
-    @FXML private ComboBox<Item> itemComboBox;
-    @FXML private DatePicker dataRetiradaPicker;
-    @FXML private DatePicker dataDevolucaoPicker;
-    @FXML private Label valorDiariaLabel;
-    @FXML private Label quantidadeDiasLabel;
-    @FXML private Label valorTotalLabel;
-    @FXML private Label mensagemLabel;
-    @FXML private Button registrarAluguelButton;
+    private static final String VALOR_ZERO = "R$ 0,00";
 
-    private final ObservableList<Cliente> clientes = FXCollections.observableArrayList();
-    private final ObservableList<Item> itens = FXCollections.observableArrayList();
-    private final ObservableList<ContratoAluguel> alugados = FXCollections.observableArrayList();
+    @FXML
+    private ComboBox<Cliente> clienteComboBox;
+
+    @FXML
+    private ComboBox<Item> itemComboBox;
+
+    @FXML
+    private DatePicker dataRetiradaPicker;
+
+    @FXML
+    private DatePicker dataDevolucaoPicker;
+
+    @FXML
+    private Label valorDiariaLabel;
+
+    @FXML
+    private Label quantidadeDiasLabel;
+
+    @FXML
+    private Label valorTotalLabel;
+
+    @FXML
+    private Label mensagemLabel;
+
+    @FXML
+    private Button registrarAluguelButton;
+
+    private final ObservableList<Cliente> clientes =
+            FXCollections.observableArrayList();
+
+    private final ObservableList<Item> itens =
+            FXCollections.observableArrayList();
+
+    private final ObservableList<ContratoAluguel> alugados =
+            FXCollections.observableArrayList();
 
     private final ILojaFacade facade;
     private final Navigator navigator;
 
-    private final NumberFormat moeda = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+    private final NumberFormat moeda =
+            NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
 
     public AluguelController(ILojaFacade facade, Navigator navigator) {
         this.facade = facade;
@@ -49,49 +74,74 @@ public class AluguelController {
     }
 
     @FXML
-public void initialize() {
-    clienteComboBox.setItems(clientes);
-    itemComboBox.setItems(itens);
+    public void initialize() {
+        clienteComboBox.setItems(clientes);
+        itemComboBox.setItems(itens);
 
-    // Configuração de exibição para Cliente
-    clienteComboBox.setCellFactory(lv -> new ListCell<Cliente>() {
-        @Override
-        protected void updateItem(Cliente cliente, boolean empty) {
-            super.updateItem(cliente, empty);
-            setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
-        }
-    });
-    clienteComboBox.setButtonCell(new ListCell<Cliente>() {
-        @Override
-        protected void updateItem(Cliente cliente, boolean empty) {
-            super.updateItem(cliente, empty);
-            setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
-        }
-    });
+        clienteComboBox.setCellFactory(lv -> new ListCell<Cliente>() {
+            @Override
+            protected void updateItem(Cliente cliente, boolean empty) {
+                super.updateItem(cliente, empty);
 
-    // Configuração de exibição para Item
-    itemComboBox.setCellFactory(lv -> new ListCell<Item>() {
-        @Override
-        protected void updateItem(Item item, boolean empty) {
-            super.updateItem(item, empty);
-            setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
-        }
-    });
-    itemComboBox.setButtonCell(new ListCell<Item>() {
-        @Override
-        protected void updateItem(Item item, boolean empty) {
-            super.updateItem(item, empty);
-            setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
-        }
-    });
+                setText(
+                        empty || cliente == null || cliente.getNome() == null
+                                ? ""
+                                : cliente.getNome()
+                );
+            }
+        });
 
-    // Listeners
-    dataRetiradaPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
-    dataDevolucaoPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
-    itemComboBox.valueProperty().addListener((obs, antigo, novo) -> calcularTotal());
+        clienteComboBox.setButtonCell(new ListCell<Cliente>() {
+            @Override
+            protected void updateItem(Cliente cliente, boolean empty) {
+                super.updateItem(cliente, empty);
 
-    carregarDados();
-}
+                setText(
+                        empty || cliente == null || cliente.getNome() == null
+                                ? ""
+                                : cliente.getNome()
+                );
+            }
+        });
+
+        itemComboBox.setCellFactory(lv -> new ListCell<Item>() {
+            @Override
+            protected void updateItem(Item item, boolean empty) {
+                super.updateItem(item, empty);
+
+                setText(
+                        empty || item == null || item.getNome() == null
+                                ? ""
+                                : item.getNome()
+                );
+            }
+        });
+
+        itemComboBox.setButtonCell(new ListCell<Item>() {
+            @Override
+            protected void updateItem(Item item, boolean empty) {
+                super.updateItem(item, empty);
+
+                setText(
+                        empty || item == null || item.getNome() == null
+                                ? ""
+                                : item.getNome()
+                );
+            }
+        });
+
+        dataRetiradaPicker.valueProperty()
+                .addListener((obs, antiga, nova) -> calcularTotal());
+
+        dataDevolucaoPicker.valueProperty()
+                .addListener((obs, antiga, nova) -> calcularTotal());
+
+        itemComboBox.valueProperty()
+                .addListener((obs, antigo, novo) -> calcularTotal());
+
+        carregarDados();
+        calcularTotal();
+    }
 
     private void carregarDados() {
         try {
@@ -99,6 +149,7 @@ public void initialize() {
             itens.clear();
 
             Map<String, Usuario> usuariosMap = facade.listarUsuario();
+
             if (usuariosMap != null) {
                 for (Usuario usuario : usuariosMap.values()) {
                     if (usuario instanceof Cliente cliente) {
@@ -108,6 +159,7 @@ public void initialize() {
             }
 
             Map<String, Item> itensMap = facade.listarItensDisponiveis();
+
             if (itensMap != null) {
                 itens.addAll(itensMap.values());
             }
@@ -118,18 +170,25 @@ public void initialize() {
             if (clientes.isEmpty()) {
                 mensagemLabel.setText("Nenhum cliente encontrado.");
             } else if (itens.isEmpty()) {
-                mensagemLabel.setText("Nenhum item disponível para aluguel.");
+                mensagemLabel.setText(
+                        "Nenhum item disponível para aluguel."
+                );
             } else {
                 mensagemLabel.setText("");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            mensagemLabel.setText("Erro ao carregar dados: " + e.getMessage());
+            mensagemLabel.setText(
+                    "Erro ao carregar dados: " + e.getMessage()
+            );
         }
 
-        for (Cliente c : clientes) {
-            System.out.println("Cliente ID: " + c.getId() + " | Nome: '" + c.getNome() + "'");
+        for (Cliente cliente : clientes) {
+            System.out.println(
+                    "Cliente ID: " + cliente.getId()
+                            + " | Nome: '" + cliente.getNome() + "'"
+            );
         }
     }
 
@@ -143,18 +202,32 @@ public void initialize() {
         double total = 0;
 
         if (item != null) {
-            diaria = Double.parseDouble(String.valueOf(item.getTaxaDiaria()));
+            diaria = Double.parseDouble(
+                    String.valueOf(item.getTaxaDiaria())
+            );
         }
 
-        if (retirada != null && devolucao != null && !devolucao.isBefore(retirada)) {
+        if (retirada != null
+                && devolucao != null
+                && !devolucao.isBefore(retirada)) {
+
             dias = ChronoUnit.DAYS.between(retirada, devolucao);
             dias = Math.max(1, dias);
             total = diaria * dias;
         }
 
-        valorDiariaLabel.setText(moeda.format(diaria));
+        valorDiariaLabel.setText(
+                item == null ? VALOR_ZERO : moeda.format(diaria)
+        );
+
         quantidadeDiasLabel.setText(dias + " dia(s)");
-        valorTotalLabel.setText(moeda.format(total));
+
+        valorTotalLabel.setText(
+                retirada == null || devolucao == null
+                        || devolucao.isBefore(retirada)
+                        ? VALOR_ZERO
+                        : moeda.format(total)
+        );
     }
 
     @FXML
@@ -164,15 +237,21 @@ public void initialize() {
         LocalDate retirada = dataRetiradaPicker.getValue();
         LocalDate devolucao = dataDevolucaoPicker.getValue();
 
-        if (cliente == null || item == null || retirada == null || devolucao == null) {
+        if (cliente == null || item == null
+                || retirada == null || devolucao == null) {
+
             mensagemLabel.setStyle("-fx-text-fill: #b91c1c;");
-            mensagemLabel.setText("Selecione o cliente, o item e as duas datas.");
+            mensagemLabel.setText(
+                    "Selecione o cliente, o item e as duas datas."
+            );
             return;
         }
 
         if (devolucao.isBefore(retirada)) {
             mensagemLabel.setStyle("-fx-text-fill: #b91c1c;");
-            mensagemLabel.setText("A devolução não pode ser anterior à retirada.");
+            mensagemLabel.setText(
+                    "A devolução não pode ser anterior à retirada."
+            );
             return;
         }
 
@@ -187,23 +266,30 @@ public void initialize() {
             alugados.add(contrato);
 
             mensagemLabel.setStyle("-fx-text-fill: #15803d;");
-            mensagemLabel.setText("Aluguel registrado! Contrato: " + contrato.getId());
+            mensagemLabel.setText(
+                    "Aluguel registrado! Contrato: " + contrato.getId()
+            );
 
             carregarDados();
             limparFormulario();
 
         } catch (Exception e) {
             e.printStackTrace();
+
             mensagemLabel.setStyle("-fx-text-fill: #b91c1c;");
-            mensagemLabel.setText("Não foi possível registrar: " + e.getMessage());
+            mensagemLabel.setText(
+                    "Não foi possível registrar: " + e.getMessage()
+            );
         }
     }
 
     private void limparFormulario() {
         clienteComboBox.getSelectionModel().clearSelection();
         itemComboBox.getSelectionModel().clearSelection();
+
         dataRetiradaPicker.setValue(null);
         dataDevolucaoPicker.setValue(null);
+
         calcularTotal();
     }
 }
