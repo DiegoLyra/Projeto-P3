@@ -1,6 +1,5 @@
 package com.loja.ui.controllers;
 
-
 import static com.loja.ui.relatorios.GeradorRelatorios.diasDeAtraso;
 import static com.loja.ui.relatorios.GeradorRelatorios.estaAtrasado;
 import static com.loja.ui.relatorios.GeradorRelatorios.formatarData;
@@ -66,9 +65,7 @@ import javafx.scene.control.DatePicker;
 
 //ignorar pedido para colocar lambda, uma vez que o professor pediu para não ser utilizado
 @SuppressWarnings({"java:S1604", "java:S9357"}) 
-
 public class MenuAdminController {
-
 
     private static final Logger logger = LoggerFactory.getLogger(MenuAdminController.class);
 
@@ -76,11 +73,11 @@ public class MenuAdminController {
     private static final String PERFIL_FUNCIONARIO = "FUNCIONARIO";
     private static final String PERFIL_ADMINISTRADOR = "ADMINISTRADOR";
     private static final String ACAO_REMOVER = "Remover";
+    private static final String STATUS_DISPONIVEL = "DISPONIVEL";
 
     private final ILojaFacade facade;
     private final Navigator navigator;
     private final GeradorRelatorios relatorios;
-
 
     // Listas que alimentam as tabelas e os ComboBox
     private final ObservableList<Usuario> usuarios = FXCollections.observableArrayList();
@@ -89,17 +86,14 @@ public class MenuAdminController {
     private final ObservableList<Fornecedor> fornecedores = FXCollections.observableArrayList();
     private final ObservableList<ContratoAluguel> alugados = FXCollections.observableArrayList();
 
-
     // Cabeçalho e Navegação
     @FXML private PillNav navModulos;
-
 
     // Painéis de Conteúdo
     @FXML private VBox paneUsuarios;
     @FXML private VBox paneItens;
     @FXML private VBox paneCategorias;
     @FXML private VBox paneFornecedores;
-
 
     // Usuários
     @FXML private Label lblFormUsuario;
@@ -124,7 +118,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Usuario, String> colUsuarioSituacao;
     @FXML private TableColumn<Usuario, Void> colUsuarioAcoes;
 
-
     // Itens
     @FXML private Label lblFormItem;
     @FXML private HBox badgeItem;
@@ -148,7 +141,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Item, String> colItemTaxa;
     @FXML private TableColumn<Item, Void> colItemAcoes;
 
-
     // Categorias
     @FXML private Label lblFormCategoria;
     @FXML private HBox badgeCategoria;
@@ -163,7 +155,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Categoria, String> colCategoriaId;
     @FXML private TableColumn<Categoria, String> colCategoriaNome;
     @FXML private TableColumn<Categoria, Void> colCategoriaAcoes;
-
 
     // Fornecedores
     @FXML private Label lblFormFornecedor;
@@ -184,7 +175,7 @@ public class MenuAdminController {
     @FXML private TableColumn<Fornecedor, String> colFornecedorTelefone;
     @FXML private TableColumn<Fornecedor, Void> colFornecedorAcoes;
 
-    // relatórios
+    // Relatórios
     @FXML private VBox paneRelatorios;
     @FXML private VBox feedbackRelatorios;
     @FXML private DatePicker dpFaturamentoInicio;
@@ -201,21 +192,17 @@ public class MenuAdminController {
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoAtraso;
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoValor;
 
-
     // Controle "Cadastrar <-> Modo de Edição" de cada formulário
     private FormState formUsuario;
     private FormState formItem;
     private FormState formCategoria;
     private FormState formFornecedor;
 
-
-    // Construtor exigido pelo Navigator (controllerFactory)
     public MenuAdminController(ILojaFacade facade, Navigator navigator) {
         this.facade = facade;
         this.navigator = navigator;
         this.relatorios = new GeradorRelatorios(facade);
     }
-
 
     @FXML
     public void initialize() {
@@ -251,7 +238,6 @@ public class MenuAdminController {
             }
         });
 
-        // Período padrão do faturamento: do dia 1º do mês até hoje
         dpFaturamentoInicio.setValue(hoje().withDayOfMonth(1));
         dpFaturamentoFim.setValue(hoje());
 
@@ -265,7 +251,7 @@ public class MenuAdminController {
 
             @Override
             public Categoria fromString(String texto) {
-                return null; // ComboBox não editável
+                return null;
             }
         });
 
@@ -278,7 +264,7 @@ public class MenuAdminController {
 
             @Override
             public Fornecedor fromString(String texto) {
-                return null; // ComboBox não editável
+                return null;
             }
         });
 
@@ -296,7 +282,7 @@ public class MenuAdminController {
         carregarTudo();
     }
 
-        private void mostrarPainel(VBox painel) {
+    private void mostrarPainel(VBox painel) {
         VBox[] paineis = {paneUsuarios, paneItens, paneCategorias, paneFornecedores, paneRelatorios};
         for (VBox p : paineis) {
             p.setVisible(p == painel);
@@ -304,19 +290,21 @@ public class MenuAdminController {
         }
     }
 
-
-    //tabelas
-
-
     private void configurarTabelas() {
+        configurarTabelaUsuarios();
+        configurarTabelaCategorias();
+        configurarTabelaFornecedores();
+        configurarTabelaItens();
+        configurarTabelaAlugados();
+    }
 
-         //Usuários
+    private void configurarTabelaUsuarios() {
         tblUsuarios.setPlaceholder(new EmptyState("Nenhum usuário cadastrado."));
 
         new Pesquisa<Usuario>() {
             @Override
             protected String textoPesquisavel(Usuario u) {
-                String cargo = (u instanceof Funcionario) ? ((Funcionario) u).getCargo() : null;
+                String cargo = (u instanceof Funcionario funcionario) ? funcionario.getCargo() : null;
                 return texto(u.getId(), u.getNome(), u.getLogin(), u.getPerfil(), cargo,
                         u.isAtivo() ? "ativo" : "inativo");
             }
@@ -330,8 +318,8 @@ public class MenuAdminController {
         colUsuarioCargo.setCellValueFactory(new ColunaTexto<Usuario>() {
             @Override
             protected String valor(Usuario u) {
-                if (u instanceof Funcionario) {
-                    String cargo = ((Funcionario) u).getCargo();
+                if (u instanceof Funcionario f) {
+                    String cargo = f.getCargo();
                     if (cargo != null && !cargo.isBlank()) {
                         return cargo;
                     }
@@ -367,8 +355,9 @@ public class MenuAdminController {
                 relatorioHistoricoCliente(u);
             }
         }));
+    }
 
-        //Categorias
+    private void configurarTabelaCategorias() {
         tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
 
         new Pesquisa<Categoria>() {
@@ -391,8 +380,9 @@ public class MenuAdminController {
                 removerCategoria(c);
             }
         }));
+    }
 
-        //Fornecedores
+    private void configurarTabelaFornecedores() {
         tblFornecedores.setPlaceholder(new EmptyState("Nenhum fornecedor cadastrado."));
 
         new Pesquisa<Fornecedor>() {
@@ -418,8 +408,9 @@ public class MenuAdminController {
                 removerFornecedor(f);
             }
         }));
+    }
 
-        //Itens
+    private void configurarTabelaItens() {
         tblItens.setPlaceholder(new EmptyState("Nenhum item cadastrado."));
 
         new Pesquisa<Item>() {
@@ -466,9 +457,9 @@ public class MenuAdminController {
                 removerItem(i);
             }
         }));
+    }
 
-        //relatorios
-                // Itens alugados (aba Relatórios)
+    private void configurarTabelaAlugados() {
         tblAlugados.setItems(alugados);
         tblAlugados.setPlaceholder(new EmptyState("Nenhum item alugado no momento."));
         colAlugadoContrato.setCellValueFactory(new PropertyValueFactory<ContratoAluguel, String>("id"));
@@ -517,9 +508,6 @@ public class MenuAdminController {
         });
     }
 
-
-
-
     private void carregarTudo() {
         try {
             usuarios.setAll(facade.listarUsuario().values());
@@ -532,18 +520,16 @@ public class MenuAdminController {
         }
     }
 
-
-    @FXML public void alterarPerfil() {
-
+    @FXML 
+    public void alterarPerfil() {
         boolean funcionario = PERFIL_FUNCIONARIO.equals(cbUsuarioPerfil.getValue());
         fUsuarioCargo.setVisible(funcionario);
         fUsuarioCargo.setManaged(funcionario);
         if (!funcionario) fUsuarioCargo.setText("");
-
     }
 
-    @FXML public void salvarUsuario() {
-
+    @FXML 
+    public void salvarUsuario() {
         String nome = fUsuarioNome.getText().trim();
         String login = fUsuarioLogin.getText().trim();
         String senha = fUsuarioSenha.getText();
@@ -557,12 +543,10 @@ public class MenuAdminController {
         boolean edicao = formUsuario.emEdicao();
         try {
             if (edicao) {
-                // Nunca altera o objeto persistido: envia uma cópia para o Business validar e aplicar
                 Usuario atual = facade.buscarUsuario(formUsuario.idEditando);
                 Usuario novo = copiaComNovosDados(atual, nome, login, senha, cargo);
                 facade.atualizarUsuario(atual.getId(), novo);
             } else if (PERFIL_FUNCIONARIO.equals(cbUsuarioPerfil.getValue())) {
-                // O ID é gerado pela camada de negócio
                 facade.cadastrarFuncionario(new Funcionario(null, nome, login, senha, cargo));
             } else if (PERFIL_ADMINISTRADOR.equals(cbUsuarioPerfil.getValue())) {
                 facade.cadastrarAdm(new Administrador(null, nome, login, senha));
@@ -575,14 +559,12 @@ public class MenuAdminController {
         } catch (RuntimeException e) {
             mostrarErro(formUsuario, e);
         }
-
     }
 
-    @FXML public void cancelarUsuario() {
-
+    @FXML 
+    public void cancelarUsuario() {
         limparUsuario();
         formUsuario.limparAviso();
-
     }
 
     private Usuario copiaComNovosDados(Usuario atual, String nome, String login, String senha, String cargo) {
@@ -601,7 +583,7 @@ public class MenuAdminController {
 
     private void limparUsuario() {
         formUsuario.sairEdicao();
-        fUsuarioId.getInputField().setDisable(true); // ID automático no cadastro
+        fUsuarioId.getInputField().setDisable(true);
         fUsuarioNome.setText("");
         fUsuarioLogin.setText("");
         fUsuarioSenha.setText("");
@@ -613,7 +595,7 @@ public class MenuAdminController {
     private void editarUsuario(Usuario u) {
         formUsuario.entrarEdicao(u.getId());
         cbUsuarioPerfil.setValue(u.getPerfil());
-        cbUsuarioPerfil.setDisable(true); // o tipo (classe) do usuário não muda na edição
+        cbUsuarioPerfil.setDisable(true);
         alterarPerfil();
         fUsuarioNome.setText(u.getNome());
         fUsuarioLogin.setText(u.getLogin());
@@ -648,8 +630,8 @@ public class MenuAdminController {
         }
     }
 
-    @FXML public void salvarItem() {
-
+    @FXML 
+    public void salvarItem() {
         String id = fItemId.getText().trim();
         String nome = fItemNome.getText().trim();
         Categoria categoria = cbItemCategoria.getValue();
@@ -674,7 +656,6 @@ public class MenuAdminController {
         boolean edicao = formItem.emEdicao();
         try {
             if (edicao) {
-                // Altera o objeto existente: o status não muda (a facade proíbe mudá-lo aqui)
                 Item item = facade.buscarItem(formItem.idEditando);
                 item.setNome(nome);
                 item.setCategoria(categoria);
@@ -683,7 +664,7 @@ public class MenuAdminController {
                 item.setValorReposicao(reposicao);
                 facade.atualizarItem(item);
             } else {
-                facade.cadastrarItem(new Item(id, nome, taxa, reposicao, "DISPONIVEL", categoria, fornecedor));
+                facade.cadastrarItem(new Item(id, nome, taxa, reposicao, STATUS_DISPONIVEL, categoria, fornecedor));
             }
             itens.setAll(facade.listarItem().values());
             limparItem();
@@ -691,14 +672,12 @@ public class MenuAdminController {
         } catch (RuntimeException e) {
             mostrarErro(formItem, e);
         }
-
     }
 
-    @FXML public void cancelarItem() {
-
+    @FXML 
+    public void cancelarItem() {
         limparItem();
         formItem.limparAviso();
-
     }
 
     private void limparItem() {
@@ -719,7 +698,6 @@ public class MenuAdminController {
         fItemReposicao.setText(String.valueOf(i.getValorReposicao()));
     }
 
-    //Acha, na lista do ComboBox, a categoria com o mesmo ID
     private Categoria categoriaDaLista(Categoria categoria) {
         if (categoria == null) {
             return null;
@@ -732,7 +710,6 @@ public class MenuAdminController {
         return null;
     }
 
-    //Acha, na lista do ComboBox, o fornecedor com o mesmo ID
     private Fornecedor fornecedorDaLista(Fornecedor fornecedor) {
         if (fornecedor == null) {
             return null;
@@ -760,7 +737,6 @@ public class MenuAdminController {
         }
     }
 
-    // Cruza os itens disponíveis com as categorias cadastradas
     @FXML
     public void relatorioDisponiveisPorCategoria() {
         try {
@@ -770,8 +746,8 @@ public class MenuAdminController {
         }
     }
 
-    @FXML public void salvarCategoria() {
-
+    @FXML 
+    public void salvarCategoria() {
         String id = fCategoriaId.getText().trim();
         String nome = fCategoriaNome.getText().trim();
 
@@ -790,20 +766,18 @@ public class MenuAdminController {
                 facade.cadastrarCategoria(new Categoria(id, nome));
             }
             categorias.setAll(facade.listarCategoria().values());
-            itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome da categoria
+            itens.setAll(facade.listarItem().values());
             limparCategoria();
             formCategoria.aviso(edicao ? "Categoria atualizada!" : "Categoria cadastrada!", Banner.BannerType.SUCCESS);
         } catch (RuntimeException e) {
             mostrarErro(formCategoria, e);
         }
-
     }
 
-    @FXML public void cancelarCategoria() {
-
+    @FXML 
+    public void cancelarCategoria() {
         limparCategoria();
         formCategoria.limparAviso();
-
     }
 
     private void limparCategoria() {
@@ -831,8 +805,8 @@ public class MenuAdminController {
         }
     }
 
-    @FXML public void salvarFornecedor() {
-
+    @FXML 
+    public void salvarFornecedor() {
         String id = fFornecedorId.getText().trim();
         String nome = fFornecedorNome.getText().trim();
         String cnpj = fFornecedorCnpj.getText().trim();
@@ -855,20 +829,18 @@ public class MenuAdminController {
                 facade.cadastrarFornecedor(new Fornecedor(id, nome, cnpj, telefone));
             }
             fornecedores.setAll(facade.listarFornecedor().values());
-            itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome do fornecedor
+            itens.setAll(facade.listarItem().values());
             limparFornecedor();
             formFornecedor.aviso(edicao ? "Fornecedor atualizado!" : "Fornecedor cadastrado!", Banner.BannerType.SUCCESS);
         } catch (RuntimeException e) {
             mostrarErro(formFornecedor, e);
         }
-
     }
 
-    @FXML public void cancelarFornecedor() {
-
+    @FXML 
+    public void cancelarFornecedor() {
         limparFornecedor();
         formFornecedor.limparAviso();
-
     }
 
     private void limparFornecedor() {
@@ -899,8 +871,6 @@ public class MenuAdminController {
             }
         }
     }
-
-    //relatorios
 
     @FXML
     public void gerarFaturamento() {
@@ -934,7 +904,7 @@ public class MenuAdminController {
         }
     }
 
-        @FXML
+    @FXML
     public void exportarFaturamento() {
         feedbackRelatorios.getChildren().clear();
         try {
@@ -956,21 +926,16 @@ public class MenuAdminController {
         }
     }
 
-    //fim relatorio
-
     @FXML
     public void handleSair() {
         navigator.showLogin();
     }
 
-    // Registra o erro no log e mostra no Banner só mensagens seguras para o usuário
     private void mostrarErro(FormState form, RuntimeException e) {
         logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
         form.aviso(mensagemSegura(e), Banner.BannerType.DANGER);
     }
 
-
-    //Só exibe mensagens escritas para o usuário; qualquer outra falha vai para o log
     private String mensagemSegura(RuntimeException e) {
         boolean mensagemDeNegocio = e instanceof IllegalArgumentException
                 || e.getClass().getPackageName().equals("com.loja.exceptions");
@@ -979,14 +944,12 @@ public class MenuAdminController {
                 : "Ocorreu um erro inesperado. Consulte o log.";
     }
 
-
     private boolean confirmar(String mensagem) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, mensagem, ButtonType.YES, ButtonType.NO);
         alert.setTitle("Confirmação");
         alert.setHeaderText(null);
         return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
-
 
     private void exibirAlertaErro(String titulo, String mensagem) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -996,26 +959,19 @@ public class MenuAdminController {
         alert.showAndWait();
     }
 
-    //Cor do StatusBadge
     private static StatusBadge.StatusType tipoDoBadge(String valor) {
         switch (valor.toUpperCase()) {
-            case "ATIVO":
-            case "DISPONIVEL":
-            case "EM DIA":
+            case "ATIVO", STATUS_DISPONIVEL, "EM DIA":
                 return StatusBadge.StatusType.SUCCESS;
             case "ALUGADO":
                 return StatusBadge.StatusType.WARNING;
-            case "INATIVO":
-            case "MANUTENCAO":
-            case "INDISPONIVEL":
-            case "ATRASADO":
+            case "INATIVO", "MANUTENCAO", "INDISPONIVEL", "ATRASADO":
                 return StatusBadge.StatusType.DANGER;
             default:
                 return StatusBadge.StatusType.INFO;
         }
     }
 
-    //Junta vários valores num texto só, ignorando os nulos
     private static String texto(Object... partes) {
         StringBuilder sb = new StringBuilder();
         for (Object parte : partes) {
@@ -1026,7 +982,6 @@ public class MenuAdminController {
         return sb.toString();
     }
 
-    //Minúsculas e sem acento
     private static String normalizar(String valor) {
         if (valor == null) {
             return "";
@@ -1037,12 +992,10 @@ public class MenuAdminController {
                 .trim();
     }
 
-    //12.345.678/0001-99" vira "12345678000199" (para achar CNPJ/telefone digitado sem pontuação)
     private static String somenteDigitos(String valor) {
         return valor == null ? null : valor.replaceAll("\\D", "");
     }
 
-    //Liga um campo de pesquisa a uma tabela: filtra enquanto o usuário digita. cada aba cria uma subclasse anonima dizendo em textoPesquisavel() onde procurar.
     private abstract static class Pesquisa<T> {
 
         protected abstract String textoPesquisavel(T item);
@@ -1050,7 +1003,7 @@ public class MenuAdminController {
         void ligar(TextField campo, final TableView<T> tabela, ObservableList<T> dados) {
             final FilteredList<T> filtrados = new FilteredList<>(dados);
             SortedList<T> ordenados = new SortedList<>(filtrados);
-            ordenados.comparatorProperty().bind(tabela.comparatorProperty()); // mantém a ordenação por coluna
+            ordenados.comparatorProperty().bind(tabela.comparatorProperty());
             tabela.setItems(ordenados);
 
             final Node vazioOriginal = tabela.getPlaceholder();
@@ -1090,10 +1043,9 @@ public class MenuAdminController {
         String textoSalvar() { return textoSalvar; }
     }
 
-    //Alterna um formulário entre "Cadastrar" e "Modo de Edição".
+    //Alterna um formulário entre "Cadastrar" e "Modo de Edição
     private static class FormState {
         private static final String BOTAO = "-fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand; -fx-background-color: ";
-
 
         private final Label titulo;
         private final HBox badge;
@@ -1105,7 +1057,6 @@ public class MenuAdminController {
         private final String tituloEdicao;
         private final String textoSalvar;
         private String idEditando;
-
 
         FormState(Label titulo, HBox badge, Button btnSalvar, Button btnCancelar, VBox feedback,
                   FormField campoId, TextosFormulario textos) {
@@ -1119,17 +1070,14 @@ public class MenuAdminController {
             this.tituloEdicao = textos.tituloEdicao();
             this.textoSalvar = textos.textoSalvar();
 
-
             badge.getChildren().add(new StatusBadge("Modo de Edição", StatusBadge.StatusType.WARNING));
             btnCancelar.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;");
             sairEdicao();
         }
 
-
         boolean emEdicao() {
             return idEditando != null;
         }
-
 
         void entrarEdicao(String id) {
             idEditando = id;
@@ -1142,7 +1090,6 @@ public class MenuAdminController {
             limparAviso();
         }
 
-
         void sairEdicao() {
             idEditando = null;
             campoId.setText("");
@@ -1153,16 +1100,13 @@ public class MenuAdminController {
             exibir(false);
         }
 
-
         void aviso(String mensagem, Banner.BannerType tipo) {
             feedback.getChildren().setAll(new Banner(mensagem, tipo));
         }
 
-
         void limparAviso() {
             feedback.getChildren().clear();
         }
-
 
         private void exibir(boolean edicao) {
             badge.setVisible(edicao);
@@ -1171,8 +1115,6 @@ public class MenuAdminController {
             btnCancelar.setManaged(edicao);
         }
     }
-
-    //Coluna cujo texto é calculado (não vem direto de um getter)
 
     private abstract static class ColunaTexto<T>
             implements Callback<TableColumn.CellDataFeatures<T, String>, ObservableValue<String>> {
@@ -1185,7 +1127,6 @@ public class MenuAdminController {
         protected abstract String valor(T item);
     }
 
-    //Cria as células que mostram o texto dentro de um StatusBadge
     private static class BadgeCellFactory<T> implements Callback<TableColumn<T, String>, TableCell<T, String>> {
         @Override
         public TableCell<T, String> call(TableColumn<T, String> coluna) {
@@ -1193,7 +1134,6 @@ public class MenuAdminController {
         }
     }
 
-    //Célula que mostra o texto dentro de um StatusBadge
     private static class BadgeCell<T> extends TableCell<T, String> {
         @Override
         protected void updateItem(String item, boolean empty) {
@@ -1209,13 +1149,11 @@ public class MenuAdminController {
         }
     }
 
-    // O que os botões da coluna "Ações" fazem em cada tabela
     private interface AcoesTabela<T> {
         void editar(T item);
 
         void remover(T item);
 
-        // Botão extra opcional (ex.: "Histórico" só para clientes). Por padrão não aparece.
         default boolean temExtra(T item) {
             return false;
         }
@@ -1224,7 +1162,6 @@ public class MenuAdminController {
         }
     }
 
-    // Cria as células da coluna "Ações"
     private static class AcoesCellFactory<T> implements Callback<TableColumn<T, Void>, TableCell<T, Void>> {
         private final String textoRemover;
         private final String textoExtra;
@@ -1246,7 +1183,6 @@ public class MenuAdminController {
         }
     }
 
-    // Célula com os botões "Editar" e "Remover/Desativar"
     private static class AcoesCell<T> extends TableCell<T, Void> {
         private final HBox box;
         private final Button extra;
@@ -1310,8 +1246,9 @@ public class MenuAdminController {
             setGraphic(box);
         }
     }
+
     @FXML
-        private void sair() {
-            navigator.showLogin();
-        }
+    private void sair() {
+        navigator.showLogin();
+    }
 }
