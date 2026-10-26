@@ -2,6 +2,8 @@ package com.loja.ui.controllers;
 
 import com.loja.model.ContratoAluguel;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
+import com.loja.ui.components.ColunaTexto;
+import com.loja.ui.relatorios.GeradorRelatorios;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,7 +31,7 @@ public class ContratosAtivosController {
     @FXML private TableColumn<ContratoAluguel, String> colItem;
     @FXML private TableColumn<ContratoAluguel, String> colDataInicio;
     @FXML private TableColumn<ContratoAluguel, String> colDataDevolucao;
-    @FXML private TableColumn<ContratoAluguel, Object> colValor;
+    @FXML private TableColumn<ContratoAluguel, String> colValor;    
     @FXML private Label mensagemLabel;
 
     private ILojaFacade facade;
@@ -40,33 +42,70 @@ public class ContratosAtivosController {
         carregarContratos();
     }
 
-    @FXML
+        @FXML
     private void initialize() {
-        colIdContrato.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colCliente.setCellValueFactory(new PropertyValueFactory<>("clienteId"));
-        colItem.setCellValueFactory(new PropertyValueFactory<>("itemId"));
-        colDataInicio.setCellValueFactory(new PropertyValueFactory<>("dataRetirada"));
-        colDataDevolucao.setCellValueFactory(new PropertyValueFactory<>("dataPrevDevolucao"));
-        colValor.setCellValueFactory(new PropertyValueFactory<>("valorTotal"));
+        colIdContrato.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getId();
+            }
+        });
+        colCliente.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getCliente().getNome();
+            }
+        });
+        colItem.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getItem().getNome();
+            }
+        });
+        colDataInicio.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return GeradorRelatorios.formatarData(c.getDataRetirada());
+            }
+        });
+        colDataDevolucao.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return GeradorRelatorios.formatarData(c.getDataPrevDevolucao());
+            }
+        });
+        colValor.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return GeradorRelatorios.formatarMoeda(c.getValorTotal());
+            }
+        });
 
         tabelaContratos.setItems(listaContratos);
     }
 
-    @FXML
+        @FXML
     private void handleFiltrar() {
         String filtro = txtFiltro.getText().trim().toLowerCase();
-        if (filtro.isEmpty()) {
+        if (filtro.isEmpty() || facade == null) {
             carregarContratos();
             return;
         }
 
-        if (facade != null) {
-            List<ContratoAluguel> filtrados = facade.listarContratosAtivos().values().stream()
-                    .filter(c -> (c.getId() != null && c.getId().toLowerCase().contains(filtro))
-                            || (c.getId() != null && c.getId().toLowerCase().contains(filtro)))
-                    .toList();
-            listaContratos.setAll(filtrados);
+        List<ContratoAluguel> filtrados = new ArrayList<>();
+        for (ContratoAluguel c : facade.listarContratosAtivos().values()) {
+            String clienteId = c.getCliente() != null ? c.getCliente().getId() : "";
+            String clienteNome = c.getCliente() != null ? c.getCliente().getNome() : "";
+            String texto = (c.getId() + " " + clienteId + " " + clienteNome).toLowerCase();
+            if (texto.contains(filtro)) {
+                filtrados.add(c);
+            }
         }
+
+        listaContratos.setAll(filtrados);
+        exibirMensagem(filtrados.isEmpty()
+                ? "Nenhum contrato encontrado."
+                : filtrados.size() + " contrato(s) encontrado(s).", !filtrados.isEmpty());
     }
 
     @FXML
