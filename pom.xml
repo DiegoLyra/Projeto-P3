@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,18 +15,16 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <sonar.organization>diegolyra</sonar.organization>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
         <jacoco.version>0.8.12</jacoco.version>
         <mockito.version>5.12.0</mockito.version>
 
-        <!-- Caminho do relatório de cobertura lido pelo sonar-maven-plugin -->
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
-        <!-- Telas JavaFX e Main ficam fora do cálculo de cobertura do Sonar -->
         <sonar.coverage.exclusions>**/com/loja/ui/**,**/com/loja/Main.java</sonar.coverage.exclusions>
-
     </properties>
 
     <dependencies>
@@ -39,12 +37,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Mockito para testes -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
@@ -52,50 +52,67 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Gson para salvar/carregar JSON (persistência) -->
+        <!-- Gson para persistência JSON -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
 
-        <!-- SLF4J: fachada de logging -->
+        <!-- SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
 
-        <!-- Logback: implementação concreta do SLF4J -->
+        <!-- Logback -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
 
+        <!-- JavaFX 21 compatível com Java 21 -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>17.0.6</version>
+            <version>21.0.6</version>
         </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>17.0.6</version>
+            <version>21.0.6</version>
+        </dependency>
+
+        <!-- PDFBox para exportação de relatórios em PDF -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.5</version>
+        </dependency>
+
+        <!--geração de PDF dos relatórios-->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.30</version>
         </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Plugin para rodar os testes JUnit 5 -->
+
+            <!-- Testes JUnit 5 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
             </plugin>
 
-            <!-- Plugin para gerar um JAR executável -->
+            <!-- JAR executável -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -109,29 +126,27 @@
                 </configuration>
             </plugin>
 
-            <!-- JaCoCo: instrumenta os testes e gera o relatório de cobertura
-                 consumido pelo SonarQube/SonarCloud (métrica "Coverage" e
-                 "Coverage on New Code" do Quality Gate). -->
+            <!-- JaCoCo: cobertura de testes -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+
                 <configuration>
-                    <!-- Telas JavaFX e Main não entram na cobertura -->
                     <excludes>
                         <exclude>com/loja/ui/**</exclude>
                         <exclude>com/loja/Main.class</exclude>
                     </excludes>
                 </configuration>
+
                 <executions>
-                    <!-- Liga o agente do JaCoCo antes dos testes rodarem -->
                     <execution>
                         <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
-                    <!-- Gera o relatório XML/HTML logo após a fase de testes -->
+
                     <execution>
                         <id>report</id>
                         <phase>test</phase>
@@ -142,6 +157,7 @@
                 </executions>
             </plugin>
 
+            <!-- Execução da aplicação JavaFX -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -150,6 +166,7 @@
                     <mainClass>com.loja.Main</mainClass>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 

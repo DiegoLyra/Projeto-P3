@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import com.loja.ui.relatorios.PainelRelatorio?>
+
+<BorderPane prefHeight="650.0" prefWidth="1100.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.controllers.HistoricoFuncionarioController">
+   <center>
+      <VBox alignment="TOP_CENTER" spacing="18.0" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+         </padding>
+         <children>
+            <VBox maxWidth="1000.0" spacing="18.0" style="-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #e5e7eb; -fx-border-radius: 16; -fx-border-width: 1;">
+               <padding>
+                  <Insets bottom="26.0" left="26.0" right="26.0" top="26.0" />
+               </padding>
+               <children>
+                  <VBox spacing="6.0">
+                     <children>
+                        <Label style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" text="Histórico do Cliente" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" text="Consulte o histórico de locações e devoluções finalizadas." wrapText="true" />
+                     </children>
+                  </VBox>
+
+                  <Separator />
+
+                  <HBox alignment="CENTER_LEFT" spacing="12.0">
+                     <children>
+                        <TextField fx:id="txtClienteId" prefHeight="40.0" prefWidth="350.0" promptText="Digite o ID do cliente..." style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db;" />
+                        <Button onAction="#handleBuscarHistorico" prefHeight="40.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 0 20; -fx-cursor: hand;" text="Consultar Histórico" />
+                     </children>
+                  </HBox>
+
+                  <TableView fx:id="tabelaHistorico" prefHeight="380.0" style="-fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+                     <columns>
+                        <TableColumn fx:id="colContratoId" prefWidth="120.0" text="ID CONTRATO" />
+                        <TableColumn fx:id="colItem" prefWidth="230.0" text="ITEM" />
+                        <TableColumn fx:id="colDataRetirada" prefWidth="140.0" text="RETIRADA" />
+                        <TableColumn fx:id="colDataDevolucao" prefWidth="140.0" text="DEVOLUÇÃO" />
+                        <TableColumn fx:id="colStatus" prefWidth="130.0" text="STATUS" />
+                        <TableColumn fx:id="colValorPago" prefWidth="120.0" text="VALOR (R$)" />
+                     </columns>
+                  </TableView>
+
+                  <Label fx:id="mensagemLabel" style="-fx-font-size: 12px;" wrapText="true" />
+                  <PainelRelatorio fx:id="painelHistorico" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<?import com.loja.ui.relatorios.PainelRelatorio?>
+
+<BorderPane prefHeight="650.0" prefWidth="1100.0"
+            style="-fx-background-color: #f8fafc;"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.loja.ui.controllers.ItensDisponiveisFuncionarioController">
+
+    <center>
+        <VBox spacing="18.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="24.0" right="24.0"
+                        bottom="24.0" left="24.0"/>
+            </padding>
+
+            <VBox spacing="18.0"
+                  style="-fx-background-color: white;
+                         -fx-background-radius: 16;
+                         -fx-border-color: #e5e7eb;
+                         -fx-border-radius: 16;
+                         -fx-border-width: 1;">
+                <padding>
+                    <Insets top="26.0" right="26.0"
+                            bottom="26.0" left="26.0"/>
+                </padding>
+
+                <VBox spacing="6.0">
+                    <Label text="Itens Disponíveis"
+                           style="-fx-font-size: 19px;
+                                  -fx-font-weight: bold;
+                                  -fx-text-fill: #1f2937;"/>
+
+                    <Label text="Listagem de itens disponíveis para aluguel."
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #6b7280;"/>
+                </VBox>
+
+                <Separator/>
+
+                <TableView fx:id="tabelaItens"
+                           prefHeight="400.0"
+                           VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colunaId"
+                                     text="ID"
+                                     prefWidth="130.0"/>
+
+                        <TableColumn fx:id="colunaNome"
+                                     text="Nome do Item"
+                                     prefWidth="350.0"/>
+
+                        <TableColumn fx:id="colunaValorDiario"
+                                     text="Valor Diário"
+                                     prefWidth="180.0"/>
+
+                        <TableColumn fx:id="colunaStatus"
+                                     text="Status"
+                                     prefWidth="180.0"/>
+                    </columns>
+                </TableView>
+
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label fx:id="mensagemLabel"
+                           text="Carregando itens..."
+                           wrapText="true"
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #64748b;"/>
+
+                    <Button text="Disponíveis por categoria"
+                            onAction="#handleRelatorioPorCategoria"
+                            style="-fx-background-color: #eef2ff;
+                                   -fx-background-radius: 10;
+                                   -fx-text-fill: #4338ca;
+                                   -fx-font-weight: bold;
+                                   -fx-padding: 9 20;
+                                   -fx-cursor: hand;"/>
+                </HBox>
+                <PainelRelatorio fx:id="painelCategorias" />
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

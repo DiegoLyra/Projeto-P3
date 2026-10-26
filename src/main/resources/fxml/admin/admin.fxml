@@ -366,6 +366,7 @@
                                        </children>
                                     </VBox>
                                     <Button onAction="#gerarFaturamento" text="Gerar Relatório" style="-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand;" />
+                                    <Button onAction="#exportarFaturamento" text="Salvar PDF / Imprimir" style="-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;" />
                                  </children>
                               </HBox>
                               <TextArea fx:id="txtFaturamento" editable="false" prefHeight="170.0" promptText="Escolha o período e clique em Gerar Relatório." style="-fx-font-family: monospace; -fx-font-size: 13px;" />
@@ -379,6 +380,7 @@
                                     <Region HBox.hgrow="ALWAYS" />
                                     <Label fx:id="lblResumoAlugados" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
                                     <Button onAction="#carregarItensAlugados" text="Atualizar" style="-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;" />
+                                    <Button onAction="#exportarItensAlugados" text="Salvar PDF / Imprimir" style="-fx-background-color: #eef2ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;" />
                                  </children>
                               </HBox>
                               <TableView fx:id="tblAlugados" prefHeight="300.0">

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="650.0" prefWidth="1100.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.controllers.DevolucaoFuncionarioController">
+   <center>
+      <VBox alignment="TOP_CENTER" spacing="18.0" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+         </padding>
+         <children>
+            <VBox spacing="18.0" style="-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #e5e7eb; -fx-border-radius: 16; -fx-border-width: 1;" VBox.vgrow="ALWAYS">
+               <padding>
+                  <Insets bottom="26.0" left="26.0" right="26.0" top="26.0" />
+               </padding>
+               <children>
+                  <HBox alignment="CENTER_LEFT">
+                     <children>
+                        <VBox spacing="4.0">
+                           <children>
+                              <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" text="Processar Devoluções" />
+                              <Label style="-fx-font-size: 13px; -fx-text-fill: #6b7280;" text="Selecione um contrato ativo da lista para registrar a devolução do item." wrapText="true" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+
+                  <Separator />
+
+                  <Label fx:id="mensagemLabel" style="-fx-font-size: 13px; -fx-font-weight: bold;" wrapText="true" />
+
+                  <!-- Tabela de Contratos Ativos -->
+                  <TableView fx:id="tblContratos" style="-fx-border-color: #e5e7eb; -fx-background-radius: 8;" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn fx:id="colId" prefWidth="100.0" text="Contrato" />
+                        <TableColumn fx:id="colCliente" prefWidth="180.0" text="Cliente" />
+                        <TableColumn fx:id="colItem" prefWidth="200.0" text="Item" />
+                        <TableColumn fx:id="colRetirada" prefWidth="110.0" text="Retirada" />
+                        <TableColumn fx:id="colPrevDevolucao" prefWidth="120.0" text="Prev. Devolução" />
+                        <TableColumn fx:id="colSituacao" prefWidth="110.0" text="Situação" />
+                        <TableColumn fx:id="colAcao" prefWidth="120.0" text="Ação" />
+                     </columns>
+                     <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                  </TableView>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>
