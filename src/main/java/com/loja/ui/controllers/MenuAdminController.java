@@ -1,6 +1,12 @@
 package com.loja.ui.controllers;
 
 
+import static com.loja.ui.relatorios.GeradorRelatorios.diasDeAtraso;
+import static com.loja.ui.relatorios.GeradorRelatorios.estaAtrasado;
+import static com.loja.ui.relatorios.GeradorRelatorios.formatarData;
+import static com.loja.ui.relatorios.GeradorRelatorios.formatarMoeda;
+import static com.loja.ui.relatorios.GeradorRelatorios.hoje;
+
 import java.math.BigDecimal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +25,8 @@ import com.loja.ui.components.FormField;
 import com.loja.ui.components.PillNav;
 import com.loja.ui.components.StatusBadge;
 import com.loja.ui.navigation.Navigator;
+import com.loja.ui.relatorios.GeradorRelatorios;
+import com.loja.ui.relatorios.JanelaRelatorios;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -52,15 +60,8 @@ import javafx.scene.control.TextField;
 import java.text.Normalizer;
 import java.util.function.Predicate;
 
-import javafx.scene.control.Dialog;
 import javafx.scene.control.TextArea;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import com.loja.model.ContratoAluguel;
-import com.loja.model.Multa;
-import java.time.temporal.ChronoUnit;
 import javafx.scene.control.DatePicker;
 
 //ignorar pedido para colocar lambda, uma vez que o professor pediu para não ser utilizado
@@ -75,11 +76,10 @@ public class MenuAdminController {
     private static final String PERFIL_FUNCIONARIO = "FUNCIONARIO";
     private static final String PERFIL_ADMINISTRADOR = "ADMINISTRADOR";
     private static final String ACAO_REMOVER = "Remover";
-    private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ILojaFacade facade;
     private final Navigator navigator;
-    private Administrador usuarioLogado;
+    private final GeradorRelatorios relatorios;
 
 
     // Listas que alimentam as tabelas e os ComboBox
@@ -91,7 +91,6 @@ public class MenuAdminController {
 
 
     // Cabeçalho e Navegação
-    @FXML private Label lblBoasVindas;
     @FXML private PillNav navModulos;
 
 
@@ -214,6 +213,7 @@ public class MenuAdminController {
     public MenuAdminController(ILojaFacade facade, Navigator navigator) {
         this.facade = facade;
         this.navigator = navigator;
+        this.relatorios = new GeradorRelatorios(facade);
     }
 
 
@@ -642,76 +642,10 @@ public class MenuAdminController {
 
     private void relatorioHistoricoCliente(Usuario cliente) {
         try {
-            Map<String, ContratoAluguel> contratos = facade.consultarHistoricoCliente(cliente.getId());
-            Map<String, Multa> multas = facade.listarMultaPorCliente(cliente.getId());
-            LocalDate dataHoje = hoje();
-
-            StringBuilder atuais = new StringBuilder();
-            StringBuilder encerrados = new StringBuilder();
-            StringBuilder irregularidades = new StringBuilder();
-            int qtdAtuais = 0;
-            int qtdEncerrados = 0;
-            int qtdIrregularidades = 0;
-
-            for (ContratoAluguel c : contratos.values()) {
-                LocalDate previsao = c.getDataPrevDevolucao();
-                if (c.getDataEfetivaDevolucao() == null) {
-                    atuais.append(linhaContrato(c));
-                    qtdAtuais++;
-                    if (previsao != null && dataHoje.isAfter(previsao)) {
-                        irregularidades.append(String.format("   Contrato #%s: EM ATRASO há %d dia(s) (devolução prevista para %s)%n",
-                                c.getId(), ChronoUnit.DAYS.between(previsao, dataHoje), formatarData(previsao)));
-                        qtdIrregularidades++;
-                    }
-                } else {
-                    encerrados.append(linhaContrato(c));
-                    qtdEncerrados++;
-                    if (previsao != null && c.getDataEfetivaDevolucao().isAfter(previsao)) {
-                        irregularidades.append(String.format("   Contrato #%s: devolvido com %d dia(s) de atraso%n",
-                                c.getId(), ChronoUnit.DAYS.between(previsao, c.getDataEfetivaDevolucao())));
-                        qtdIrregularidades++;
-                    }
-                }
-            }
-
-            for (Multa m : multas.values()) {
-                irregularidades.append(String.format("   Multa #%s: %s | %s | %s%n",
-                        m.getId(), m.getMotivo(), formatarMoeda(m.getValorTotal()), m.getStatus()));
-                qtdIrregularidades++;
-            }
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("=== HISTÓRICO DO CLIENTE ===\n");
-            sb.append("Cliente : ").append(cliente.getNome()).append(" (#").append(cliente.getId()).append(")\n");
-            sb.append("Login   : ").append(cliente.getLogin()).append('\n');
-            sb.append("Gerado em ").append(formatarData(dataHoje)).append("\n\n");
-
-            sb.append("ALUGUÉIS ATUAIS (").append(qtdAtuais).append(")\n");
-            sb.append(qtdAtuais == 0 ? "   Nenhum.\n" : atuais.toString()).append('\n');
-
-            sb.append("ALUGUÉIS ENCERRADOS (").append(qtdEncerrados).append(")\n");
-            sb.append(qtdEncerrados == 0 ? "   Nenhum.\n" : encerrados.toString()).append('\n');
-
-            sb.append("IRREGULARIDADES (").append(qtdIrregularidades).append(")\n");
-            sb.append(qtdIrregularidades == 0 ? "   Nenhuma.\n" : irregularidades.toString()).append('\n');
-
-            if (facade.possuiMultaPendente(cliente.getId())) {
-                sb.append("⚠ ATENÇÃO: este cliente possui multa pendente.\n");
-            }
-
-            mostrarRelatorio("Histórico de " + cliente.getNome(), sb.toString());
+            JanelaRelatorios.mostrar(relatorios.historicoCliente(cliente));
         } catch (RuntimeException e) {
             mostrarErro(formUsuario, e);
         }
-    }
-
-    private static String linhaContrato(ContratoAluguel c) {
-        String item = c.getItem() != null ? c.getItem().getNome() : "-";
-        String devolucao = c.getDataEfetivaDevolucao() != null
-                ? "devolvido em " + formatarData(c.getDataEfetivaDevolucao())
-                : "previsto para " + formatarData(c.getDataPrevDevolucao());
-        return String.format("   #%-8s %-25s retirada %s, %s | %s%n",
-                c.getId(), item, formatarData(c.getDataRetirada()), devolucao, formatarMoeda(c.getValorTotal()));
     }
 
     @FXML public void salvarItem() {
@@ -830,53 +764,11 @@ public class MenuAdminController {
     @FXML
     public void relatorioDisponiveisPorCategoria() {
         try {
-            Map<String, Item> disponiveis = facade.listarItemPorStatus("DISPONIVEL");
-            Map<String, Categoria> todasCategorias = facade.listarCategoria();
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("=== ITENS DISPONÍVEIS POR CATEGORIA: ").append(formatarData(hoje())).append(" ===\n\n");
-
-            for (Categoria categoria : todasCategorias.values()) {
-                StringBuilder linhas = new StringBuilder();
-                int quantidade = 0;
-                for (Item item : disponiveis.values()) {
-                    if (item.getCategoria() != null && categoria.getId().equals(item.getCategoria().getId())) {
-                        linhas.append(String.format("   #%-8s %-30s %s/dia%n",
-                                item.getId(), item.getNome(), formatarMoeda(item.getTaxaDiaria())));
-                        quantidade++;
-                    }
-                }
-                sb.append(categoria.getNome()).append(" (").append(quantidade).append(")\n");
-                sb.append(quantidade == 0 ? "   Nenhum item disponível.\n" : linhas.toString());
-                sb.append('\n');
-            }
-
-            // Itens disponíveis cuja categoria não está cadastrada
-            StringBuilder semCategoria = new StringBuilder();
-            for (Item item : disponiveis.values()) {
-                boolean encontrou = false;
-                if (item.getCategoria() != null) {
-                    for (Categoria categoria : todasCategorias.values()) {
-                        if (categoria.getId().equals(item.getCategoria().getId())) {
-                            encontrou = true;
-                        }
-                    }
-                }
-                if (!encontrou) {
-                    semCategoria.append(String.format("   #%-8s %s%n", item.getId(), item.getNome()));
-                }
-            }
-            if (semCategoria.length() > 0) {
-                sb.append("Sem categoria\n").append(semCategoria).append('\n');
-            }
-
-            sb.append("Total de itens disponíveis: ").append(disponiveis.size()).append('\n');
-            mostrarRelatorio("Itens disponíveis por categoria", sb.toString());
+            JanelaRelatorios.mostrar(relatorios.disponiveisPorCategoria());
         } catch (RuntimeException e) {
             mostrarErro(formItem, e);
         }
     }
-
 
     @FXML public void salvarCategoria() {
 
@@ -1013,17 +905,8 @@ public class MenuAdminController {
     @FXML
     public void gerarFaturamento() {
         feedbackRelatorios.getChildren().clear();
-        LocalDate inicio = dpFaturamentoInicio.getValue();
-        LocalDate fim = dpFaturamentoFim.getValue();
-
-        if (inicio == null || fim == null) {
-            avisoRelatorio("Escolha a data inicial e a data final.", Banner.BannerType.DANGER);
-            return;
-        }
-
         try {
-            // A fachada valida o período (ex.: início depois do fim) e soma aluguéis + multas
-            txtFaturamento.setText(facade.gerarRelatorioFaturamento(inicio, fim));
+            txtFaturamento.setText(relatorios.faturamento(dpFaturamentoInicio.getValue(), dpFaturamentoFim.getValue()).comoTexto());
         } catch (RuntimeException e) {
             logger.warn("Falha ao gerar relatório de faturamento: {}", e.getMessage(), e);
             avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
@@ -1051,12 +934,26 @@ public class MenuAdminController {
         }
     }
 
-    private static boolean estaAtrasado(ContratoAluguel c) {
-        return c.getDataPrevDevolucao() != null && hoje().isAfter(c.getDataPrevDevolucao());
+        @FXML
+    public void exportarFaturamento() {
+        feedbackRelatorios.getChildren().clear();
+        try {
+            JanelaRelatorios.mostrar(relatorios.faturamento(dpFaturamentoInicio.getValue(), dpFaturamentoFim.getValue()));
+        } catch (RuntimeException e) {
+            logger.warn("Falha ao exportar faturamento: {}", e.getMessage(), e);
+            avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
+        }
     }
 
-    private static long diasDeAtraso(ContratoAluguel c) {
-        return estaAtrasado(c) ? ChronoUnit.DAYS.between(c.getDataPrevDevolucao(), hoje()) : 0;
+    @FXML
+    public void exportarItensAlugados() {
+        feedbackRelatorios.getChildren().clear();
+        try {
+            JanelaRelatorios.mostrar(relatorios.itensAlugados());
+        } catch (RuntimeException e) {
+            logger.warn("Falha ao exportar itens alugados: {}", e.getMessage(), e);
+            avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
+        }
     }
 
     //fim relatorio
@@ -1097,36 +994,6 @@ public class MenuAdminController {
         alert.setHeaderText(null);
         alert.setContentText(mensagem);
         alert.showAndWait();
-    }
-
-        // Abre uma janela com o texto de um relatório (fonte monoespaçada para alinhar as colunas)
-    private void mostrarRelatorio(String titulo, String texto) {
-        TextArea area = new TextArea(texto);
-        area.setEditable(false);
-        area.setWrapText(false);
-        area.setPrefSize(680, 440);
-        area.setStyle("-fx-font-family: monospace; -fx-font-size: 13px;");
-
-        Dialog<Void> janela = new Dialog<>();
-        janela.setTitle(titulo);
-        janela.setHeaderText(titulo);
-        janela.getDialogPane().setContent(area);
-        janela.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-        janela.setResizable(true);
-        janela.showAndWait();
-    }
-
-    // Data de hoje no fuso da loja
-    private static LocalDate hoje() {
-        return LocalDate.now(ZoneId.of("America/Recife"));
-    }
-
-    private static String formatarData(LocalDate data) {
-        return data == null ? "-" : data.format(FORMATO_DATA);
-    }
-
-    private static String formatarMoeda(BigDecimal valor) {
-        return valor == null ? "-" : String.format("R$ %.2f", valor);
     }
 
     //Cor do StatusBadge

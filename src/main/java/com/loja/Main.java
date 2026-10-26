@@ -3,6 +3,7 @@ package com.loja;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.ui.LojaApp;
 import com.loja.ui.MenuLogin;
+
 import javafx.application.Application;
 
 public class Main {
