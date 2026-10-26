@@ -9,7 +9,6 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane prefHeight="650.0" prefWidth="1100.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.controllers.ContratosAtivosController">
@@ -33,11 +32,11 @@
 
                   <Separator />
 
+                  <!-- Campo de Busca e Botão Buscar Mantidos -->
                   <HBox alignment="CENTER_LEFT" spacing="12.0">
                      <children>
                         <TextField fx:id="txtFiltro" prefHeight="40.0" prefWidth="350.0" promptText="Buscar por ID do cliente ou contrato..." style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db;" />
                         <Button onAction="#handleFiltrar" prefHeight="40.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 0 18; -fx-cursor: hand;" text="Buscar" />
-                        <Button onAction="#handleAtualizar" prefHeight="40.0" style="-fx-background-color: #f1f5f9; -fx-text-fill: #334155; -fx-background-radius: 8; -fx-padding: 0 18; -fx-cursor: hand;" text="Atualizar" />
                      </children>
                   </HBox>
 

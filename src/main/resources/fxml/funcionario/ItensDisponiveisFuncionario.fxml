@@ -78,14 +78,6 @@
                            style="-fx-font-size: 12px;
                                   -fx-text-fill: #64748b;"/>
 
-                    <Button text="Atualizar"
-                            onAction="#handleAtualizar"
-                            style="-fx-background-color: #2563eb;
-                                   -fx-background-radius: 10;
-                                   -fx-text-fill: white;
-                                   -fx-font-weight: bold;
-                                   -fx-padding: 9 20;
-                                   -fx-cursor: hand;"/>
                     <Button text="Disponíveis por categoria"
                             onAction="#handleRelatorioPorCategoria"
                             style="-fx-background-color: #eef2ff;
