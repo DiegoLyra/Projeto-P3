@@ -65,7 +65,7 @@ import com.loja.model.ContratoAluguel;
 import javafx.scene.control.DatePicker;
 
 //ignorar pedido para colocar lambda, uma vez que o professor pediu para não ser utilizado
-@SuppressWarnings("java:S1604") 
+@SuppressWarnings({"java:S1604", "java:S9357"}) 
 
 public class MenuAdminController {
 
