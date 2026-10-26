@@ -106,7 +106,7 @@ public class MenuFuncionarioController {
 
     @FXML
     private void abrirMultas() {
-        if (carregarTela("/fxml/funcionario/TelaMultas.fxml")) {
+        if (carregarTela("/fxml/funcionario/MultaFuncionario.fxml")) {
             marcarBotaoAtivo(btnMultas);
         }
     }
