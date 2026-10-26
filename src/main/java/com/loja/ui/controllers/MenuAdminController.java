@@ -1130,6 +1130,7 @@ public class MenuAdminController {
     }
 
     //Cor do StatusBadge
+        
     private static StatusBadge.StatusType tipoDoBadge(String valor) {
         switch (valor.toUpperCase()) {
             case "ATIVO":
@@ -1147,6 +1148,8 @@ public class MenuAdminController {
                 return StatusBadge.StatusType.INFO;
         }
     }
+
+    
 
     //Junta vários valores num texto só, ignorando os nulos
     private static String texto(Object... partes) {
