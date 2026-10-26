@@ -124,7 +124,7 @@ public class MenuFuncionarioController {
     private void abrirRelatorios() {
         if (carregarTela(
                 "/fxml/funcionario/RelatorioFuncionario.fxml")){
-          marcarBotaoAtivo(btnRelatorios);
+            marcarBotaoAtivo(btnRelatorios);
         }
     }
 
@@ -136,7 +136,8 @@ public class MenuFuncionarioController {
                 btnDisponiveis,
                 btnContratosAtivos,
                 btnHistorico,
-                btnMultas
+                btnMultas,
+                btnRelatorios
         );
 
         for (Button botao : botoes) {
