@@ -269,13 +269,13 @@ public class MenuAdminController {
         });
 
         formUsuario = new FormState(lblFormUsuario, badgeUsuario, btnSalvarUsuario, btnCancelarUsuario, feedbackUsuario,
-                fUsuarioId, "Cadastrar Novo Usuário", "Atualizar Usuário", "Cadastrar Usuário");
+                fUsuarioId, new TextosFormulario("Cadastrar Novo Usuário", "Atualizar Usuário", "Cadastrar Usuário"));
         formItem = new FormState(lblFormItem, badgeItem, btnSalvarItem, btnCancelarItem, feedbackItem,
-                fItemId, "Cadastrar Novo Item", "Atualizar Item", "Cadastrar Item");
+                fItemId, new TextosFormulario("Cadastrar Novo Item", "Atualizar Item", "Cadastrar Item"));
         formCategoria = new FormState(lblFormCategoria, badgeCategoria, btnSalvarCategoria, btnCancelarCategoria, feedbackCategoria,
-                fCategoriaId, "Cadastrar Nova Categoria", "Atualizar Categoria", "Cadastrar Categoria");
+                fCategoriaId, new TextosFormulario("Cadastrar Nova Categoria", "Atualizar Categoria", "Cadastrar Categoria"));
         formFornecedor = new FormState(lblFormFornecedor, badgeFornecedor, btnSalvarFornecedor, btnCancelarFornecedor, feedbackFornecedor,
-                fFornecedorId, "Cadastrar Novo Fornecedor", "Atualizar Fornecedor", "Cadastrar Fornecedor");
+                fFornecedorId, new TextosFormulario("Cadastrar Novo Fornecedor", "Atualizar Fornecedor", "Cadastrar Fornecedor"));
 
         configurarTabelas();
         limparUsuario();
@@ -1027,6 +1027,23 @@ public class MenuAdminController {
         }
     }
 
+    private static final class TextosFormulario {
+        private final String tituloNovo;
+        private final String tituloEdicao;
+        private final String textoSalvar;
+
+        TextosFormulario(String tituloNovo, String tituloEdicao, String textoSalvar) {
+            this.tituloNovo = tituloNovo;
+            this.tituloEdicao = tituloEdicao;
+            this.textoSalvar = textoSalvar;
+        }
+
+        String tituloNovo() { return tituloNovo; }
+        String tituloEdicao() { return tituloEdicao; }
+        String textoSalvar() { return textoSalvar; }
+    }
+
+    //Alterna um formulário entre "Cadastrar" e "Modo de Edição
     private static class FormState {
         private static final String BOTAO = "-fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand; -fx-background-color: ";
 
@@ -1042,16 +1059,16 @@ public class MenuAdminController {
         private String idEditando;
 
         FormState(Label titulo, HBox badge, Button btnSalvar, Button btnCancelar, VBox feedback,
-                  FormField campoId, String tituloNovo, String tituloEdicao, String textoSalvar) {
+                  FormField campoId, TextosFormulario textos) {
             this.titulo = titulo;
             this.badge = badge;
             this.btnSalvar = btnSalvar;
             this.btnCancelar = btnCancelar;
             this.feedback = feedback;
             this.campoId = campoId;
-            this.tituloNovo = tituloNovo;
-            this.tituloEdicao = tituloEdicao;
-            this.textoSalvar = textoSalvar;
+            this.tituloNovo = textos.tituloNovo();
+            this.tituloEdicao = textos.tituloEdicao();
+            this.textoSalvar = textos.textoSalvar();
 
             badge.getChildren().add(new StatusBadge("Modo de Edição", StatusBadge.StatusType.WARNING));
             btnCancelar.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;");
