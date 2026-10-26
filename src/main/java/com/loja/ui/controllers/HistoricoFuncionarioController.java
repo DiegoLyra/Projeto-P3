@@ -2,6 +2,10 @@ package com.loja.ui.controllers;
 
 import com.loja.model.ContratoAluguel;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
+import com.loja.model.Usuario;
+import com.loja.ui.components.ColunaTexto;
+import com.loja.ui.relatorios.GeradorRelatorios;
+import com.loja.ui.relatorios.PainelRelatorio;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,13 +14,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class HistoricoFuncionarioController {
@@ -29,7 +30,10 @@ public class HistoricoFuncionarioController {
     @FXML private TableColumn<ContratoAluguel, String> colItem;
     @FXML private TableColumn<ContratoAluguel, String> colDataRetirada;
     @FXML private TableColumn<ContratoAluguel, String> colDataDevolucao;
-    @FXML private TableColumn<ContratoAluguel, Object> colValorPago;
+    @FXML private TableColumn<ContratoAluguel, String> colValorPago;
+    @FXML private TableColumn<ContratoAluguel, String> colStatus;
+    @FXML private PainelRelatorio painelHistorico;
+    private GeradorRelatorios relatorios;    
     @FXML private Label mensagemLabel;
 
     private ILojaFacade facade;
@@ -37,15 +41,50 @@ public class HistoricoFuncionarioController {
 
     public void setFacade(ILojaFacade facade) {
         this.facade = facade;
+        this.relatorios = new GeradorRelatorios(facade);
     }
 
-    @FXML
+        @FXML
     private void initialize() {
-        colContratoId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colItem.setCellValueFactory(new PropertyValueFactory<>("itemId"));
-        colDataRetirada.setCellValueFactory(new PropertyValueFactory<>("dataRetirada"));
-        colDataDevolucao.setCellValueFactory(new PropertyValueFactory<>("dataPrevDevolucao"));
-        colValorPago.setCellValueFactory(new PropertyValueFactory<>("valorTotal"));
+        colContratoId.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getId();
+            }
+        });
+        colItem.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getItem().getNome();
+            }
+        });
+        colDataRetirada.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return GeradorRelatorios.formatarData(c.getDataRetirada());
+            }
+        });
+        colDataDevolucao.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                if (c.getDataEfetivaDevolucao() != null) {
+                    return GeradorRelatorios.formatarData(c.getDataEfetivaDevolucao());
+                }
+                return "Prev. " + GeradorRelatorios.formatarData(c.getDataPrevDevolucao());
+            }
+        });
+        colStatus.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getStatus();
+            }
+        });
+        colValorPago.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return GeradorRelatorios.formatarMoeda(c.getValorTotal());
+            }
+        });
 
         tabelaHistorico.setItems(listaHistorico);
     }
@@ -63,20 +102,25 @@ public class HistoricoFuncionarioController {
             return;
         }
 
-        try {
-            // Chama o método da fachada que você definiu: consultarHistoricoCliente
-            Map<String, ContratoAluguel> mapaHistorico = facade.consultarHistoricoCliente(clienteId);
-            List<ContratoAluguel> historico = new ArrayList<>(mapaHistorico.values());
-            
-            listaHistorico.setAll(historico);
-
-            if (historico.isEmpty()) {
-                exibirMensagem("Nenhum histórico encontrado para este cliente.", false);
-            } else {
-                exibirMensagem("Histórico carregado com sucesso.", true);
+                try {
+            Usuario cliente = facade.buscarUsuario(clienteId);
+            if (cliente == null) {
+                listaHistorico.clear();
+                painelHistorico.limpar();
+                exibirMensagem("Cliente não encontrado.", false);
+                return;
             }
+
+            Map<String, ContratoAluguel> mapaHistorico = facade.consultarHistoricoCliente(clienteId);
+            listaHistorico.setAll(mapaHistorico.values());
+            painelHistorico.mostrar(relatorios.historicoCliente(cliente));
+
+            exibirMensagem(mapaHistorico.isEmpty()
+                    ? "Nenhum aluguel registrado para este cliente."
+                    : "Histórico carregado com sucesso.", !mapaHistorico.isEmpty());
         } catch (Exception e) {
             logger.error("Erro ao buscar histórico do cliente '{}'", clienteId, e);
+            painelHistorico.limpar();
             exibirMensagem("Erro ao buscar histórico: " + e.getMessage(), false);
         }
     }

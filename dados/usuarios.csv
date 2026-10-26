@@ -1,6 +1,7 @@
 id;nome;login;senha;perfil;ativo;campoExtra1;campoExtra2
 USR005;vinicius;vini@gmail.com;Vini123vini?;CLIENTE;true;false;
 USR004;MIRELE;admin;123;ADMINISTRADOR;true;1;Geral
+127127;menob;duda@gmail.com;Dudaneves0#;CLIENTE;true;false;
 12346789;audax;audax@gmail.com;Vini123vini?;CLIENTE;true;false;
 USR003;JACKSON;cli;123;CLIENTE;true;false;
 USR002;JEOVÁ;func;123;FUNCIONARIO;true;Geral;

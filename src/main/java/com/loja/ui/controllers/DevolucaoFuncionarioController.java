@@ -3,8 +3,9 @@ package com.loja.ui.controllers;
 
 import com.loja.model.ContratoAluguel;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
+import com.loja.ui.components.ColunaTexto;
+import com.loja.ui.relatorios.GeradorRelatorios;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -14,7 +15,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
@@ -49,9 +49,6 @@ public class DevolucaoFuncionarioController {
 
     private ILojaFacade facade;
 
-    private final DateTimeFormatter formatoData =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
     @FXML
     public void initialize() {
         configurarColunas();
@@ -63,36 +60,49 @@ public class DevolucaoFuncionarioController {
         carregarContratos();
     }
 
-    private void configurarColunas() {
-        colId.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        dado.getValue().getId()));
-
-        colCliente.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        dado.getValue().getCliente().getNome()));
-
-        colItem.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        dado.getValue().getItem().getNome()));
-
-        colRetirada.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        dado.getValue().getDataRetirada()
-                                .format(formatoData)));
-
-        colPrevDevolucao.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        dado.getValue().getDataPrevDevolucao()
-                                .format(formatoData)));
-
-        colSituacao.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        String.valueOf(
-                                dado.getValue().getStatus())));
-
-        colAcao.setCellValueFactory(dado ->
-                new SimpleStringProperty(""));
+        private void configurarColunas() {
+        colId.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getId();
+            }
+        });
+        colCliente.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getCliente().getNome();
+            }
+        });
+        colItem.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getItem().getNome();
+            }
+        });
+        colRetirada.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return GeradorRelatorios.formatarData(c.getDataRetirada());
+            }
+        });
+        colPrevDevolucao.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return GeradorRelatorios.formatarData(c.getDataPrevDevolucao());
+            }
+        });
+        colSituacao.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return c.getStatus();
+            }
+        });
+        colAcao.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
+            @Override
+            protected String valor(ContratoAluguel c) {
+                return "";
+            }
+        });
     }
 
     private void configurarBotaoDevolucao() {

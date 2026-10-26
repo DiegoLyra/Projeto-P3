@@ -3,8 +3,9 @@ package com.loja.ui.controllers;
 
 import com.loja.model.Multa;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
+import com.loja.ui.components.ColunaTexto;
+import com.loja.ui.relatorios.GeradorRelatorios;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -63,37 +64,37 @@ public class MultaFuncionarioController {
         carregarMultas();
     }
 
-    private void configurarColunas() {
-        colId.setCellValueFactory(dado ->
-                new SimpleStringProperty(dado.getValue().getId()));
-
-        colCliente.setCellValueFactory(dado -> {
-            Multa multa = dado.getValue();
-
-            String nomeCliente = multa.getContrato()
-                    .getCliente()
-                    .getNome();
-
-            return new SimpleStringProperty(nomeCliente);
+        private void configurarColunas() {
+        colId.setCellValueFactory(new ColunaTexto<Multa>() {
+            @Override
+            protected String valor(Multa m) {
+                return m.getId();
+            }
         });
-
-        colContrato.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        dado.getValue().getContrato().getId()
-                ));
-
-        colValor.setCellValueFactory(dado -> {
-            BigDecimal valor = dado.getValue().getValorTotal();
-
-            return new SimpleStringProperty(
-                    formatoMoeda.format(valor)
-            );
+        colCliente.setCellValueFactory(new ColunaTexto<Multa>() {
+            @Override
+            protected String valor(Multa m) {
+                return m.getContrato().getCliente().getNome();
+            }
         });
-
-        colSituacao.setCellValueFactory(dado ->
-                new SimpleStringProperty(
-                        dado.getValue().getStatus()
-                ));
+        colContrato.setCellValueFactory(new ColunaTexto<Multa>() {
+            @Override
+            protected String valor(Multa m) {
+                return m.getContrato().getId();
+            }
+        });
+        colValor.setCellValueFactory(new ColunaTexto<Multa>() {
+            @Override
+            protected String valor(Multa m) {
+                return GeradorRelatorios.formatarMoeda(m.getValorTotal());
+            }
+        });
+        colSituacao.setCellValueFactory(new ColunaTexto<Multa>() {
+            @Override
+            protected String valor(Multa m) {
+                return m.getStatus();
+            }
+        });
     }
 
     private void configurarBotaoQuitar() {

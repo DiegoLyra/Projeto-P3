@@ -104,7 +104,7 @@ public final class JanelaRelatorios {
         janela.showAndWait();
     }
 
-    private static void salvarPdf(Relatorio relatorio, Window dono) {
+    public static void salvarPdf(Relatorio relatorio, Window dono) {
         FileChooser seletor = new FileChooser();
         seletor.setTitle("Salvar relatório em PDF");
         seletor.setInitialFileName(relatorio.getNomeArquivo() + "-" + GeradorRelatorios.hoje() + ".pdf");
@@ -129,7 +129,7 @@ public final class JanelaRelatorios {
     }
 
     // Gera o PDF e abre a janela de impressão do sistema (escolha de impressora, cópias, páginas)
-    private static void imprimir(final Relatorio relatorio) {
+    public static void imprimir(final Relatorio relatorio) {
         // Sem impressora instalada, não adianta abrir a janela de impressão
         if (PrintServiceLookup.lookupPrintServices(null, null).length == 0) {
             mensagem(Alert.AlertType.INFORMATION, "Impressão",

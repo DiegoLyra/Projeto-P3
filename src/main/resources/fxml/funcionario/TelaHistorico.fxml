@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import com.loja.ui.relatorios.PainelRelatorio?>
 
 <BorderPane prefHeight="650.0" prefWidth="1100.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.loja.ui.controllers.HistoricoFuncionarioController">
    <center>
@@ -34,7 +35,7 @@
 
                   <HBox alignment="CENTER_LEFT" spacing="12.0">
                      <children>
-                        <TextField fx:id="txtClienteId" prefHeight="40.0" prefWidth="350.0" promptText="Digite o ID ou CPF do cliente..." style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db;" />
+                        <TextField fx:id="txtClienteId" prefHeight="40.0" prefWidth="350.0" promptText="Digite o ID do cliente..." style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db;" />
                         <Button onAction="#handleBuscarHistorico" prefHeight="40.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 0 20; -fx-cursor: hand;" text="Consultar Histórico" />
                      </children>
                   </HBox>
@@ -51,6 +52,7 @@
                   </TableView>
 
                   <Label fx:id="mensagemLabel" style="-fx-font-size: 12px;" wrapText="true" />
+                  <PainelRelatorio fx:id="painelHistorico" />
                </children>
             </VBox>
          </children>
