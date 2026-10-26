@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import com.loja.ui.relatorios.PainelRelatorio?>
 
 <BorderPane prefHeight="760.0" prefWidth="1100.0"
             style="-fx-background-color: #f8fafc;"
@@ -72,21 +73,7 @@
 
                                 <VBox fx:id="feedbackRelatorios" spacing="8.0"/>
 
-                                <TextArea fx:id="txtFaturamento"
-                                          editable="false"
-                                          prefHeight="150.0"
-                                          promptText="O resultado do faturamento aparecerá aqui."
-                                          style="-fx-control-inner-background: #ffffff; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-family: monospace; -fx-font-size: 13px;"
-                                          wrapText="true"/>
-
-                                <HBox alignment="CENTER_RIGHT">
-                                    <children>
-                                        <Button onAction="#exportarPDF"
-                                                prefHeight="38.0"
-                                                style="-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;"
-                                                text="Exportar Faturamento PDF"/>
-                                    </children>
-                                </HBox>
+                                <PainelRelatorio fx:id="painelFaturamento" />
                             </children>
                         </VBox>
 
@@ -114,10 +101,6 @@
                                                 style="-fx-background-color: #eef2ff; -fx-text-fill: #4338ca; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;"
                                                 text="Atualizar"/>
 
-                                        <Button onAction="#exportarAlugadosPDF"
-                                                prefHeight="38.0"
-                                                style="-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;"
-                                                text="Baixar relatório PDF"/>
                                     </children>
                                 </HBox>
 
@@ -139,6 +122,18 @@
                                         <Label text="Nenhum item alugado no momento."/>
                                     </placeholder>
                                 </TableView>
+                                <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                    <children>
+                                        <Button onAction="#salvarAlugadosPDF"
+                                                prefHeight="38.0"
+                                                style="-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18; -fx-cursor: hand;"
+                                                text="Salvar PDF"/>
+                                        <Button onAction="#imprimirAlugados"
+                                                prefHeight="38.0"
+                                                style="-fx-background-color: #eef2ff; -fx-text-fill: #4338ca; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18; -fx-cursor: hand;"
+                                                text="Imprimir"/>
+                                    </children>
+                                </HBox>
                             </children>
                         </VBox>
 
