@@ -1,3 +1,4 @@
+
 package com.loja.ui.controllers;
 
 import com.loja.model.Cliente;
@@ -98,13 +99,17 @@ public class MenuClienteController {
     }
 
     private void configurarTabelas() {
-        colContratoId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getId()));
+        colContratoId.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getId()));
+
         colContratoItem.setCellValueFactory(cellData -> {
             Item item = cellData.getValue().getItem();
             return new SimpleStringProperty(item != null ? item.getNome() : "Item N/I");
         });
+
         colContratoRetirada.setCellValueFactory(cellData ->
                 new SimpleStringProperty(formatarData(cellData.getValue().getDataRetirada(), "-")));
+
         colContratoDevolucao.setCellValueFactory(cellData -> {
             LocalDate data = cellData.getValue().getDataEfetivaDevolucao();
             if (data == null) {
@@ -112,8 +117,10 @@ public class MenuClienteController {
             }
             return new SimpleStringProperty(formatarData(data, "Em Aberto"));
         });
+
         colContratoValorTotal.setCellValueFactory(cellData ->
                 new SimpleStringProperty(formatarMoeda(cellData.getValue().getValorTotal())));
+
         colContratoStatus.setCellValueFactory(cellData ->
                 new SimpleStringProperty(String.valueOf(cellData.getValue().getStatus())));
 
@@ -135,12 +142,18 @@ public class MenuClienteController {
             }
         });
 
-        colMultaId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getId()));
-        colMultaMotivo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMotivo()));
+        colMultaId.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getId()));
+
+        colMultaMotivo.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getMotivo()));
+
         colMultaDias.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getDiasAtraso() + " dias"));
+
         colMultaValor.setCellValueFactory(cellData ->
                 new SimpleStringProperty(formatarMoeda(cellData.getValue().getValorTotal())));
+
         colMultaStatus.setCellValueFactory(cellData ->
                 new SimpleStringProperty(String.valueOf(cellData.getValue().getStatus())));
 
@@ -178,19 +191,23 @@ public class MenuClienteController {
                 String termoBusca = newValue.toLowerCase().trim();
 
                 Item item = contrato.getItem();
-                if (item != null && item.getNome() != null && item.getNome().toLowerCase().contains(termoBusca)) {
+                if (item != null && item.getNome() != null
+                        && item.getNome().toLowerCase().contains(termoBusca)) {
                     return true;
                 }
 
-                if (contrato.getValorTotal() != null && contrato.getValorTotal().toString().contains(termoBusca)) {
+                if (contrato.getValorTotal() != null
+                        && contrato.getValorTotal().toString().contains(termoBusca)) {
                     return true;
                 }
 
-                if (contrato.getStatus() != null && contrato.getStatus().toString().toLowerCase().contains(termoBusca)) {
+                if (contrato.getStatus() != null
+                        && contrato.getStatus().toString().toLowerCase().contains(termoBusca)) {
                     return true;
                 }
 
-                if (contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca)) {
+                if (contrato.getId() != null
+                        && contrato.getId().toLowerCase().contains(termoBusca)) {
                     return true;
                 }
 
@@ -229,21 +246,35 @@ public class MenuClienteController {
 
     private ObservableList<ContratoAluguel> obterItensPaginaAlugueis(int pageIndex) {
         int deIndex = pageIndex * ITENS_POR_PAGINA;
-        int paraIndex = Math.min(deIndex + ITENS_POR_PAGINA, listaContratosFiltrada.size());
+        int paraIndex = Math.clamp(
+                deIndex + ITENS_POR_PAGINA,
+                0,
+                listaContratosFiltrada.size()
+        );
 
         if (deIndex >= 0 && deIndex < listaContratosFiltrada.size()) {
-            return FXCollections.observableArrayList(listaContratosFiltrada.subList(deIndex, paraIndex));
+            return FXCollections.observableArrayList(
+                    listaContratosFiltrada.subList(deIndex, paraIndex)
+            );
         }
+
         return FXCollections.emptyObservableList();
     }
 
     private ObservableList<Multa> obterItensPaginaMultas(int pageIndex) {
         int deIndex = pageIndex * ITENS_POR_PAGINA;
-        int paraIndex = Math.min(deIndex + ITENS_POR_PAGINA, listaMultas.size());
+        int paraIndex = Math.clamp(
+                deIndex + ITENS_POR_PAGINA,
+                0,
+                listaMultas.size()
+        );
 
         if (deIndex >= 0 && deIndex < listaMultas.size()) {
-            return FXCollections.observableArrayList(listaMultas.subList(deIndex, paraIndex));
+            return FXCollections.observableArrayList(
+                    listaMultas.subList(deIndex, paraIndex)
+            );
         }
+
         return FXCollections.emptyObservableList();
     }
 
@@ -253,7 +284,13 @@ public class MenuClienteController {
 
         paginacaoAlugueis.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
 
-        int paginaAtual = Math.min(paginacaoAlugueis.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
+        int ultimaPagina = totalPaginas > 0 ? totalPaginas - 1 : 0;
+        int paginaAtual = Math.clamp(
+                paginacaoAlugueis.getCurrentPageIndex(),
+                0,
+                ultimaPagina
+        );
+
         paginacaoAlugueis.setCurrentPageIndex(paginaAtual);
         tblAlugueis.setItems(obterItensPaginaAlugueis(paginaAtual));
     }
@@ -264,7 +301,13 @@ public class MenuClienteController {
 
         paginacaoMultas.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
 
-        int paginaAtual = Math.min(paginacaoMultas.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
+        int ultimaPagina = totalPaginas > 0 ? totalPaginas - 1 : 0;
+        int paginaAtual = Math.clamp(
+                paginacaoMultas.getCurrentPageIndex(),
+                0,
+                ultimaPagina
+        );
+
         paginacaoMultas.setCurrentPageIndex(paginaAtual);
         tblMultas.setItems(obterItensPaginaMultas(paginaAtual));
     }
@@ -312,8 +355,10 @@ public class MenuClienteController {
     @FXML
     public void carregarItensDisponiveis() {
         containerCardsItens.getChildren().clear();
+
         try {
             Map<String, Item> itens = facade.listarItensDisponiveis();
+
             if (itens == null || itens.isEmpty()) {
                 Label lblVazio = new Label("Não há itens disponíveis para aluguel no momento.");
                 lblVazio.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14px;");
@@ -447,26 +492,44 @@ public class MenuClienteController {
         grid.add(new Label("Data Prevista Devolução:"), 0, 1);
         grid.add(dpDevolucao, 1, 1);
 
-        root.getChildren().addAll(lblTitulo, grid, lblDiarias, lblValorTotal, lblMultaAviso, lblStatusConflito, btnConfirmar);
+        root.getChildren().addAll(
+                lblTitulo, grid, lblDiarias, lblValorTotal,
+                lblMultaAviso, lblStatusConflito, btnConfirmar
+        );
 
         Scene scene = new Scene(root, 420, 320);
         modal.setScene(scene);
         modal.showAndWait();
     }
 
-    private boolean verificarConflitoDeDatas(String itemId, LocalDate inicioDesejado, LocalDate fimDesejado) {
+    private boolean verificarConflitoDeDatas(
+            String itemId,
+            LocalDate inicioDesejado,
+            LocalDate fimDesejado
+    ) {
         try {
-            Map<String, ContratoAluguel> historico = facade.consultarHistoricoCliente(usuarioLogado.getId());
-            if (historico == null) return false;
+            Map<String, ContratoAluguel> historico =
+                    facade.consultarHistoricoCliente(usuarioLogado.getId());
+
+            if (historico == null) {
+                return false;
+            }
 
             for (ContratoAluguel c : historico.values()) {
                 if (c.getItem() != null && itemId.equalsIgnoreCase(c.getItem().getId())) {
                     LocalDate inicioExistente = c.getDataRetirada();
-                    LocalDate fimExistente = c.getDataEfetivaDevolucao() != null ? c.getDataEfetivaDevolucao() : c.getDataPrevDevolucao();
+                    LocalDate fimExistente = c.getDataEfetivaDevolucao() != null
+                            ? c.getDataEfetivaDevolucao()
+                            : c.getDataPrevDevolucao();
 
                     if (inicioExistente != null && fimExistente != null) {
-                        boolean sobrepoe = !(fimDesejado.isBefore(inicioExistente) || inicioDesejado.isAfter(fimExistente));
-                        if (sobrepoe && !"ENCERRADO".equalsIgnoreCase(String.valueOf(c.getStatus()))) {
+                        boolean sobrepoe = !(
+                                fimDesejado.isBefore(inicioExistente)
+                                || inicioDesejado.isAfter(fimExistente)
+                        );
+
+                        if (sobrepoe
+                                && !"ENCERRADO".equalsIgnoreCase(String.valueOf(c.getStatus()))) {
                             return true;
                         }
                     }
@@ -475,16 +538,22 @@ public class MenuClienteController {
         } catch (RuntimeException e) {
             logger.error("Erro ao verificar conflito de datas: {}", e.getMessage());
         }
+
         return false;
     }
 
     @FXML
     public void carregarMeusAlugueis() {
         try {
-            if (usuarioLogado == null || usuarioLogado.getId() == null) return;
+            if (usuarioLogado == null || usuarioLogado.getId() == null) {
+                return;
+            }
 
-            Map<String, ContratoAluguel> contratos = facade.consultarHistoricoCliente(usuarioLogado.getId());
+            Map<String, ContratoAluguel> contratos =
+                    facade.consultarHistoricoCliente(usuarioLogado.getId());
+
             listaContratos.clear();
+
             if (contratos != null && !contratos.isEmpty()) {
                 listaContratos.addAll(contratos.values());
             }
@@ -492,7 +561,12 @@ public class MenuClienteController {
             atualizarPaginacaoAlugueis();
 
         } catch (RuntimeException e) {
-            logger.error("Falha ao consultar histórico do cliente '{}': {}", usuarioLogado.getId(), e.getMessage(), e);
+            logger.error(
+                    "Falha ao consultar histórico do cliente '{}': {}",
+                    usuarioLogado.getId(),
+                    e.getMessage(),
+                    e
+            );
             exibirAlertaErro("Erro", "Erro ao carregar histórico de aluguéis: " + e.getMessage());
         }
     }
@@ -500,7 +574,9 @@ public class MenuClienteController {
     @FXML
     public void carregarMultasPendentes() {
         try {
-            if (usuarioLogado == null || usuarioLogado.getId() == null) return;
+            if (usuarioLogado == null || usuarioLogado.getId() == null) {
+                return;
+            }
 
             String clienteId = usuarioLogado.getId();
 
@@ -516,6 +592,7 @@ public class MenuClienteController {
 
             Map<String, Multa> multas = facade.listarMultaPorCliente(clienteId);
             listaMultas.clear();
+
             if (multas != null && !multas.isEmpty()) {
                 listaMultas.addAll(multas.values());
             }
@@ -523,7 +600,12 @@ public class MenuClienteController {
             atualizarPaginacaoMultas();
 
         } catch (RuntimeException e) {
-            logger.error("Falha ao consultar multas do cliente '{}': {}", usuarioLogado.getId(), e.getMessage(), e);
+            logger.error(
+                    "Falha ao consultar multas do cliente '{}': {}",
+                    usuarioLogado.getId(),
+                    e.getMessage(),
+                    e
+            );
             exibirAlertaErro("Erro", "Erro ao carregar multas: " + e.getMessage());
         }
     }
