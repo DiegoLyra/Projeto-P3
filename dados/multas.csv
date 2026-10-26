@@ -1,2 +1,3 @@
 id;contratoId;motivo;valorFixo;valorDiario;valorTotal;diasAtraso;status
 1;E528328A-2F31-41FE-8D8C-3A73F693E457;Atraso na devolução do item;20.00;5.50;850.50;151;QUITADA
+2;798F89B2-2A64-4C88-80DE-CDC2859820BE;Atraso na devolução do item;20.00;5.50;58.50;7;QUITADA
