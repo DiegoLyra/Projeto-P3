@@ -29,7 +29,7 @@ public class ContratosAtivosController {
     @FXML private TableColumn<ContratoAluguel, String> colItem;
     @FXML private TableColumn<ContratoAluguel, String> colDataInicio;
     @FXML private TableColumn<ContratoAluguel, String> colDataDevolucao;
-    @FXML private TableColumn<ContratoAluguel, Double> colValor;
+    @FXML private TableColumn<ContratoAluguel, Object> colValor;
     @FXML private Label mensagemLabel;
 
     private ILojaFacade facade;
@@ -43,10 +43,10 @@ public class ContratosAtivosController {
     @FXML
     private void initialize() {
         colIdContrato.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colCliente.setCellValueFactory(new PropertyValueFactory<>("nomeCliente"));
-        colItem.setCellValueFactory(new PropertyValueFactory<>("nomeItem"));
-        colDataInicio.setCellValueFactory(new PropertyValueFactory<>("dataInicio"));
-        colDataDevolucao.setCellValueFactory(new PropertyValueFactory<>("dataDevolucaoPrevista"));
+        colCliente.setCellValueFactory(new PropertyValueFactory<>("clienteId"));
+        colItem.setCellValueFactory(new PropertyValueFactory<>("itemId"));
+        colDataInicio.setCellValueFactory(new PropertyValueFactory<>("dataRetirada"));
+        colDataDevolucao.setCellValueFactory(new PropertyValueFactory<>("dataPrevDevolucao"));
         colValor.setCellValueFactory(new PropertyValueFactory<>("valorTotal"));
 
         tabelaContratos.setItems(listaContratos);
@@ -82,7 +82,7 @@ public class ContratosAtivosController {
             listaContratos.setAll(ativos);
             mensagemLabel.setText("");
         } catch (Exception e) {
-            logger.error("Erro ao carregar contratos ativos", e);
+            logger.error("Erro ao carregar contratos ativos do CSV", e);
             exibirMensagem("Erro ao carregar contratos: " + e.getMessage(), false);
         }
     }

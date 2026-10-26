@@ -1,4 +1,3 @@
-
 package com.loja.ui.controllers;
 
 import com.loja.padrao.facade.interfaces.ILojaFacade;
@@ -34,6 +33,7 @@ public class MenuFuncionarioController {
     @FXML private Button btnContratosAtivos;
     @FXML private Button btnHistorico;
     @FXML private Button btnMultas;
+    @FXML private Button btnRelatorios;
 
     private final ILojaFacade facade;
     private final Navigator navigator;
@@ -114,6 +114,7 @@ public class MenuFuncionarioController {
     @FXML
     private void abrirRelatorios() {
         carregarTela("/fxml/funcionario/RelatorioFuncionario.fxml");
+        marcarBotaoAtivo(btnRelatorios);
     }
 
     private void marcarBotaoAtivo(Button selecionado) {
