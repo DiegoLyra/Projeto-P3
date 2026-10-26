@@ -7,7 +7,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class UiComponentTest extends Application {
+//não é teste automatizado, não deve receber o nome de Test
+
+public class UiComponentsDemo extends Application {
 
     @Override
     public void start(Stage primaryStage) {
