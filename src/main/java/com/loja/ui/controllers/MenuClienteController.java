@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -200,8 +201,8 @@ public class MenuClienteController {
                     }
                 }
 
-                LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null 
-                        ? contrato.getDataEfetivaDevolucao() 
+                LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null
+                        ? contrato.getDataEfetivaDevolucao()
                         : contrato.getDataPrevDevolucao();
 
                 if (dataDevolucao != null) {
@@ -219,13 +220,11 @@ public class MenuClienteController {
     }
 
     private void configurarPaginacao() {
-        paginacaoAlugueis.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) -> 
-            tblAlugueis.setItems(obterItensPaginaAlugueis(newIdx.intValue()))
-        );
+        paginacaoAlugueis.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) ->
+                tblAlugueis.setItems(obterItensPaginaAlugueis(newIdx.intValue())));
 
-        paginacaoMultas.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) -> 
-            tblMultas.setItems(obterItensPaginaMultas(newIdx.intValue()))
-        );
+        paginacaoMultas.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) ->
+                tblMultas.setItems(obterItensPaginaMultas(newIdx.intValue())));
     }
 
     private ObservableList<ContratoAluguel> obterItensPaginaAlugueis(int pageIndex) {
@@ -251,9 +250,9 @@ public class MenuClienteController {
     private void atualizarPaginacaoAlugueis() {
         int totalItens = listaContratosFiltrada.size();
         int totalPaginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
-        
+
         paginacaoAlugueis.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
-        
+
         int paginaAtual = Math.min(paginacaoAlugueis.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
         paginacaoAlugueis.setCurrentPageIndex(paginaAtual);
         tblAlugueis.setItems(obterItensPaginaAlugueis(paginaAtual));
@@ -262,9 +261,9 @@ public class MenuClienteController {
     private void atualizarPaginacaoMultas() {
         int totalItens = listaMultas.size();
         int totalPaginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
-        
+
         paginacaoMultas.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
-        
+
         int paginaAtual = Math.min(paginacaoMultas.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
         paginacaoMultas.setCurrentPageIndex(paginaAtual);
         tblMultas.setItems(obterItensPaginaMultas(paginaAtual));
@@ -377,8 +376,9 @@ public class MenuClienteController {
         Label lblTitulo = new Label("Alugar: " + item.getNome());
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #1e293b;");
 
-        DatePicker dpRetirada = new DatePicker(LocalDate.now());
-        DatePicker dpDevolucao = new DatePicker(LocalDate.now().plusDays(1));
+        ZoneId fusoHorario = ZoneId.of("America/Sao_Paulo");
+        DatePicker dpRetirada = new DatePicker(LocalDate.now(fusoHorario));
+        DatePicker dpDevolucao = new DatePicker(LocalDate.now(fusoHorario).plusDays(1));
 
         Label lblDiarias = new Label("Duração: 1 dia(s)");
         Label lblValorTotal = new Label("Valor Total Previsto: " + formatarMoeda(item.getTaxaDiaria()));
