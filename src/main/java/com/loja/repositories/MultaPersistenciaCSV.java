@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class MultaPersistenciaCSV implements IMultaRepository {
     private String caminhoArquivo;
-    private Map<String, Multa> multas;
+    private final Map<String, Multa> multas;
 
     public MultaPersistenciaCSV(String caminhoArquivo) {
         this.caminhoArquivo = caminhoArquivo;
