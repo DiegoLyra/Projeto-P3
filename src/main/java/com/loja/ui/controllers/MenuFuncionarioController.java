@@ -1,10 +1,11 @@
-
 package com.loja.ui.controllers;
 
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.ui.navigation.Navigator;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,7 @@ public class MenuFuncionarioController {
     public MenuFuncionarioController(
             ILojaFacade facade,
             Navigator navigator) {
+
         this.facade = facade;
         this.navigator = navigator;
     }
@@ -71,49 +73,56 @@ public class MenuFuncionarioController {
 
     @FXML
     private void abrirDevolucao() {
-        if (carregarTela("/fxml/funcionario/DevolucaoFuncionario.fxml")) {
+        if (carregarTela(
+                "/fxml/funcionario/DevolucaoFuncionario.fxml")) {
             marcarBotaoAtivo(btnDevolucao);
         }
     }
 
     @FXML
     private void abrirNovoCliente() {
-        if (carregarTela("/fxml/funcionario/NovoClienteFuncionario.fxml")) {
+        if (carregarTela(
+                "/fxml/funcionario/NovoClienteFuncionario.fxml")) {
             marcarBotaoAtivo(btnNovoCliente);
         }
     }
 
     @FXML
     private void abrirDisponiveis() {
-        if (carregarTela("/fxml/funcionario/ItensDisponiveisFuncionario.fxml")) {
+        if (carregarTela(
+                "/fxml/funcionario/ItensDisponiveisFuncionario.fxml")) {
             marcarBotaoAtivo(btnDisponiveis);
         }
     }
 
     @FXML
     private void abrirContratosAtivos() {
-        if (carregarTela("/fxml/funcionario/TelaContratosAtivos.fxml")) {
+        if (carregarTela(
+                "/fxml/funcionario/TelaContratosAtivos.fxml")) {
             marcarBotaoAtivo(btnContratosAtivos);
         }
     }
 
     @FXML
     private void abrirHistorico() {
-        if (carregarTela("/fxml/funcionario/TelaHistorico.fxml")) {
+        if (carregarTela(
+                "/fxml/funcionario/TelaHistorico.fxml")) {
             marcarBotaoAtivo(btnHistorico);
         }
     }
 
     @FXML
     private void abrirMultas() {
-        if (carregarTela("/fxml/funcionario/TelaMultas.fxml")) {
+        if (carregarTela(
+                "/fxml/funcionario/MultaFuncionario.fxml")) {
             marcarBotaoAtivo(btnMultas);
         }
     }
 
     @FXML
     private void abrirRelatorios() {
-        carregarTela("/fxml/funcionario/RelatorioFuncionario.fxml");
+        carregarTela(
+                "/fxml/funcionario/RelatorioFuncionario.fxml");
     }
 
     private void marcarBotaoAtivo(Button selecionado) {
@@ -165,35 +174,27 @@ public class MenuFuncionarioController {
 
             FXMLLoader loader = new FXMLLoader(recurso);
 
-            loader.setControllerFactory(tipo ->
-                    criarControlador(tipo)
-            );
+            loader.setControllerFactory(this::criarControlador);
 
             Parent tela = loader.load();
             Object controlador = loader.getController();
 
-            if (controlador instanceof RelatorioFuncionarioController) {
-                ((RelatorioFuncionarioController) controlador)
-                        .setFacade(facade);
-            }
-
-            if (controlador instanceof ItensDisponiveisFuncionarioController) {
-                ((ItensDisponiveisFuncionarioController) controlador)
-                        .setFacade(facade);
-            }
-
-            if (controlador instanceof NovoClienteFuncionarioController) {
-                ((NovoClienteFuncionarioController) controlador)
-                        .setFacade(facade);
-            }
+            // Entrega a facade a qualquer controlador que tenha
+            // o método setFacade(ILojaFacade).
+            configurarFacade(controlador);
 
             ScrollPane scrollPane = new ScrollPane(tela);
             scrollPane.setFitToWidth(true);
             scrollPane.setFitToHeight(false);
             scrollPane.setMinHeight(0);
             scrollPane.setMaxHeight(Double.MAX_VALUE);
-            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+            scrollPane.setHbarPolicy(
+                    ScrollPane.ScrollBarPolicy.NEVER);
+
+            scrollPane.setVbarPolicy(
+                    ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
             scrollPane.setStyle(
                     "-fx-background: #f8fafc;" +
                     "-fx-background-color: #f8fafc;"
@@ -208,14 +209,44 @@ public class MenuFuncionarioController {
 
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Erro de navegação");
-            alerta.setHeaderText("Não foi possível abrir esta tela.");
+            alerta.setHeaderText(
+                    "Não foi possível abrir esta tela.");
+
             alerta.setContentText(
                     "Arquivo: " + caminhoFXML
                     + "\n\nMotivo: " + obterMensagemErro(erro)
             );
+
             alerta.showAndWait();
 
             return false;
+        }
+    }
+
+    private void configurarFacade(Object controlador) {
+        if (controlador == null) {
+            return;
+        }
+
+        try {
+            Method metodo = controlador.getClass().getMethod(
+                    "setFacade",
+                    ILojaFacade.class
+            );
+
+            metodo.invoke(controlador, facade);
+
+        } catch (NoSuchMethodException erro) {
+            // Esse controlador não precisa receber a facade
+            // por meio de setFacade().
+        } catch (IllegalAccessException
+                | InvocationTargetException erro) {
+
+            throw new IllegalStateException(
+                    "Não foi possível configurar a facade no controlador "
+                    + controlador.getClass().getName(),
+                    erro
+            );
         }
     }
 
@@ -272,12 +303,17 @@ public class MenuFuncionarioController {
 
     @FXML
     private void sair() {
-        Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacao.setTitle("Sair do sistema");
-        confirmacao.setHeaderText("Deseja voltar ao login?");
-        confirmacao.setContentText("Sua sessão será encerrada.");
+        Alert confirmacao =
+                new Alert(Alert.AlertType.CONFIRMATION);
 
-        Optional<ButtonType> resposta = confirmacao.showAndWait();
+        confirmacao.setTitle("Sair do sistema");
+        confirmacao.setHeaderText(
+                "Deseja voltar ao login?");
+        confirmacao.setContentText(
+                "Sua sessão será encerrada.");
+
+        Optional<ButtonType> resposta =
+                confirmacao.showAndWait();
 
         if (resposta.isPresent()
                 && resposta.get() == ButtonType.OK) {
