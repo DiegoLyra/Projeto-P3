@@ -5,7 +5,6 @@ import com.loja.model.ContratoAluguel;
 import com.loja.model.Item;
 import com.loja.model.Usuario;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
-import com.loja.ui.navigation.Navigator;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -51,10 +50,9 @@ public class AluguelController {
 
     private final ILojaFacade facade;
 
-
     private final NumberFormat moeda = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
 
-    public AluguelController(ILojaFacade facade, Navigator navigator) {
+    public AluguelController(ILojaFacade facade) {
         this.facade = facade;
     }
 
@@ -79,7 +77,6 @@ public class AluguelController {
             }
         });
 
-        // Configuração de exibição para Item
         itemComboBox.setCellFactory(lv -> new ListCell<Item>() {
             @Override
             protected void updateItem(Item item, boolean empty) {
@@ -95,10 +92,8 @@ public class AluguelController {
             }
         });
 
-        // Configura restrições visuais nos DatePickers
         configurarRestricoesDeDatas();
 
-        // Listeners
         dataRetiradaPicker.valueProperty().addListener((obs, antiga, nova) -> {
             atualizarRestricaoDevolucao();
             calcularTotal();
@@ -225,7 +220,7 @@ public class AluguelController {
             limparFormulario();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Falha ao registrar aluguel: {}", e.getMessage(), e);
             mostrarErro("Não foi possível registrar: " + e.getMessage());
         }
     }
