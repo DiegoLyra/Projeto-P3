@@ -416,11 +416,7 @@ public class MenuAdminController {
         new Pesquisa<Item>() {
             @Override
             protected String textoPesquisavel(Item i) {
-                Categoria c = i.getCategoria();
-                Fornecedor f = i.getFornecedor();
-                return texto(i.getId(), i.getNome(), i.getStatus(), i.getTaxaDiaria(),
-                        c != null ? c.getId() : null, c != null ? c.getNome() : null,
-                        f != null ? f.getId() : null, f != null ? f.getNome() : null);
+                return textoPesquisavelItem(i);
             }
         }.ligar(txtPesquisaItens, tblItens, itens);
 
@@ -431,13 +427,13 @@ public class MenuAdminController {
         colItemCategoria.setCellValueFactory(new ColunaTexto<Item>() {
             @Override
             protected String valor(Item i) {
-                return i.getCategoria() != null ? i.getCategoria().getNome() : "-";
+                return nomeCategoria(i.getCategoria());
             }
         });
         colItemFornecedor.setCellValueFactory(new ColunaTexto<Item>() {
             @Override
             protected String valor(Item i) {
-                return i.getFornecedor() != null ? i.getFornecedor().getNome() : "-";
+                return nomeFornecedor(i.getFornecedor());
             }
         });
         colItemTaxa.setCellValueFactory(new ColunaTexto<Item>() {
@@ -457,6 +453,24 @@ public class MenuAdminController {
                 removerItem(i);
             }
         }));
+    }
+
+    private static String textoPesquisavelItem(Item i) {
+        Categoria c = i.getCategoria();
+        Fornecedor f = i.getFornecedor();
+        String idCategoria = c != null ? c.getId() : null;
+        String idFornecedor = f != null ? f.getId() : null;
+        return texto(i.getId(), i.getNome(), i.getStatus(), i.getTaxaDiaria(),
+                idCategoria, c != null ? c.getNome() : null,
+                idFornecedor, f != null ? f.getNome() : null);
+    }
+
+    private static String nomeCategoria(Categoria c) {
+        return c != null ? c.getNome() : "-";
+    }
+
+    private static String nomeFornecedor(Fornecedor f) {
+        return f != null ? f.getNome() : "-";
     }
 
     private void configurarTabelaAlugados() {
