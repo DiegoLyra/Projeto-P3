@@ -218,11 +218,11 @@ public class MenuClienteController {
     }
 
     private void configurarPaginacao() {
-        paginacaoAlugueis.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) -> 
+        paginacaoAlugueis.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) ->
             tblAlugueis.setItems(obterItensPaginaAlugueis(newIdx.intValue()))
         );
 
-        paginacaoMultas.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) -> 
+        paginacaoMultas.currentPageIndexProperty().addListener((obs, oldIdx, newIdx) ->
             tblMultas.setItems(obterItensPaginaMultas(newIdx.intValue()))
         );
     }
@@ -250,7 +250,7 @@ public class MenuClienteController {
     private void atualizarPaginacaoAlugueis() {
         int totalItens = listaContratosFiltrada.size();
         int totalPaginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
-        
+
         paginacaoAlugueis.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
         
         int paginaAtual = Math.clamp(paginacaoAlugueis.getCurrentPageIndex(), 0, Math.max(0, totalPaginas - 1));
@@ -261,7 +261,7 @@ public class MenuClienteController {
     private void atualizarPaginacaoMultas() {
         int totalItens = listaMultas.size();
         int totalPaginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
-        
+
         paginacaoMultas.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
         
         int paginaAtual = Math.clamp(paginacaoMultas.getCurrentPageIndex(), 0, Math.max(0, totalPaginas - 1));
