@@ -356,11 +356,12 @@ class UsuarioBusinessTest {
     void cadastrar_deveExigirAdminParaPerfisPrivilegiados() {
         business.encerrarSessao();
 
+        Funcionario funcionario = new Funcionario("2", "Ana", "ana@email.com", SENHA_OK, "Caixa");
+        Administrador administrador = new Administrador("3", "Eve", "eve@email.com", SENHA_OK);
+
         assertDoesNotThrow(() -> business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK)));
-        assertThrows(UsuarioException.class,
-                () -> business.cadastrar(new Funcionario("2", "Ana", "ana@email.com", SENHA_OK, "Caixa")));
-        assertThrows(UsuarioException.class,
-                () -> business.cadastrar(new Administrador("3", "Eve", "eve@email.com", SENHA_OK)));
+        assertThrows(UsuarioException.class, () -> business.cadastrar(funcionario));
+        assertThrows(UsuarioException.class, () -> business.cadastrar(administrador));
         assertNull(repositorio.buscar("2"));
         assertNull(repositorio.buscar("3"));
     }
@@ -393,9 +394,11 @@ class UsuarioBusinessTest {
         business.cadastrar(new Cliente("2", "Maria", "maria@email.com", SENHA_OK));
         business.autenticar("joao@email.com", SENHA_OK);
 
-        assertDoesNotThrow(() -> business.atualizar(new Cliente("1", "João Novo", "joao@email.com", SENHA_OK)));
-        assertThrows(UsuarioException.class,
-                () -> business.atualizar(new Cliente("2", "Hack", "maria@email.com", SENHA_OK)));
+        Cliente novoJoao = new Cliente("1", "João Novo", "joao@email.com", SENHA_OK);
+        Cliente hackMaria = new Cliente("2", "Hack", "maria@email.com", SENHA_OK);
+
+        assertDoesNotThrow(() -> business.atualizar(novoJoao));
+        assertThrows(UsuarioException.class, () -> business.atualizar(hackMaria));
         assertEquals("Maria", repositorio.buscar("2").getNome());
     }
 
@@ -406,7 +409,7 @@ class UsuarioBusinessTest {
     void atualizar_deveRecusarObjetoPersistido() {
         business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
         Usuario vivo = business.buscarPorId("1");
-        vivo.setLogin("invalido"); // alteração direta, como a tela fazia antes
+        vivo.setLogin("invalido");
 
         assertThrows(UsuarioException.class, () -> business.atualizar(vivo));
     }
@@ -445,8 +448,9 @@ class UsuarioBusinessTest {
         business.atualizar(new Funcionario("1", "Ana", "ana@email.com", SENHA_OK, "Gerente"));
 
         assertEquals("Gerente", ((Funcionario) repositorio.buscar("1")).getCargo());
-        assertThrows(UsuarioException.class,
-                () -> business.atualizar(new Cliente("1", "Ana", "ana@email.com", SENHA_OK)));
+
+        Cliente trocaPerfil = new Cliente("1", "Ana", "ana@email.com", SENHA_OK);
+        assertThrows(UsuarioException.class, () -> business.atualizar(trocaPerfil));
     }
 
     @Test
@@ -454,8 +458,8 @@ class UsuarioBusinessTest {
     void atualizar_deveRejeitarNomeEmBranco() {
         business.cadastrar(new Cliente("1", "João", "joao@email.com", SENHA_OK));
 
-        assertThrows(UsuarioException.class,
-                () -> business.atualizar(new Cliente("1", "  ", "joao@email.com", SENHA_OK)));
+        Cliente nomeEmBranco = new Cliente("1", "  ", "joao@email.com", SENHA_OK);
+        assertThrows(UsuarioException.class, () -> business.atualizar(nomeEmBranco));
     }
 
     /* ------------------------------- IDs ------------------------------- */

@@ -1,10 +1,10 @@
 package com.loja.business;
 
-import com.loja.exceptions.UsuarioException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import com.loja.exceptions.UsuarioException;
 
 public final class UsuarioValidador {
 
@@ -12,8 +12,10 @@ public final class UsuarioValidador {
     public static final int SENHA_MAX = 64;
     public static final int EMAIL_MAX = 254;
 
+    // Cada parte do domínio termina em ponto. o "++" (possessivo) não guarda estados para voltar atrás,
+    // então a validação não estoura a pilha com textos grandes (Sonar java:S5998).
     private static final Pattern EMAIL =
-            Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$");
+            Pattern.compile("^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\\.)++[A-Za-z]{2,}$");
     private static final Pattern MAIUSCULA = Pattern.compile("\\p{Lu}");
     private static final Pattern ESPECIAL = Pattern.compile("[^\\p{L}\\p{N}\\s]");
     private static final Pattern ESPACO = Pattern.compile("\\s");

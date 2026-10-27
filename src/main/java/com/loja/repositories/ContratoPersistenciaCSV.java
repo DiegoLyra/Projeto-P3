@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 
 public class ContratoPersistenciaCSV implements IContratoRepository {
 
-    private String caminhoArquivo;
-    private Map<String, ContratoAluguel> contratos;
+    private final String caminhoArquivo;
+    private final Map<String, ContratoAluguel> contratos;
 
     public ContratoPersistenciaCSV(String caminhoArquivo){
         this.caminhoArquivo = caminhoArquivo;
