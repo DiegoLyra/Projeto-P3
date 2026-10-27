@@ -40,6 +40,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Pagination;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -63,7 +64,6 @@ import javafx.scene.control.TextArea;
 import com.loja.model.ContratoAluguel;
 import javafx.scene.control.DatePicker;
 
-//ignorar pedido para colocar lambda, uma vez que o professor pediu para não ser utilizado
 @SuppressWarnings({"java:S1604", "java:S9357"}) 
 public class MenuAdminController {
 
@@ -74,28 +74,25 @@ public class MenuAdminController {
     private static final String PERFIL_ADMINISTRADOR = "ADMINISTRADOR";
     private static final String ACAO_REMOVER = "Remover";
     private static final String STATUS_DISPONIVEL = "DISPONIVEL";
+    private static final int ITENS_POR_PAGINA = 8;
 
     private final ILojaFacade facade;
     private final Navigator navigator;
     private final GeradorRelatorios relatorios;
 
-    // Listas que alimentam as tabelas e os ComboBox
     private final ObservableList<Usuario> usuarios = FXCollections.observableArrayList();
     private final ObservableList<Item> itens = FXCollections.observableArrayList();
     private final ObservableList<Categoria> categorias = FXCollections.observableArrayList();
     private final ObservableList<Fornecedor> fornecedores = FXCollections.observableArrayList();
     private final ObservableList<ContratoAluguel> alugados = FXCollections.observableArrayList();
 
-    // Cabeçalho e Navegação
     @FXML private PillNav navModulos;
 
-    // Painéis de Conteúdo
     @FXML private VBox paneUsuarios;
     @FXML private VBox paneItens;
     @FXML private VBox paneCategorias;
     @FXML private VBox paneFornecedores;
 
-    // Usuários
     @FXML private Label lblFormUsuario;
     @FXML private HBox badgeUsuario;
     @FXML private FormField fUsuarioId;
@@ -110,6 +107,7 @@ public class MenuAdminController {
 
     @FXML private TextField txtPesquisaUsuarios;
     @FXML private TableView<Usuario> tblUsuarios;
+    @FXML private Pagination paginacaoUsuarios;
     @FXML private TableColumn<Usuario, String> colUsuarioId;
     @FXML private TableColumn<Usuario, String> colUsuarioPerfil;
     @FXML private TableColumn<Usuario, String> colUsuarioNome;
@@ -118,7 +116,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Usuario, String> colUsuarioSituacao;
     @FXML private TableColumn<Usuario, Void> colUsuarioAcoes;
 
-    // Itens
     @FXML private Label lblFormItem;
     @FXML private HBox badgeItem;
     @FXML private FormField fItemId;
@@ -133,6 +130,7 @@ public class MenuAdminController {
 
     @FXML private TextField txtPesquisaItens;
     @FXML private TableView<Item> tblItens;
+    @FXML private Pagination paginacaoItens;
     @FXML private TableColumn<Item, String> colItemId;
     @FXML private TableColumn<Item, String> colItemNome;
     @FXML private TableColumn<Item, String> colItemStatus;
@@ -141,7 +139,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Item, String> colItemTaxa;
     @FXML private TableColumn<Item, Void> colItemAcoes;
 
-    // Categorias
     @FXML private Label lblFormCategoria;
     @FXML private HBox badgeCategoria;
     @FXML private FormField fCategoriaId;
@@ -152,11 +149,11 @@ public class MenuAdminController {
 
     @FXML private TextField txtPesquisaCategorias;
     @FXML private TableView<Categoria> tblCategorias;
+    @FXML private Pagination paginacaoCategorias;
     @FXML private TableColumn<Categoria, String> colCategoriaId;
     @FXML private TableColumn<Categoria, String> colCategoriaNome;
     @FXML private TableColumn<Categoria, Void> colCategoriaAcoes;
 
-    // Fornecedores
     @FXML private Label lblFormFornecedor;
     @FXML private HBox badgeFornecedor;
     @FXML private FormField fFornecedorId;
@@ -169,13 +166,13 @@ public class MenuAdminController {
 
     @FXML private TextField txtPesquisaFornecedores;
     @FXML private TableView<Fornecedor> tblFornecedores;
+    @FXML private Pagination paginacaoFornecedores;
     @FXML private TableColumn<Fornecedor, String> colFornecedorId;
     @FXML private TableColumn<Fornecedor, String> colFornecedorNome;
     @FXML private TableColumn<Fornecedor, String> colFornecedorCnpj;
     @FXML private TableColumn<Fornecedor, String> colFornecedorTelefone;
     @FXML private TableColumn<Fornecedor, Void> colFornecedorAcoes;
 
-    // Relatórios
     @FXML private VBox paneRelatorios;
     @FXML private VBox feedbackRelatorios;
     @FXML private DatePicker dpFaturamentoInicio;
@@ -183,6 +180,7 @@ public class MenuAdminController {
     @FXML private TextArea txtFaturamento;
     @FXML private Label lblResumoAlugados;
     @FXML private TableView<ContratoAluguel> tblAlugados;
+    @FXML private Pagination paginacaoAlugados;
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoContrato;
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoItem;
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoCliente;
@@ -192,7 +190,6 @@ public class MenuAdminController {
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoAtraso;
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoValor;
 
-    // Controle "Cadastrar <-> Modo de Edição" de cada formulário
     private FormState formUsuario;
     private FormState formItem;
     private FormState formCategoria;
@@ -308,7 +305,7 @@ public class MenuAdminController {
                 return texto(u.getId(), u.getNome(), u.getLogin(), u.getPerfil(), cargo,
                         u.isAtivo() ? "ativo" : "inativo");
             }
-        }.ligar(txtPesquisaUsuarios, tblUsuarios, usuarios);
+        }.ligar(txtPesquisaUsuarios, tblUsuarios, paginacaoUsuarios, usuarios);
 
         colUsuarioId.setCellValueFactory(new PropertyValueFactory<Usuario, String>("id"));
         colUsuarioPerfil.setCellValueFactory(new PropertyValueFactory<Usuario, String>("perfil"));
@@ -365,7 +362,7 @@ public class MenuAdminController {
             protected String textoPesquisavel(Categoria c) {
                 return texto(c.getId(), c.getNome());
             }
-        }.ligar(txtPesquisaCategorias, tblCategorias, categorias);
+        }.ligar(txtPesquisaCategorias, tblCategorias, paginacaoCategorias, categorias);
 
         colCategoriaId.setCellValueFactory(new PropertyValueFactory<Categoria, String>("id"));
         colCategoriaNome.setCellValueFactory(new PropertyValueFactory<Categoria, String>("nome"));
@@ -391,7 +388,7 @@ public class MenuAdminController {
                 return texto(f.getId(), f.getNome(), f.getCnpj(), f.getTelefone(),
                         somenteDigitos(f.getCnpj()), somenteDigitos(f.getTelefone()));
             }
-        }.ligar(txtPesquisaFornecedores, tblFornecedores, fornecedores);
+        }.ligar(txtPesquisaFornecedores, tblFornecedores, paginacaoFornecedores, fornecedores);
 
         colFornecedorId.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("id"));
         colFornecedorNome.setCellValueFactory(new PropertyValueFactory<Fornecedor, String>("nome"));
@@ -418,7 +415,7 @@ public class MenuAdminController {
             protected String textoPesquisavel(Item i) {
                 return textoPesquisavelItem(i);
             }
-        }.ligar(txtPesquisaItens, tblItens, itens);
+        }.ligar(txtPesquisaItens, tblItens, paginacaoItens, itens);
 
         colItemId.setCellValueFactory(new PropertyValueFactory<Item, String>("id"));
         colItemNome.setCellValueFactory(new PropertyValueFactory<Item, String>("nome"));
@@ -474,8 +471,17 @@ public class MenuAdminController {
     }
 
     private void configurarTabelaAlugados() {
-        tblAlugados.setItems(alugados);
         tblAlugados.setPlaceholder(new EmptyState("Nenhum item alugado no momento."));
+
+        new Pesquisa<ContratoAluguel>() {
+            @Override
+            protected String textoPesquisavel(ContratoAluguel c) {
+                String nomeItem = c.getItem() != null ? c.getItem().getNome() : "";
+                String nomeCliente = c.getCliente() != null ? c.getCliente().getNome() : "";
+                return texto(c.getId(), nomeItem, nomeCliente);
+            }
+        }.ligarSemCampo(tblAlugados, paginacaoAlugados, alugados);
+
         colAlugadoContrato.setCellValueFactory(new PropertyValueFactory<ContratoAluguel, String>("id"));
         colAlugadoItem.setCellValueFactory(new ColunaTexto<ContratoAluguel>() {
             @Override
@@ -972,6 +978,7 @@ public class MenuAdminController {
         alert.setContentText(mensagem);
         alert.showAndWait();
     }
+
     private static class BadgeCell<T> extends TableCell<T, String> {
 
         private static StatusBadge.StatusType tipoDoBadge(String valor) {
@@ -1021,23 +1028,61 @@ public class MenuAdminController {
 
         protected abstract String textoPesquisavel(T item);
 
-            private static String normalizar(String valor) {
-        if (valor == null) {
-            return "";
+        private static String normalizar(String valor) {
+            if (valor == null) {
+                return "";
+            }
+            return Normalizer.normalize(valor, Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}", "")
+                    .toLowerCase()
+                    .trim();
         }
-        return Normalizer.normalize(valor, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toLowerCase()
-                .trim();
-    }
 
-        void ligar(TextField campo, final TableView<T> tabela, ObservableList<T> dados) {
+        void ligar(TextField campo, final TableView<T> tabela, final Pagination paginacao, ObservableList<T> dados) {
             final FilteredList<T> filtrados = new FilteredList<>(dados);
-            SortedList<T> ordenados = new SortedList<>(filtrados);
+            final SortedList<T> ordenados = new SortedList<>(filtrados);
             ordenados.comparatorProperty().bind(tabela.comparatorProperty());
-            tabela.setItems(ordenados);
 
             final Node vazioOriginal = tabela.getPlaceholder();
+
+            final Runnable atualizarPaginacao = new Runnable() {
+                @Override
+                public void run() {
+                    int totalItens = ordenados.size();
+                    int paginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
+                    paginacao.setPageCount(Math.max(1, paginas));
+
+                    int paginaAtual = paginacao.getCurrentPageIndex();
+                    if (paginaAtual >= paginas && paginas > 0) {
+                        paginacao.setCurrentPageIndex(paginas - 1);
+                        paginaAtual = paginas - 1;
+                    }
+
+                    int deIndex = paginaAtual * ITENS_POR_PAGINA;
+                    int ateIndex = Math.min(deIndex + ITENS_POR_PAGINA, totalItens);
+
+                    if (deIndex <= ateIndex && deIndex < totalItens) {
+                        tabela.setItems(FXCollections.observableArrayList(ordenados.subList(deIndex, ateIndex)));
+                    } else {
+                        tabela.setItems(FXCollections.observableArrayList());
+                    }
+                }
+            };
+
+            paginacao.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
+                @Override
+                public void changed(ObservableValue<? extends Number> obs, Number antigo, Number novo) {
+                    atualizarPaginacao.run();
+                }
+            });
+
+            dados.addListener(new javafx.collections.ListChangeListener<T>() {
+                @Override
+                public void onChanged(Change<? extends T> c) {
+                    atualizarPaginacao.run();
+                }
+            });
+
             campo.textProperty().addListener(new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> obs, String antigo, String texto) {
@@ -1053,15 +1098,57 @@ public class MenuAdminController {
                     } else {
                         tabela.setPlaceholder(new EmptyState("Nenhum resultado para \"" + texto.trim() + "\"."));
                     }
+                    paginacao.setCurrentPageIndex(0);
+                    atualizarPaginacao.run();
                 }
             });
+
+            atualizarPaginacao.run();
+        }
+
+        void ligarSemCampo(final TableView<T> tabela, final Pagination paginacao, ObservableList<T> dados) {
+            final SortedList<T> ordenados = new SortedList<>(dados);
+            ordenados.comparatorProperty().bind(tabela.comparatorProperty());
+
+            final Runnable atualizarPaginacao = new Runnable() {
+                @Override
+                public void run() {
+                    int totalItens = ordenados.size();
+                    int paginas = (int) Math.ceil((double) totalItens / ITENS_POR_PAGINA);
+                    paginacao.setPageCount(Math.max(1, paginas));
+
+                    int paginaAtual = paginacao.getCurrentPageIndex();
+                    int deIndex = paginaAtual * ITENS_POR_PAGINA;
+                    int ateIndex = Math.min(deIndex + ITENS_POR_PAGINA, totalItens);
+
+                    if (deIndex <= ateIndex && deIndex < totalItens) {
+                        tabela.setItems(FXCollections.observableArrayList(ordenados.subList(deIndex, ateIndex)));
+                    } else {
+                        tabela.setItems(FXCollections.observableArrayList());
+                    }
+                }
+            };
+
+            paginacao.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
+                @Override
+                public void changed(ObservableValue<? extends Number> obs, Number antigo, Number novo) {
+                    atualizarPaginacao.run();
+                }
+            });
+
+            dados.addListener(new javafx.collections.ListChangeListener<T>() {
+                @Override
+                public void onChanged(Change<? extends T> c) {
+                    atualizarPaginacao.run();
+                }
+            });
+
+            atualizarPaginacao.run();
         }
     }
 
-    // Textos de cada formulário (título de cadastro, título de edição e texto do botão salvar)
     private record TextosFormulario(String tituloNovo, String tituloEdicao, String textoSalvar) {}
 
-    //Alterna um formulário entre "Cadastrar" e "Modo de Edição
     private static class FormState {
         private static final String BOTAO = "-fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand; -fx-background-color: ";
 
@@ -1151,8 +1238,6 @@ public class MenuAdminController {
             return new BadgeCell<>();
         }
     }
-
-    
 
     private interface AcoesTabela<T> {
         void editar(T item);

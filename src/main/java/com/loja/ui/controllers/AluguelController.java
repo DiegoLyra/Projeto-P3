@@ -50,13 +50,12 @@ public class AluguelController {
     private final ObservableList<ContratoAluguel> alugados = FXCollections.observableArrayList();
 
     private final ILojaFacade facade;
-    private final Navigator navigator;
+
 
     private final NumberFormat moeda = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
 
     public AluguelController(ILojaFacade facade, Navigator navigator) {
         this.facade = facade;
-        this.navigator = navigator;
     }
 
     @FXML
