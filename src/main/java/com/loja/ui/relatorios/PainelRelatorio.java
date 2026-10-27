@@ -14,6 +14,9 @@ import javafx.scene.layout.VBox;
  * Pode ser usado direto no FXML: <PainelRelatorio fx:id="..." />
  * Os botões ficam desativados até algum relatório ser mostrado.
  */
+
+@SuppressWarnings({"java:S9357", "java:S1604"})
+
 public class PainelRelatorio extends VBox {
 
     private static final String ESTILO_BOTAO =
