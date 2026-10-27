@@ -10,6 +10,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import com.loja.ui.relatorios.PainelRelatorio?>
+
 <BorderPane prefHeight="650.0" prefWidth="1100.0"
             style="-fx-background-color: #f8fafc;"
             xmlns="http://javafx.com/javafx/21"
@@ -76,15 +78,16 @@
                            style="-fx-font-size: 12px;
                                   -fx-text-fill: #64748b;"/>
 
-                    <Button text="Atualizar"
-                            onAction="#handleAtualizar"
-                            style="-fx-background-color: #2563eb;
+                    <Button text="Disponíveis por categoria"
+                            onAction="#handleRelatorioPorCategoria"
+                            style="-fx-background-color: #eef2ff;
                                    -fx-background-radius: 10;
-                                   -fx-text-fill: white;
+                                   -fx-text-fill: #4338ca;
                                    -fx-font-weight: bold;
                                    -fx-padding: 9 20;
                                    -fx-cursor: hand;"/>
                 </HBox>
+                <PainelRelatorio fx:id="painelCategorias" />
             </VBox>
         </VBox>
     </center>

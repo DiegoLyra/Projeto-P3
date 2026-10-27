@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -49,49 +50,86 @@ public class AluguelController {
     }
 
     @FXML
-public void initialize() {
-    clienteComboBox.setItems(clientes);
-    itemComboBox.setItems(itens);
+    public void initialize() {
+        clienteComboBox.setItems(clientes);
+        itemComboBox.setItems(itens);
 
-    // Configuração de exibição para Cliente
-    clienteComboBox.setCellFactory(lv -> new ListCell<Cliente>() {
-        @Override
-        protected void updateItem(Cliente cliente, boolean empty) {
-            super.updateItem(cliente, empty);
-            setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
-        }
-    });
-    clienteComboBox.setButtonCell(new ListCell<Cliente>() {
-        @Override
-        protected void updateItem(Cliente cliente, boolean empty) {
-            super.updateItem(cliente, empty);
-            setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
-        }
-    });
+        // Configuração de exibição para Cliente
+        clienteComboBox.setCellFactory(lv -> new ListCell<Cliente>() {
+            @Override
+            protected void updateItem(Cliente cliente, boolean empty) {
+                super.updateItem(cliente, empty);
+                setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
+            }
+        });
+        clienteComboBox.setButtonCell(new ListCell<Cliente>() {
+            @Override
+            protected void updateItem(Cliente cliente, boolean empty) {
+                super.updateItem(cliente, empty);
+                setText((empty || cliente == null || cliente.getNome() == null) ? "" : cliente.getNome());
+            }
+        });
 
-    // Configuração de exibição para Item
-    itemComboBox.setCellFactory(lv -> new ListCell<Item>() {
-        @Override
-        protected void updateItem(Item item, boolean empty) {
-            super.updateItem(item, empty);
-            setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
-        }
-    });
-    itemComboBox.setButtonCell(new ListCell<Item>() {
-        @Override
-        protected void updateItem(Item item, boolean empty) {
-            super.updateItem(item, empty);
-            setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
-        }
-    });
+        // Configuração de exibição para Item
+        itemComboBox.setCellFactory(lv -> new ListCell<Item>() {
+            @Override
+            protected void updateItem(Item item, boolean empty) {
+                super.updateItem(item, empty);
+                setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
+            }
+        });
+        itemComboBox.setButtonCell(new ListCell<Item>() {
+            @Override
+            protected void updateItem(Item item, boolean empty) {
+                super.updateItem(item, empty);
+                setText((empty || item == null || item.getNome() == null) ? "" : item.getNome());
+            }
+        });
 
-    // Listeners
-    dataRetiradaPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
-    dataDevolucaoPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
-    itemComboBox.valueProperty().addListener((obs, antigo, novo) -> calcularTotal());
+        // Configura restrições visuais nos DatePickers
+        configurarRestricoesDeDatas();
 
-    carregarDados();
-}
+        // Listeners
+        dataRetiradaPicker.valueProperty().addListener((obs, antiga, nova) -> {
+            atualizarRestricaoDevolucao();
+            calcularTotal();
+        });
+        dataDevolucaoPicker.valueProperty().addListener((obs, antiga, nova) -> calcularTotal());
+        itemComboBox.valueProperty().addListener((obs, antigo, novo) -> calcularTotal());
+
+        carregarDados();
+    }
+
+    private void configurarRestricoesDeDatas() {
+        dataRetiradaPicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (date.isBefore(LocalDate.now())) {
+                    setDisable(true);
+                    setStyle("-fx-background-color: #fee2e2;");
+                }
+            }
+        });
+    }
+
+    private void atualizarRestricaoDevolucao() {
+        LocalDate retirada = dataRetiradaPicker.getValue();
+        dataDevolucaoPicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (retirada != null && (date.isBefore(retirada) || date.isEqual(retirada))) {
+                    setDisable(true);
+                    setStyle("-fx-background-color: #fee2e2;");
+                }
+            }
+        });
+
+        if (dataDevolucaoPicker.getValue() != null && retirada != null && !dataDevolucaoPicker.getValue().isAfter(retirada)) {
+            dataDevolucaoPicker.setValue(null);
+        }
+    }
 
     private void carregarDados() {
         try {
@@ -112,9 +150,6 @@ public void initialize() {
                 itens.addAll(itensMap.values());
             }
 
-            System.out.println("Clientes carregados: " + clientes.size());
-            System.out.println("Itens disponíveis: " + itens.size());
-
             if (clientes.isEmpty()) {
                 mensagemLabel.setText("Nenhum cliente encontrado.");
             } else if (itens.isEmpty()) {
@@ -126,10 +161,6 @@ public void initialize() {
         } catch (Exception e) {
             e.printStackTrace();
             mensagemLabel.setText("Erro ao carregar dados: " + e.getMessage());
-        }
-
-        for (Cliente c : clientes) {
-            System.out.println("Cliente ID: " + c.getId() + " | Nome: '" + c.getNome() + "'");
         }
     }
 
@@ -146,9 +177,8 @@ public void initialize() {
             diaria = Double.parseDouble(String.valueOf(item.getTaxaDiaria()));
         }
 
-        if (retirada != null && devolucao != null && !devolucao.isBefore(retirada)) {
+        if (retirada != null && devolucao != null && devolucao.isAfter(retirada)) {
             dias = ChronoUnit.DAYS.between(retirada, devolucao);
-            dias = Math.max(1, dias);
             total = diaria * dias;
         }
 
@@ -170,9 +200,15 @@ public void initialize() {
             return;
         }
 
-        if (devolucao.isBefore(retirada)) {
+        if (retirada.isBefore(LocalDate.now())) {
             mensagemLabel.setStyle("-fx-text-fill: #b91c1c;");
-            mensagemLabel.setText("A devolução não pode ser anterior à retirada.");
+            mensagemLabel.setText("A data de retirada não pode ser no passado.");
+            return;
+        }
+
+        if (!devolucao.isAfter(retirada)) {
+            mensagemLabel.setStyle("-fx-text-fill: #b91c1c;");
+            mensagemLabel.setText("A data de devolução deve ser posterior à data de retirada (mínimo 1 dia).");
             return;
         }
 

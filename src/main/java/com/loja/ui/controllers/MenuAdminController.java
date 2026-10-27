@@ -1,5 +1,10 @@
 package com.loja.ui.controllers;
 
+import static com.loja.ui.relatorios.GeradorRelatorios.diasDeAtraso;
+import static com.loja.ui.relatorios.GeradorRelatorios.estaAtrasado;
+import static com.loja.ui.relatorios.GeradorRelatorios.formatarData;
+import static com.loja.ui.relatorios.GeradorRelatorios.formatarMoeda;
+import static com.loja.ui.relatorios.GeradorRelatorios.hoje;
 
 import java.math.BigDecimal;
 import org.slf4j.Logger;
@@ -19,6 +24,8 @@ import com.loja.ui.components.FormField;
 import com.loja.ui.components.PillNav;
 import com.loja.ui.components.StatusBadge;
 import com.loja.ui.navigation.Navigator;
+import com.loja.ui.relatorios.GeradorRelatorios;
+import com.loja.ui.relatorios.JanelaRelatorios;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -52,22 +59,13 @@ import javafx.scene.control.TextField;
 import java.text.Normalizer;
 import java.util.function.Predicate;
 
-import javafx.scene.control.Dialog;
 import javafx.scene.control.TextArea;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import com.loja.model.ContratoAluguel;
-import com.loja.model.Multa;
-import java.time.temporal.ChronoUnit;
 import javafx.scene.control.DatePicker;
 
 //ignorar pedido para colocar lambda, uma vez que o professor pediu para não ser utilizado
-@SuppressWarnings("java:S1604") 
-
+@SuppressWarnings({"java:S1604", "java:S9357"}) 
 public class MenuAdminController {
-
 
     private static final Logger logger = LoggerFactory.getLogger(MenuAdminController.class);
 
@@ -75,12 +73,11 @@ public class MenuAdminController {
     private static final String PERFIL_FUNCIONARIO = "FUNCIONARIO";
     private static final String PERFIL_ADMINISTRADOR = "ADMINISTRADOR";
     private static final String ACAO_REMOVER = "Remover";
-    private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String STATUS_DISPONIVEL = "DISPONIVEL";
 
     private final ILojaFacade facade;
     private final Navigator navigator;
-    private Administrador usuarioLogado;
-
+    private final GeradorRelatorios relatorios;
 
     // Listas que alimentam as tabelas e os ComboBox
     private final ObservableList<Usuario> usuarios = FXCollections.observableArrayList();
@@ -89,18 +86,14 @@ public class MenuAdminController {
     private final ObservableList<Fornecedor> fornecedores = FXCollections.observableArrayList();
     private final ObservableList<ContratoAluguel> alugados = FXCollections.observableArrayList();
 
-
     // Cabeçalho e Navegação
-    @FXML private Label lblBoasVindas;
     @FXML private PillNav navModulos;
-
 
     // Painéis de Conteúdo
     @FXML private VBox paneUsuarios;
     @FXML private VBox paneItens;
     @FXML private VBox paneCategorias;
     @FXML private VBox paneFornecedores;
-
 
     // Usuários
     @FXML private Label lblFormUsuario;
@@ -125,7 +118,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Usuario, String> colUsuarioSituacao;
     @FXML private TableColumn<Usuario, Void> colUsuarioAcoes;
 
-
     // Itens
     @FXML private Label lblFormItem;
     @FXML private HBox badgeItem;
@@ -149,7 +141,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Item, String> colItemTaxa;
     @FXML private TableColumn<Item, Void> colItemAcoes;
 
-
     // Categorias
     @FXML private Label lblFormCategoria;
     @FXML private HBox badgeCategoria;
@@ -164,7 +155,6 @@ public class MenuAdminController {
     @FXML private TableColumn<Categoria, String> colCategoriaId;
     @FXML private TableColumn<Categoria, String> colCategoriaNome;
     @FXML private TableColumn<Categoria, Void> colCategoriaAcoes;
-
 
     // Fornecedores
     @FXML private Label lblFormFornecedor;
@@ -185,7 +175,7 @@ public class MenuAdminController {
     @FXML private TableColumn<Fornecedor, String> colFornecedorTelefone;
     @FXML private TableColumn<Fornecedor, Void> colFornecedorAcoes;
 
-    // relatórios
+    // Relatórios
     @FXML private VBox paneRelatorios;
     @FXML private VBox feedbackRelatorios;
     @FXML private DatePicker dpFaturamentoInicio;
@@ -202,20 +192,17 @@ public class MenuAdminController {
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoAtraso;
     @FXML private TableColumn<ContratoAluguel, String> colAlugadoValor;
 
-
     // Controle "Cadastrar <-> Modo de Edição" de cada formulário
     private FormState formUsuario;
     private FormState formItem;
     private FormState formCategoria;
     private FormState formFornecedor;
 
-
-    // Construtor exigido pelo Navigator (controllerFactory)
     public MenuAdminController(ILojaFacade facade, Navigator navigator) {
         this.facade = facade;
         this.navigator = navigator;
+        this.relatorios = new GeradorRelatorios(facade);
     }
-
 
     @FXML
     public void initialize() {
@@ -251,7 +238,6 @@ public class MenuAdminController {
             }
         });
 
-        // Período padrão do faturamento: do dia 1º do mês até hoje
         dpFaturamentoInicio.setValue(hoje().withDayOfMonth(1));
         dpFaturamentoFim.setValue(hoje());
 
@@ -265,7 +251,7 @@ public class MenuAdminController {
 
             @Override
             public Categoria fromString(String texto) {
-                return null; // ComboBox não editável
+                return null;
             }
         });
 
@@ -278,25 +264,25 @@ public class MenuAdminController {
 
             @Override
             public Fornecedor fromString(String texto) {
-                return null; // ComboBox não editável
+                return null;
             }
         });
 
         formUsuario = new FormState(lblFormUsuario, badgeUsuario, btnSalvarUsuario, btnCancelarUsuario, feedbackUsuario,
-                fUsuarioId, "Cadastrar Novo Usuário", "Atualizar Usuário", "Cadastrar Usuário");
+                fUsuarioId, new TextosFormulario("Cadastrar Novo Usuário", "Atualizar Usuário", "Cadastrar Usuário"));
         formItem = new FormState(lblFormItem, badgeItem, btnSalvarItem, btnCancelarItem, feedbackItem,
-                fItemId, "Cadastrar Novo Item", "Atualizar Item", "Cadastrar Item");
+                fItemId, new TextosFormulario("Cadastrar Novo Item", "Atualizar Item", "Cadastrar Item"));
         formCategoria = new FormState(lblFormCategoria, badgeCategoria, btnSalvarCategoria, btnCancelarCategoria, feedbackCategoria,
-                fCategoriaId, "Cadastrar Nova Categoria", "Atualizar Categoria", "Cadastrar Categoria");
+                fCategoriaId, new TextosFormulario("Cadastrar Nova Categoria", "Atualizar Categoria", "Cadastrar Categoria"));
         formFornecedor = new FormState(lblFormFornecedor, badgeFornecedor, btnSalvarFornecedor, btnCancelarFornecedor, feedbackFornecedor,
-                fFornecedorId, "Cadastrar Novo Fornecedor", "Atualizar Fornecedor", "Cadastrar Fornecedor");
+                fFornecedorId, new TextosFormulario("Cadastrar Novo Fornecedor", "Atualizar Fornecedor", "Cadastrar Fornecedor"));
 
         configurarTabelas();
         limparUsuario();
         carregarTudo();
     }
 
-        private void mostrarPainel(VBox painel) {
+    private void mostrarPainel(VBox painel) {
         VBox[] paineis = {paneUsuarios, paneItens, paneCategorias, paneFornecedores, paneRelatorios};
         for (VBox p : paineis) {
             p.setVisible(p == painel);
@@ -304,19 +290,21 @@ public class MenuAdminController {
         }
     }
 
-
-    //tabelas
-
-
     private void configurarTabelas() {
+        configurarTabelaUsuarios();
+        configurarTabelaCategorias();
+        configurarTabelaFornecedores();
+        configurarTabelaItens();
+        configurarTabelaAlugados();
+    }
 
-         //Usuários
+    private void configurarTabelaUsuarios() {
         tblUsuarios.setPlaceholder(new EmptyState("Nenhum usuário cadastrado."));
 
         new Pesquisa<Usuario>() {
             @Override
             protected String textoPesquisavel(Usuario u) {
-                String cargo = (u instanceof Funcionario) ? ((Funcionario) u).getCargo() : null;
+                String cargo = (u instanceof Funcionario funcionario) ? funcionario.getCargo() : null;
                 return texto(u.getId(), u.getNome(), u.getLogin(), u.getPerfil(), cargo,
                         u.isAtivo() ? "ativo" : "inativo");
             }
@@ -330,8 +318,8 @@ public class MenuAdminController {
         colUsuarioCargo.setCellValueFactory(new ColunaTexto<Usuario>() {
             @Override
             protected String valor(Usuario u) {
-                if (u instanceof Funcionario) {
-                    String cargo = ((Funcionario) u).getCargo();
+                if (u instanceof Funcionario f) {
+                    String cargo = f.getCargo();
                     if (cargo != null && !cargo.isBlank()) {
                         return cargo;
                     }
@@ -367,8 +355,9 @@ public class MenuAdminController {
                 relatorioHistoricoCliente(u);
             }
         }));
+    }
 
-        //Categorias
+    private void configurarTabelaCategorias() {
         tblCategorias.setPlaceholder(new EmptyState("Nenhuma categoria cadastrada."));
 
         new Pesquisa<Categoria>() {
@@ -391,8 +380,9 @@ public class MenuAdminController {
                 removerCategoria(c);
             }
         }));
+    }
 
-        //Fornecedores
+    private void configurarTabelaFornecedores() {
         tblFornecedores.setPlaceholder(new EmptyState("Nenhum fornecedor cadastrado."));
 
         new Pesquisa<Fornecedor>() {
@@ -418,18 +408,15 @@ public class MenuAdminController {
                 removerFornecedor(f);
             }
         }));
+    }
 
-        //Itens
+    private void configurarTabelaItens() {
         tblItens.setPlaceholder(new EmptyState("Nenhum item cadastrado."));
 
         new Pesquisa<Item>() {
             @Override
             protected String textoPesquisavel(Item i) {
-                Categoria c = i.getCategoria();
-                Fornecedor f = i.getFornecedor();
-                return texto(i.getId(), i.getNome(), i.getStatus(), i.getTaxaDiaria(),
-                        c != null ? c.getId() : null, c != null ? c.getNome() : null,
-                        f != null ? f.getId() : null, f != null ? f.getNome() : null);
+                return textoPesquisavelItem(i);
             }
         }.ligar(txtPesquisaItens, tblItens, itens);
 
@@ -440,13 +427,13 @@ public class MenuAdminController {
         colItemCategoria.setCellValueFactory(new ColunaTexto<Item>() {
             @Override
             protected String valor(Item i) {
-                return i.getCategoria() != null ? i.getCategoria().getNome() : "-";
+                return nomeCategoria(i.getCategoria());
             }
         });
         colItemFornecedor.setCellValueFactory(new ColunaTexto<Item>() {
             @Override
             protected String valor(Item i) {
-                return i.getFornecedor() != null ? i.getFornecedor().getNome() : "-";
+                return nomeFornecedor(i.getFornecedor());
             }
         });
         colItemTaxa.setCellValueFactory(new ColunaTexto<Item>() {
@@ -466,9 +453,27 @@ public class MenuAdminController {
                 removerItem(i);
             }
         }));
+    }
 
-        //relatorios
-                // Itens alugados (aba Relatórios)
+    private static String textoPesquisavelItem(Item i) {
+        Categoria c = i.getCategoria();
+        Fornecedor f = i.getFornecedor();
+        String idCategoria = c != null ? c.getId() : null;
+        String idFornecedor = f != null ? f.getId() : null;
+        return texto(i.getId(), i.getNome(), i.getStatus(), i.getTaxaDiaria(),
+                idCategoria, c != null ? c.getNome() : null,
+                idFornecedor, f != null ? f.getNome() : null);
+    }
+
+    private static String nomeCategoria(Categoria c) {
+        return c != null ? c.getNome() : "-";
+    }
+
+    private static String nomeFornecedor(Fornecedor f) {
+        return f != null ? f.getNome() : "-";
+    }
+
+    private void configurarTabelaAlugados() {
         tblAlugados.setItems(alugados);
         tblAlugados.setPlaceholder(new EmptyState("Nenhum item alugado no momento."));
         colAlugadoContrato.setCellValueFactory(new PropertyValueFactory<ContratoAluguel, String>("id"));
@@ -517,9 +522,6 @@ public class MenuAdminController {
         });
     }
 
-
-
-
     private void carregarTudo() {
         try {
             usuarios.setAll(facade.listarUsuario().values());
@@ -532,18 +534,16 @@ public class MenuAdminController {
         }
     }
 
-
-    @FXML public void alterarPerfil() {
-
+    @FXML 
+    public void alterarPerfil() {
         boolean funcionario = PERFIL_FUNCIONARIO.equals(cbUsuarioPerfil.getValue());
         fUsuarioCargo.setVisible(funcionario);
         fUsuarioCargo.setManaged(funcionario);
         if (!funcionario) fUsuarioCargo.setText("");
-
     }
 
-    @FXML public void salvarUsuario() {
-
+    @FXML 
+    public void salvarUsuario() {
         String nome = fUsuarioNome.getText().trim();
         String login = fUsuarioLogin.getText().trim();
         String senha = fUsuarioSenha.getText();
@@ -557,12 +557,10 @@ public class MenuAdminController {
         boolean edicao = formUsuario.emEdicao();
         try {
             if (edicao) {
-                // Nunca altera o objeto persistido: envia uma cópia para o Business validar e aplicar
                 Usuario atual = facade.buscarUsuario(formUsuario.idEditando);
                 Usuario novo = copiaComNovosDados(atual, nome, login, senha, cargo);
                 facade.atualizarUsuario(atual.getId(), novo);
             } else if (PERFIL_FUNCIONARIO.equals(cbUsuarioPerfil.getValue())) {
-                // O ID é gerado pela camada de negócio
                 facade.cadastrarFuncionario(new Funcionario(null, nome, login, senha, cargo));
             } else if (PERFIL_ADMINISTRADOR.equals(cbUsuarioPerfil.getValue())) {
                 facade.cadastrarAdm(new Administrador(null, nome, login, senha));
@@ -575,14 +573,12 @@ public class MenuAdminController {
         } catch (RuntimeException e) {
             mostrarErro(formUsuario, e);
         }
-
     }
 
-    @FXML public void cancelarUsuario() {
-
+    @FXML 
+    public void cancelarUsuario() {
         limparUsuario();
         formUsuario.limparAviso();
-
     }
 
     private Usuario copiaComNovosDados(Usuario atual, String nome, String login, String senha, String cargo) {
@@ -601,7 +597,7 @@ public class MenuAdminController {
 
     private void limparUsuario() {
         formUsuario.sairEdicao();
-        fUsuarioId.getInputField().setDisable(true); // ID automático no cadastro
+        fUsuarioId.getInputField().setDisable(true);
         fUsuarioNome.setText("");
         fUsuarioLogin.setText("");
         fUsuarioSenha.setText("");
@@ -613,7 +609,7 @@ public class MenuAdminController {
     private void editarUsuario(Usuario u) {
         formUsuario.entrarEdicao(u.getId());
         cbUsuarioPerfil.setValue(u.getPerfil());
-        cbUsuarioPerfil.setDisable(true); // o tipo (classe) do usuário não muda na edição
+        cbUsuarioPerfil.setDisable(true);
         alterarPerfil();
         fUsuarioNome.setText(u.getNome());
         fUsuarioLogin.setText(u.getLogin());
@@ -642,80 +638,14 @@ public class MenuAdminController {
 
     private void relatorioHistoricoCliente(Usuario cliente) {
         try {
-            Map<String, ContratoAluguel> contratos = facade.consultarHistoricoCliente(cliente.getId());
-            Map<String, Multa> multas = facade.listarMultaPorCliente(cliente.getId());
-            LocalDate dataHoje = hoje();
-
-            StringBuilder atuais = new StringBuilder();
-            StringBuilder encerrados = new StringBuilder();
-            StringBuilder irregularidades = new StringBuilder();
-            int qtdAtuais = 0;
-            int qtdEncerrados = 0;
-            int qtdIrregularidades = 0;
-
-            for (ContratoAluguel c : contratos.values()) {
-                LocalDate previsao = c.getDataPrevDevolucao();
-                if (c.getDataEfetivaDevolucao() == null) {
-                    atuais.append(linhaContrato(c));
-                    qtdAtuais++;
-                    if (previsao != null && dataHoje.isAfter(previsao)) {
-                        irregularidades.append(String.format("   Contrato #%s: EM ATRASO há %d dia(s) (devolução prevista para %s)%n",
-                                c.getId(), ChronoUnit.DAYS.between(previsao, dataHoje), formatarData(previsao)));
-                        qtdIrregularidades++;
-                    }
-                } else {
-                    encerrados.append(linhaContrato(c));
-                    qtdEncerrados++;
-                    if (previsao != null && c.getDataEfetivaDevolucao().isAfter(previsao)) {
-                        irregularidades.append(String.format("   Contrato #%s: devolvido com %d dia(s) de atraso%n",
-                                c.getId(), ChronoUnit.DAYS.between(previsao, c.getDataEfetivaDevolucao())));
-                        qtdIrregularidades++;
-                    }
-                }
-            }
-
-            for (Multa m : multas.values()) {
-                irregularidades.append(String.format("   Multa #%s: %s | %s | %s%n",
-                        m.getId(), m.getMotivo(), formatarMoeda(m.getValorTotal()), m.getStatus()));
-                qtdIrregularidades++;
-            }
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("=== HISTÓRICO DO CLIENTE ===\n");
-            sb.append("Cliente : ").append(cliente.getNome()).append(" (#").append(cliente.getId()).append(")\n");
-            sb.append("Login   : ").append(cliente.getLogin()).append('\n');
-            sb.append("Gerado em ").append(formatarData(dataHoje)).append("\n\n");
-
-            sb.append("ALUGUÉIS ATUAIS (").append(qtdAtuais).append(")\n");
-            sb.append(qtdAtuais == 0 ? "   Nenhum.\n" : atuais.toString()).append('\n');
-
-            sb.append("ALUGUÉIS ENCERRADOS (").append(qtdEncerrados).append(")\n");
-            sb.append(qtdEncerrados == 0 ? "   Nenhum.\n" : encerrados.toString()).append('\n');
-
-            sb.append("IRREGULARIDADES (").append(qtdIrregularidades).append(")\n");
-            sb.append(qtdIrregularidades == 0 ? "   Nenhuma.\n" : irregularidades.toString()).append('\n');
-
-            if (facade.possuiMultaPendente(cliente.getId())) {
-                sb.append("⚠ ATENÇÃO: este cliente possui multa pendente.\n");
-            }
-
-            mostrarRelatorio("Histórico de " + cliente.getNome(), sb.toString());
+            JanelaRelatorios.mostrar(relatorios.historicoCliente(cliente));
         } catch (RuntimeException e) {
             mostrarErro(formUsuario, e);
         }
     }
 
-    private static String linhaContrato(ContratoAluguel c) {
-        String item = c.getItem() != null ? c.getItem().getNome() : "-";
-        String devolucao = c.getDataEfetivaDevolucao() != null
-                ? "devolvido em " + formatarData(c.getDataEfetivaDevolucao())
-                : "previsto para " + formatarData(c.getDataPrevDevolucao());
-        return String.format("   #%-8s %-25s retirada %s, %s | %s%n",
-                c.getId(), item, formatarData(c.getDataRetirada()), devolucao, formatarMoeda(c.getValorTotal()));
-    }
-
-    @FXML public void salvarItem() {
-
+    @FXML 
+    public void salvarItem() {
         String id = fItemId.getText().trim();
         String nome = fItemNome.getText().trim();
         Categoria categoria = cbItemCategoria.getValue();
@@ -740,7 +670,6 @@ public class MenuAdminController {
         boolean edicao = formItem.emEdicao();
         try {
             if (edicao) {
-                // Altera o objeto existente: o status não muda (a facade proíbe mudá-lo aqui)
                 Item item = facade.buscarItem(formItem.idEditando);
                 item.setNome(nome);
                 item.setCategoria(categoria);
@@ -749,7 +678,7 @@ public class MenuAdminController {
                 item.setValorReposicao(reposicao);
                 facade.atualizarItem(item);
             } else {
-                facade.cadastrarItem(new Item(id, nome, taxa, reposicao, "DISPONIVEL", categoria, fornecedor));
+                facade.cadastrarItem(new Item(id, nome, taxa, reposicao, STATUS_DISPONIVEL, categoria, fornecedor));
             }
             itens.setAll(facade.listarItem().values());
             limparItem();
@@ -757,14 +686,12 @@ public class MenuAdminController {
         } catch (RuntimeException e) {
             mostrarErro(formItem, e);
         }
-
     }
 
-    @FXML public void cancelarItem() {
-
+    @FXML 
+    public void cancelarItem() {
         limparItem();
         formItem.limparAviso();
-
     }
 
     private void limparItem() {
@@ -785,7 +712,6 @@ public class MenuAdminController {
         fItemReposicao.setText(String.valueOf(i.getValorReposicao()));
     }
 
-    //Acha, na lista do ComboBox, a categoria com o mesmo ID
     private Categoria categoriaDaLista(Categoria categoria) {
         if (categoria == null) {
             return null;
@@ -798,7 +724,6 @@ public class MenuAdminController {
         return null;
     }
 
-    //Acha, na lista do ComboBox, o fornecedor com o mesmo ID
     private Fornecedor fornecedorDaLista(Fornecedor fornecedor) {
         if (fornecedor == null) {
             return null;
@@ -826,60 +751,17 @@ public class MenuAdminController {
         }
     }
 
-    // Cruza os itens disponíveis com as categorias cadastradas
     @FXML
     public void relatorioDisponiveisPorCategoria() {
         try {
-            Map<String, Item> disponiveis = facade.listarItemPorStatus("DISPONIVEL");
-            Map<String, Categoria> todasCategorias = facade.listarCategoria();
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("=== ITENS DISPONÍVEIS POR CATEGORIA: ").append(formatarData(hoje())).append(" ===\n\n");
-
-            for (Categoria categoria : todasCategorias.values()) {
-                StringBuilder linhas = new StringBuilder();
-                int quantidade = 0;
-                for (Item item : disponiveis.values()) {
-                    if (item.getCategoria() != null && categoria.getId().equals(item.getCategoria().getId())) {
-                        linhas.append(String.format("   #%-8s %-30s %s/dia%n",
-                                item.getId(), item.getNome(), formatarMoeda(item.getTaxaDiaria())));
-                        quantidade++;
-                    }
-                }
-                sb.append(categoria.getNome()).append(" (").append(quantidade).append(")\n");
-                sb.append(quantidade == 0 ? "   Nenhum item disponível.\n" : linhas.toString());
-                sb.append('\n');
-            }
-
-            // Itens disponíveis cuja categoria não está cadastrada
-            StringBuilder semCategoria = new StringBuilder();
-            for (Item item : disponiveis.values()) {
-                boolean encontrou = false;
-                if (item.getCategoria() != null) {
-                    for (Categoria categoria : todasCategorias.values()) {
-                        if (categoria.getId().equals(item.getCategoria().getId())) {
-                            encontrou = true;
-                        }
-                    }
-                }
-                if (!encontrou) {
-                    semCategoria.append(String.format("   #%-8s %s%n", item.getId(), item.getNome()));
-                }
-            }
-            if (semCategoria.length() > 0) {
-                sb.append("Sem categoria\n").append(semCategoria).append('\n');
-            }
-
-            sb.append("Total de itens disponíveis: ").append(disponiveis.size()).append('\n');
-            mostrarRelatorio("Itens disponíveis por categoria", sb.toString());
+            JanelaRelatorios.mostrar(relatorios.disponiveisPorCategoria());
         } catch (RuntimeException e) {
             mostrarErro(formItem, e);
         }
     }
 
-
-    @FXML public void salvarCategoria() {
-
+    @FXML 
+    public void salvarCategoria() {
         String id = fCategoriaId.getText().trim();
         String nome = fCategoriaNome.getText().trim();
 
@@ -898,20 +780,18 @@ public class MenuAdminController {
                 facade.cadastrarCategoria(new Categoria(id, nome));
             }
             categorias.setAll(facade.listarCategoria().values());
-            itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome da categoria
+            itens.setAll(facade.listarItem().values());
             limparCategoria();
             formCategoria.aviso(edicao ? "Categoria atualizada!" : "Categoria cadastrada!", Banner.BannerType.SUCCESS);
         } catch (RuntimeException e) {
             mostrarErro(formCategoria, e);
         }
-
     }
 
-    @FXML public void cancelarCategoria() {
-
+    @FXML 
+    public void cancelarCategoria() {
         limparCategoria();
         formCategoria.limparAviso();
-
     }
 
     private void limparCategoria() {
@@ -939,8 +819,8 @@ public class MenuAdminController {
         }
     }
 
-    @FXML public void salvarFornecedor() {
-
+    @FXML 
+    public void salvarFornecedor() {
         String id = fFornecedorId.getText().trim();
         String nome = fFornecedorNome.getText().trim();
         String cnpj = fFornecedorCnpj.getText().trim();
@@ -963,20 +843,18 @@ public class MenuAdminController {
                 facade.cadastrarFornecedor(new Fornecedor(id, nome, cnpj, telefone));
             }
             fornecedores.setAll(facade.listarFornecedor().values());
-            itens.setAll(facade.listarItem().values()); // a tabela de itens mostra o nome do fornecedor
+            itens.setAll(facade.listarItem().values());
             limparFornecedor();
             formFornecedor.aviso(edicao ? "Fornecedor atualizado!" : "Fornecedor cadastrado!", Banner.BannerType.SUCCESS);
         } catch (RuntimeException e) {
             mostrarErro(formFornecedor, e);
         }
-
     }
 
-    @FXML public void cancelarFornecedor() {
-
+    @FXML 
+    public void cancelarFornecedor() {
         limparFornecedor();
         formFornecedor.limparAviso();
-
     }
 
     private void limparFornecedor() {
@@ -1008,22 +886,11 @@ public class MenuAdminController {
         }
     }
 
-    //relatorios
-
     @FXML
     public void gerarFaturamento() {
         feedbackRelatorios.getChildren().clear();
-        LocalDate inicio = dpFaturamentoInicio.getValue();
-        LocalDate fim = dpFaturamentoFim.getValue();
-
-        if (inicio == null || fim == null) {
-            avisoRelatorio("Escolha a data inicial e a data final.", Banner.BannerType.DANGER);
-            return;
-        }
-
         try {
-            // A fachada valida o período (ex.: início depois do fim) e soma aluguéis + multas
-            txtFaturamento.setText(facade.gerarRelatorioFaturamento(inicio, fim));
+            txtFaturamento.setText(relatorios.faturamento(dpFaturamentoInicio.getValue(), dpFaturamentoFim.getValue()).comoTexto());
         } catch (RuntimeException e) {
             logger.warn("Falha ao gerar relatório de faturamento: {}", e.getMessage(), e);
             avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
@@ -1051,29 +918,38 @@ public class MenuAdminController {
         }
     }
 
-    private static boolean estaAtrasado(ContratoAluguel c) {
-        return c.getDataPrevDevolucao() != null && hoje().isAfter(c.getDataPrevDevolucao());
+    @FXML
+    public void exportarFaturamento() {
+        feedbackRelatorios.getChildren().clear();
+        try {
+            JanelaRelatorios.mostrar(relatorios.faturamento(dpFaturamentoInicio.getValue(), dpFaturamentoFim.getValue()));
+        } catch (RuntimeException e) {
+            logger.warn("Falha ao exportar faturamento: {}", e.getMessage(), e);
+            avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
+        }
     }
 
-    private static long diasDeAtraso(ContratoAluguel c) {
-        return estaAtrasado(c) ? ChronoUnit.DAYS.between(c.getDataPrevDevolucao(), hoje()) : 0;
+    @FXML
+    public void exportarItensAlugados() {
+        feedbackRelatorios.getChildren().clear();
+        try {
+            JanelaRelatorios.mostrar(relatorios.itensAlugados());
+        } catch (RuntimeException e) {
+            logger.warn("Falha ao exportar itens alugados: {}", e.getMessage(), e);
+            avisoRelatorio(mensagemSegura(e), Banner.BannerType.DANGER);
+        }
     }
-
-    //fim relatorio
 
     @FXML
     public void handleSair() {
         navigator.showLogin();
     }
 
-    // Registra o erro no log e mostra no Banner só mensagens seguras para o usuário
     private void mostrarErro(FormState form, RuntimeException e) {
         logger.warn("Operação do administrador falhou: {}", e.getMessage(), e);
         form.aviso(mensagemSegura(e), Banner.BannerType.DANGER);
     }
 
-
-    //Só exibe mensagens escritas para o usuário; qualquer outra falha vai para o log
     private String mensagemSegura(RuntimeException e) {
         boolean mensagemDeNegocio = e instanceof IllegalArgumentException
                 || e.getClass().getPackageName().equals("com.loja.exceptions");
@@ -1082,14 +958,12 @@ public class MenuAdminController {
                 : "Ocorreu um erro inesperado. Consulte o log.";
     }
 
-
     private boolean confirmar(String mensagem) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, mensagem, ButtonType.YES, ButtonType.NO);
         alert.setTitle("Confirmação");
         alert.setHeaderText(null);
         return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
-
 
     private void exibirAlertaErro(String titulo, String mensagem) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -1099,56 +973,19 @@ public class MenuAdminController {
         alert.showAndWait();
     }
 
-        // Abre uma janela com o texto de um relatório (fonte monoespaçada para alinhar as colunas)
-    private void mostrarRelatorio(String titulo, String texto) {
-        TextArea area = new TextArea(texto);
-        area.setEditable(false);
-        area.setWrapText(false);
-        area.setPrefSize(680, 440);
-        area.setStyle("-fx-font-family: monospace; -fx-font-size: 13px;");
-
-        Dialog<Void> janela = new Dialog<>();
-        janela.setTitle(titulo);
-        janela.setHeaderText(titulo);
-        janela.getDialogPane().setContent(area);
-        janela.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-        janela.setResizable(true);
-        janela.showAndWait();
-    }
-
-    // Data de hoje no fuso da loja
-    private static LocalDate hoje() {
-        return LocalDate.now(ZoneId.of("America/Recife"));
-    }
-
-    private static String formatarData(LocalDate data) {
-        return data == null ? "-" : data.format(FORMATO_DATA);
-    }
-
-    private static String formatarMoeda(BigDecimal valor) {
-        return valor == null ? "-" : String.format("R$ %.2f", valor);
-    }
-
-    //Cor do StatusBadge
     private static StatusBadge.StatusType tipoDoBadge(String valor) {
         switch (valor.toUpperCase()) {
-            case "ATIVO":
-            case "DISPONIVEL":
-            case "EM DIA":
+            case "ATIVO", STATUS_DISPONIVEL, "EM DIA":
                 return StatusBadge.StatusType.SUCCESS;
             case "ALUGADO":
                 return StatusBadge.StatusType.WARNING;
-            case "INATIVO":
-            case "MANUTENCAO":
-            case "INDISPONIVEL":
-            case "ATRASADO":
+            case "INATIVO", "MANUTENCAO", "INDISPONIVEL", "ATRASADO":
                 return StatusBadge.StatusType.DANGER;
             default:
                 return StatusBadge.StatusType.INFO;
         }
     }
 
-    //Junta vários valores num texto só, ignorando os nulos
     private static String texto(Object... partes) {
         StringBuilder sb = new StringBuilder();
         for (Object parte : partes) {
@@ -1159,7 +996,6 @@ public class MenuAdminController {
         return sb.toString();
     }
 
-    //Minúsculas e sem acento
     private static String normalizar(String valor) {
         if (valor == null) {
             return "";
@@ -1170,12 +1006,10 @@ public class MenuAdminController {
                 .trim();
     }
 
-    //12.345.678/0001-99" vira "12345678000199" (para achar CNPJ/telefone digitado sem pontuação)
     private static String somenteDigitos(String valor) {
         return valor == null ? null : valor.replaceAll("\\D", "");
     }
 
-    //Liga um campo de pesquisa a uma tabela: filtra enquanto o usuário digita. cada aba cria uma subclasse anonima dizendo em textoPesquisavel() onde procurar.
     private abstract static class Pesquisa<T> {
 
         protected abstract String textoPesquisavel(T item);
@@ -1183,7 +1017,7 @@ public class MenuAdminController {
         void ligar(TextField campo, final TableView<T> tabela, ObservableList<T> dados) {
             final FilteredList<T> filtrados = new FilteredList<>(dados);
             SortedList<T> ordenados = new SortedList<>(filtrados);
-            ordenados.comparatorProperty().bind(tabela.comparatorProperty()); // mantém a ordenação por coluna
+            ordenados.comparatorProperty().bind(tabela.comparatorProperty());
             tabela.setItems(ordenados);
 
             final Node vazioOriginal = tabela.getPlaceholder();
@@ -1207,10 +1041,25 @@ public class MenuAdminController {
         }
     }
 
-    //Alterna um formulário entre "Cadastrar" e "Modo de Edição".
+    private static final class TextosFormulario {
+        private final String tituloNovo;
+        private final String tituloEdicao;
+        private final String textoSalvar;
+
+        TextosFormulario(String tituloNovo, String tituloEdicao, String textoSalvar) {
+            this.tituloNovo = tituloNovo;
+            this.tituloEdicao = tituloEdicao;
+            this.textoSalvar = textoSalvar;
+        }
+
+        String tituloNovo() { return tituloNovo; }
+        String tituloEdicao() { return tituloEdicao; }
+        String textoSalvar() { return textoSalvar; }
+    }
+
+    //Alterna um formulário entre "Cadastrar" e "Modo de Edição
     private static class FormState {
         private static final String BOTAO = "-fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 24; -fx-cursor: hand; -fx-background-color: ";
-
 
         private final Label titulo;
         private final HBox badge;
@@ -1223,30 +1072,26 @@ public class MenuAdminController {
         private final String textoSalvar;
         private String idEditando;
 
-
         FormState(Label titulo, HBox badge, Button btnSalvar, Button btnCancelar, VBox feedback,
-                  FormField campoId, String tituloNovo, String tituloEdicao, String textoSalvar) {
+                  FormField campoId, TextosFormulario textos) {
             this.titulo = titulo;
             this.badge = badge;
             this.btnSalvar = btnSalvar;
             this.btnCancelar = btnCancelar;
             this.feedback = feedback;
             this.campoId = campoId;
-            this.tituloNovo = tituloNovo;
-            this.tituloEdicao = tituloEdicao;
-            this.textoSalvar = textoSalvar;
-
+            this.tituloNovo = textos.tituloNovo();
+            this.tituloEdicao = textos.tituloEdicao();
+            this.textoSalvar = textos.textoSalvar();
 
             badge.getChildren().add(new StatusBadge("Modo de Edição", StatusBadge.StatusType.WARNING));
             btnCancelar.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;");
             sairEdicao();
         }
 
-
         boolean emEdicao() {
             return idEditando != null;
         }
-
 
         void entrarEdicao(String id) {
             idEditando = id;
@@ -1259,7 +1104,6 @@ public class MenuAdminController {
             limparAviso();
         }
 
-
         void sairEdicao() {
             idEditando = null;
             campoId.setText("");
@@ -1270,16 +1114,13 @@ public class MenuAdminController {
             exibir(false);
         }
 
-
         void aviso(String mensagem, Banner.BannerType tipo) {
             feedback.getChildren().setAll(new Banner(mensagem, tipo));
         }
 
-
         void limparAviso() {
             feedback.getChildren().clear();
         }
-
 
         private void exibir(boolean edicao) {
             badge.setVisible(edicao);
@@ -1288,8 +1129,6 @@ public class MenuAdminController {
             btnCancelar.setManaged(edicao);
         }
     }
-
-    //Coluna cujo texto é calculado (não vem direto de um getter)
 
     private abstract static class ColunaTexto<T>
             implements Callback<TableColumn.CellDataFeatures<T, String>, ObservableValue<String>> {
@@ -1302,7 +1141,6 @@ public class MenuAdminController {
         protected abstract String valor(T item);
     }
 
-    //Cria as células que mostram o texto dentro de um StatusBadge
     private static class BadgeCellFactory<T> implements Callback<TableColumn<T, String>, TableCell<T, String>> {
         @Override
         public TableCell<T, String> call(TableColumn<T, String> coluna) {
@@ -1310,7 +1148,6 @@ public class MenuAdminController {
         }
     }
 
-    //Célula que mostra o texto dentro de um StatusBadge
     private static class BadgeCell<T> extends TableCell<T, String> {
         @Override
         protected void updateItem(String item, boolean empty) {
@@ -1326,13 +1163,11 @@ public class MenuAdminController {
         }
     }
 
-    // O que os botões da coluna "Ações" fazem em cada tabela
     private interface AcoesTabela<T> {
         void editar(T item);
 
         void remover(T item);
 
-        // Botão extra opcional (ex.: "Histórico" só para clientes). Por padrão não aparece.
         default boolean temExtra(T item) {
             return false;
         }
@@ -1341,7 +1176,6 @@ public class MenuAdminController {
         }
     }
 
-    // Cria as células da coluna "Ações"
     private static class AcoesCellFactory<T> implements Callback<TableColumn<T, Void>, TableCell<T, Void>> {
         private final String textoRemover;
         private final String textoExtra;
@@ -1363,7 +1197,6 @@ public class MenuAdminController {
         }
     }
 
-    // Célula com os botões "Editar" e "Remover/Desativar"
     private static class AcoesCell<T> extends TableCell<T, Void> {
         private final HBox box;
         private final Button extra;
@@ -1427,8 +1260,9 @@ public class MenuAdminController {
             setGraphic(box);
         }
     }
+
     @FXML
-        private void sair() {
-            navigator.showLogin();
-        }
+    private void sair() {
+        navigator.showLogin();
+    }
 }

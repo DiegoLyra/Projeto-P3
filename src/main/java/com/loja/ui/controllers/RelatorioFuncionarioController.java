@@ -1,7 +1,24 @@
 package com.loja.ui.controllers;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
+
 import com.loja.model.ContratoAluguel;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
+import com.loja.ui.relatorios.GeradorRelatorios;
+import com.loja.ui.relatorios.JanelaRelatorios;
+import com.loja.ui.relatorios.PainelRelatorio;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,32 +28,17 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
-
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 public class RelatorioFuncionarioController {
 
     @FXML private DatePicker dpFaturamentoInicio;
     @FXML private DatePicker dpFaturamentoFim;
     @FXML private VBox feedbackRelatorios;
-    @FXML private TextArea txtFaturamento;
+    @FXML private PainelRelatorio painelFaturamento;
 
     @FXML private TableView<LinhaAluguel> tabelaAlugados;
     @FXML private TableColumn<LinhaAluguel, String> colContrato;
@@ -55,6 +57,8 @@ public class RelatorioFuncionarioController {
             FXCollections.observableArrayList();
 
     private ILojaFacade facade;
+    
+    private GeradorRelatorios relatorios;
 
     private static final DateTimeFormatter FORMATO_DATA =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -88,6 +92,7 @@ public class RelatorioFuncionarioController {
 
     public void setFacade(ILojaFacade facade) {
         this.facade = facade;
+        this.relatorios = new GeradorRelatorios(facade);
         atualizarAlugados();
     }
 
@@ -121,28 +126,11 @@ public class RelatorioFuncionarioController {
         }
 
         try {
-            String relatorio =
-                    facade.gerarRelatorioFaturamento(inicio, fim);
-
-            if (relatorio == null || relatorio.isBlank()) {
-                txtFaturamento.setText(
-                        "Nenhum dado de faturamento foi retornado para o período.");
-            } else {
-                txtFaturamento.setText(
-                        "FATURAMENTO POR PERÍODO\n"
-                        + "Data inicial: "
-                        + inicio.format(FORMATO_DATA) + "\n"
-                        + "Data final: "
-                        + fim.format(FORMATO_DATA) + "\n\n"
-                        + relatorio);
-            }
-
+            painelFaturamento.mostrar(relatorios.faturamento(
+                    dpFaturamentoInicio.getValue(), dpFaturamentoFim.getValue()));
         } catch (RuntimeException e) {
-            mostrarAlerta(
-                    Alert.AlertType.ERROR,
-                    "Erro ao gerar relatório",
-                    "Não foi possível consultar o faturamento: "
-                            + e.getMessage());
+            painelFaturamento.limpar();
+            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
         }
     }
 
@@ -220,110 +208,27 @@ public class RelatorioFuncionarioController {
         }
     }
 
-    @FXML
-    private void exportarAlugadosPDF() {
-        if (alugueis.isEmpty()) {
-            atualizarAlugados();
-
-            if (alugueis.isEmpty()) {
-                mostrarAlerta(
-                        Alert.AlertType.WARNING,
-                        "Relatório vazio",
-                        "Não há itens alugados para exportar.");
-                return;
-            }
-        }
-
-        StringBuilder conteudo = new StringBuilder();
-
-        conteudo.append("RELATÓRIO DE ITENS ALUGADOS\n");
-
-        conteudo.append("Data: ")
-                .append(LocalDate.now(
-                        ZoneId.of("America/Recife"))
-                        .format(FORMATO_DATA))
-                .append("\n\n");
-
-        conteudo.append(
-                "Contrato | Item | Cliente | Retirada | "
-                + "Prev. Devolução | Situação | Dias atraso | Valor\n");
-
-        conteudo.append(
-                "--------------------------------------------------"
-                + "------------------------------------\n");
-
-        for (LinhaAluguel linha : alugueis) {
-            conteudo.append(linha).append("\n");
-        }
-
-        conteudo.append("\n")
-                .append(lblTotalAlugados.getText())
-                .append(" | ")
-                .append(lblTotalAtrasados.getText());
-
-        File arquivo = escolherArquivoPDF(
-                "Salvar relatório de itens alugados",
-                "relatorio-itens-alugados.pdf",
-                tabelaAlugados.getScene().getWindow());
-
-        if (arquivo == null) {
+        @FXML
+    private void salvarAlugadosPDF() {
+        if (semFachada()) {
             return;
         }
-
         try {
-            criarPDF(arquivo, conteudo.toString());
-
-            mostrarAlerta(
-                    Alert.AlertType.INFORMATION,
-                    "PDF exportado",
-                    "Relatório salvo em:\n"
-                            + arquivo.getAbsolutePath());
-
-        } catch (IOException e) {
-            mostrarAlerta(
-                    Alert.AlertType.ERROR,
-                    "Erro ao exportar PDF",
-                    "Não foi possível salvar o arquivo: "
-                            + e.getMessage());
+            JanelaRelatorios.salvarPdf(relatorios.itensAlugados(), tabelaAlugados.getScene().getWindow());
+        } catch (RuntimeException e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
         }
     }
 
     @FXML
-    private void exportarPDF() {
-        String conteudo = txtFaturamento.getText();
-
-        if (conteudo == null || conteudo.isBlank()) {
-            mostrarAlerta(
-                    Alert.AlertType.WARNING,
-                    "Relatório vazio",
-                    "Gere o relatório de faturamento antes de exportar.");
+    private void imprimirAlugados() {
+        if (semFachada()) {
             return;
         }
-
-        File arquivo = escolherArquivoPDF(
-                "Salvar relatório de faturamento",
-                "relatorio-faturamento.pdf",
-                txtFaturamento.getScene().getWindow());
-
-        if (arquivo == null) {
-            return;
-        }
-
         try {
-            criarPDF(arquivo, conteudo);
-
-            mostrarAlerta(
-                    Alert.AlertType.INFORMATION,
-                    "PDF exportado",
-                    "Relatório salvo em:\n"
-                            + arquivo.getAbsolutePath());
-
-        } catch (IOException e) {
-            mostrarAlerta(
-                    Alert.AlertType.ERROR,
-                    "Erro ao exportar PDF",
-                    "Não foi possível salvar o arquivo: "
-                            + e.getMessage());
+            JanelaRelatorios.imprimir(relatorios.itensAlugados());
+        } catch (RuntimeException e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
         }
     }
 
@@ -474,6 +379,14 @@ public class RelatorioFuncionarioController {
         return data == null
                 ? "—"
                 : data.format(FORMATO_DATA);
+    }
+
+    private boolean semFachada() {
+        if (relatorios == null) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Erro", "A fachada do sistema não foi configurada.");
+            return true;
+        }
+        return false;
     }
 
     private void mostrarAlerta(

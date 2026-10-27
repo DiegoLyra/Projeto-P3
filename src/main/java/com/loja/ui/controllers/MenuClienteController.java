@@ -183,44 +183,72 @@ private void configurarPesquisa() {
         listaContratosFiltrada = new FilteredList<>(listaContratos, p -> true);
 
         txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> {
-            listaContratosFiltrada.setPredicate(contrato -> {
-                if (newValue == null || newValue.isBlank()) {
-                    return true;
-                }
-                return contratoCombinaComTermo(contrato, newValue.toLowerCase().trim());
-            });
+            listaContratosFiltrada.setPredicate(contrato ->
+                    newValue == null || newValue.isBlank()
+                            || correspondeABusca(contrato, newValue.toLowerCase().trim()));
 
             atualizarPaginacaoAlugueis();
         });
     }
 
-    private boolean contratoCombinaComTermo(ContratoAluguel contrato, String termoBusca) {
+    // Junta os campos pesquisáveis do contrato e verifica se o termo aparece em algum deles
+    private boolean correspondeABusca(ContratoAluguel contrato, String termoBusca) {
         Item item = contrato.getItem();
-        if (item != null && item.getNome() != null && item.getNome().toLowerCase().contains(termoBusca)) {
-            return true;
-        }
-
-        if (contrato.getValorTotal() != null && contrato.getValorTotal().toString().contains(termoBusca)) {
-            return true;
-        }
-
-        if (contrato.getStatus() != null && contrato.getStatus().toLowerCase().contains(termoBusca)) {
-            return true;
-        }
-
-        if (contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca)) {
-            return true;
-        }
-
-        if (contrato.getDataRetirada() != null && formatarData(contrato.getDataRetirada(), "").contains(termoBusca)) {
-            return true;
-        }
-
-        LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null 
-                ? contrato.getDataEfetivaDevolucao() 
+        LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null
+                ? contrato.getDataEfetivaDevolucao()
                 : contrato.getDataPrevDevolucao();
 
-        return dataDevolucao != null && formatarData(dataDevolucao, "").contains(termoBusca);
+        String textoPesquisavel = String.join("\n",
+                item != null && item.getNome() != null ? item.getNome() : "",
+                contrato.getValorTotal() != null ? contrato.getValorTotal().toString() : "",
+                contrato.getStatus() != null ? contrato.getStatus().toString() : "",
+                contrato.getId() != null ? contrato.getId() : "",
+                formatarData(contrato.getDataRetirada(), ""),
+                formatarData(dataDevolucao, ""));
+
+        return textoPesquisavel.toLowerCase().contains(termoBusca);
+    }
+
+    private boolean filtrarContrato(ContratoAluguel contrato, String termo) {
+        if (termo == null || termo.isBlank()) {
+            return true;
+        }
+
+        String termoBusca = termo.toLowerCase().trim();
+        return matchItem(contrato, termoBusca)
+                || matchValor(contrato, termoBusca)
+                || matchStatus(contrato, termoBusca)
+                || matchId(contrato, termoBusca)
+                || matchDatas(contrato, termoBusca);
+    }
+
+    private boolean matchItem(ContratoAluguel contrato, String termo) {
+        Item item = contrato.getItem();
+        return item != null && item.getNome() != null && item.getNome().toLowerCase().contains(termo);
+    }
+
+    private boolean matchValor(ContratoAluguel contrato, String termo) {
+        return contrato.getValorTotal() != null && contrato.getValorTotal().toString().contains(termo);
+    }
+
+    private boolean matchStatus(ContratoAluguel contrato, String termo) {
+        return contrato.getStatus() != null && contrato.getStatus().toString().toLowerCase().contains(termo);
+    }
+
+    private boolean matchId(ContratoAluguel contrato, String termo) {
+        return contrato.getId() != null && contrato.getId().toLowerCase().contains(termo);
+    }
+
+    private boolean matchDatas(ContratoAluguel contrato, String termo) {
+        if (contrato.getDataRetirada() != null && formatarData(contrato.getDataRetirada(), "").contains(termo)) {
+            return true;
+        }
+
+        LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null
+                ? contrato.getDataEfetivaDevolucao()
+                : contrato.getDataPrevDevolucao();
+
+        return dataDevolucao != null && formatarData(dataDevolucao, "").contains(termo);
     }
 
     private void configurarPaginacao() {

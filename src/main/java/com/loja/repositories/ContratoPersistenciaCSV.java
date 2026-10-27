@@ -21,7 +21,7 @@ import com.loja.repositories.interfaces.IContratoRepository;
 public class ContratoPersistenciaCSV implements IContratoRepository {
 
     private final String caminhoArquivo;
-    private Map<String, ContratoAluguel> contratos;
+    private final Map<String, ContratoAluguel> contratos;
 
     public ContratoPersistenciaCSV(String caminhoArquivo){
         this.caminhoArquivo = caminhoArquivo;
