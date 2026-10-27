@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class ItemPersistenciaCSV implements IItemRepository {
     private String caminhoArquivo;
-    private Map<String, Item> itens;
+    private final Map<String, Item> itens;
 
     // construtor, inicialização do hashmap e transferencia arquivo -> hashmap
     public ItemPersistenciaCSV(String caminhoArquivo){

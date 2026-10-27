@@ -1,18 +1,10 @@
 package com.loja.ui.controllers;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 
 import com.loja.model.ContratoAluguel;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
@@ -30,10 +22,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.stage.Window;
 
 public class RelatorioFuncionarioController {
+    private static final ZoneId FUSO = ZoneId.of("America/Recife");
 
     @FXML private DatePicker dpFaturamentoInicio;
     @FXML private DatePicker dpFaturamentoFim;
@@ -66,9 +57,9 @@ public class RelatorioFuncionarioController {
     @FXML
     public void initialize() {
         dpFaturamentoInicio.setValue(
-                LocalDate.now().withDayOfMonth(1));
+                LocalDate.now(FUSO).withDayOfMonth(1));
 
-        dpFaturamentoFim.setValue(LocalDate.now());
+        dpFaturamentoFim.setValue(LocalDate.now(FUSO));
 
         colContrato.setCellValueFactory(
                 new PropertyValueFactory<>("contrato"));
@@ -147,7 +138,7 @@ public class RelatorioFuncionarioController {
                     facade.listarContratosAtivos();
 
             LocalDate hoje =
-                    LocalDate.now(ZoneId.of("America/Recife"));
+                    LocalDate.now(FUSO);
 
             int atrasados = 0;
 
@@ -230,149 +221,6 @@ public class RelatorioFuncionarioController {
         } catch (RuntimeException e) {
             mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
         }
-    }
-
-    private File escolherArquivoPDF(
-            String titulo,
-            String nome,
-            Window janela) {
-
-        FileChooser seletor = new FileChooser();
-
-        seletor.setTitle(titulo);
-        seletor.setInitialFileName(nome);
-
-        seletor.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter(
-                        "Arquivo PDF", "*.pdf"));
-
-        File arquivo = seletor.showSaveDialog(janela);
-
-        if (arquivo != null
-                && !arquivo.getName().toLowerCase().endsWith(".pdf")) {
-            arquivo = new File(
-                    arquivo.getAbsolutePath() + ".pdf");
-        }
-
-        return arquivo;
-    }
-
-    private void criarPDF(File arquivo, String conteudo)
-            throws IOException {
-
-        try (PDDocument documento = new PDDocument()) {
-            PDType0Font fonte = carregarFonte(documento);
-
-            float tamanhoFonte = 10;
-            float margem = 50;
-            float alturaLinha = 15;
-
-            float larguraUtil =
-                    PDRectangle.A4.getWidth() - 2 * margem;
-
-            PDPage pagina = new PDPage(PDRectangle.A4);
-            documento.addPage(pagina);
-
-            PDPageContentStream stream =
-                    new PDPageContentStream(documento, pagina);
-
-            float y =
-                    pagina.getMediaBox().getHeight() - margem;
-
-            stream.beginText();
-            stream.setFont(fonte, tamanhoFonte);
-            stream.newLineAtOffset(margem, y);
-
-            for (String linha : conteudo.split("\\R", -1)) {
-                for (String parte : quebrarLinha(
-                        linha, fonte, tamanhoFonte, larguraUtil)) {
-
-                    if (y < margem) {
-                        stream.endText();
-                        stream.close();
-
-                        pagina = new PDPage(PDRectangle.A4);
-                        documento.addPage(pagina);
-
-                        stream = new PDPageContentStream(
-                                documento, pagina);
-
-                        y = pagina.getMediaBox().getHeight() - margem;
-
-                        stream.beginText();
-                        stream.setFont(fonte, tamanhoFonte);
-                        stream.newLineAtOffset(margem, y);
-                    }
-
-                    stream.showText(parte);
-                    stream.newLineAtOffset(0, -alturaLinha);
-                    y -= alturaLinha;
-                }
-            }
-
-            stream.endText();
-            stream.close();
-
-            documento.save(arquivo);
-        }
-    }
-
-    private PDType0Font carregarFonte(PDDocument documento)
-            throws IOException {
-
-        String[] caminhos = {
-                "C:/Windows/Fonts/arial.ttf",
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
-                "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
-        };
-
-        for (String caminho : caminhos) {
-            File arquivoFonte = new File(caminho);
-
-            if (arquivoFonte.isFile()) {
-                return PDType0Font.load(documento, arquivoFonte);
-            }
-        }
-
-        throw new IOException(
-                "Nenhuma fonte compatível foi encontrada no computador.");
-    }
-
-    private String[] quebrarLinha(
-            String linha,
-            PDType0Font fonte,
-            float tamanhoFonte,
-            float larguraMaxima) throws IOException {
-
-        if (linha.isEmpty()) {
-            return new String[]{""};
-        }
-
-        java.util.List<String> partes =
-                new java.util.ArrayList<>();
-
-        StringBuilder atual = new StringBuilder();
-
-        for (String palavra : linha.split(" ")) {
-            String candidata = atual.isEmpty()
-                    ? palavra
-                    : atual + " " + palavra;
-
-            float largura = fonte.getStringWidth(candidata)
-                    / 1000 * tamanhoFonte;
-
-            if (largura > larguraMaxima && !atual.isEmpty()) {
-                partes.add(atual.toString());
-                atual = new StringBuilder(palavra);
-            } else {
-                atual = new StringBuilder(candidata);
-            }
-        }
-
-        partes.add(atual.toString());
-
-        return partes.toArray(new String[0]);
     }
 
     private String formatarData(LocalDate data) {
