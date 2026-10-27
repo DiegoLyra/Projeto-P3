@@ -182,10 +182,6 @@ public class RelatorioFuncionarioController {
         }
     }
 
-    private static String formatarData(LocalDate data) {
-        return data == null ? "—" : data.format(FORMATO_DATA);
-    }
-
     private boolean semFachada() {
         if (relatorios == null) {
             mostrarAlerta(Alert.AlertType.ERROR, "Erro", "A fachada do sistema não foi configurada.");
@@ -230,6 +226,10 @@ public class RelatorioFuncionarioController {
             this.situacao = atrasado ? "Em atraso" : "Em dia";
             this.diasAtraso = String.valueOf(atrasado ? ChronoUnit.DAYS.between(prevista, hoje) : 0);
             this.valor = c.getValorTotal() == null ? "—" : "R$ " + c.getValorTotal();
+        }
+
+        private static String formatarData(LocalDate data) {
+            return data == null ? "—" : data.format(FORMATO_DATA);
         }
 
         public String getContrato() { return contrato; }
