@@ -183,8 +183,6 @@ public class MenuFuncionarioController {
             Parent tela = loader.load();
             Object controlador = loader.getController();
 
-            // Entrega a facade a qualquer controlador que tenha
-            // o método setFacade(ILojaFacade).
             configurarFacade(controlador);
 
             ScrollPane scrollPane = new ScrollPane(tela);
@@ -240,8 +238,7 @@ public class MenuFuncionarioController {
             metodo.invoke(controlador, facade);
 
         } catch (NoSuchMethodException erro) {
-            // Esse controlador não precisa receber a facade
-            // por meio de setFacade().
+            // Esse controlador não precisa receber a facade por meio de setFacade().
         } catch (IllegalAccessException
                 | InvocationTargetException erro) {
 
@@ -264,14 +261,8 @@ public class MenuFuncionarioController {
 
         } catch (NoSuchMethodException erro) {
             try {
-                Constructor<?> construtor =
-                        tipo.getDeclaredConstructor();
-
-                if (!construtor.canAccess(null)) {
-                    construtor.setAccessible(true);
-                }
-
-                return construtor.newInstance();
+                Constructor<?> construtorPadrão = tipo.getConstructor();
+                return construtorPadrão.newInstance();
 
             } catch (ReflectiveOperationException erroInterno) {
                 throw new IllegalStateException(
