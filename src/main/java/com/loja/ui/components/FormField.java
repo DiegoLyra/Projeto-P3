@@ -1,3 +1,4 @@
+
 package com.loja.ui.components;
 
 import javafx.beans.DefaultProperty;
@@ -23,31 +24,42 @@ public class FormField extends VBox {
         setInputControl(inputControl);
     }
 
-    public String getLabelText() { return label.getText(); }
+    public String getLabelText() {
+        return label.getText();
+    }
 
     public void setLabelText(String labelText) {
         label.setText(labelText != null ? labelText.toUpperCase() : "");
     }
 
-    public TextInputControl getInputControl() { return inputField; }
+    public TextInputControl getInputControl() {
+        return inputField;
+    }
 
     public void setInputControl(TextInputControl inputControl) {
         if (inputField != null) {
             getChildren().remove(inputField);
         }
+
         inputField = inputControl;
+
         if (inputField != null) {
             inputField.setStyle(
                     "-fx-background-color: #ffffff; -fx-border-color: #d1d5db; " +
-                            "-fx-border-radius: 10px; -fx-background-radius: 10px; " +
-                            "-fx-padding: 8px 12px; -fx-font-size: 13px;");
+                    "-fx-border-radius: 10px; -fx-background-radius: 10px; " +
+                    "-fx-padding: 8px 12px; -fx-font-size: 13px;"
+            );
             getChildren().add(inputField);
         }
     }
 
-    public TextInputControl getInputField() { return inputField; }
+    public TextInputControl getInputField() {
+        return getInputControl();
+    }
 
-    public String getText() { return inputField != null ? inputField.getText() : ""; }
+    public String getText() {
+        return inputField != null ? inputField.getText() : "";
+    }
 
     public void setText(String value) {
         if (inputField != null) {
