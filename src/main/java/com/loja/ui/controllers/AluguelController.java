@@ -17,6 +17,9 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -25,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public class AluguelController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AluguelController.class);
     private static final ZoneId FUSO = ZoneId.of("America/Recife");
     private static final String ESTILO_ERRO = "-fx-text-fill: #b91c1c;";
     private static final String ESTILO_SUCESSO = "-fx-text-fill: #15803d;";
@@ -111,7 +116,7 @@ public class AluguelController {
                 super.updateItem(date, empty);
                 if (date.isBefore(LocalDate.now(FUSO))) {
                     setDisable(true);
-                    setStyle("-fx-background-color: #fee2e2;");
+                    setStyle(STYLE_DESABILITADO_DATA);
                 }
             }
         });
@@ -125,7 +130,7 @@ public class AluguelController {
                 super.updateItem(date, empty);
                 if (retirada != null && (date.isBefore(retirada) || date.isEqual(retirada))) {
                     setDisable(true);
-                    setStyle("-fx-background-color: #fee2e2;");
+                    setStyle(STYLE_DESABILITADO_DATA);
                 }
             }
         });
@@ -163,7 +168,7 @@ public class AluguelController {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Erro ao carregar dados no AluguelController: {}", e.getMessage(), e);
             mensagemLabel.setText("Erro ao carregar dados: " + e.getMessage());
         }
     }
