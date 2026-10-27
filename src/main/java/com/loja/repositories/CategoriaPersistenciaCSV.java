@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class CategoriaPersistenciaCSV implements ICategoriaRepository {
     private String caminhoArquivo;
-    private Map<String, Categoria> categorias;
+    private final Map<String, Categoria> categorias;
 
     public CategoriaPersistenciaCSV(String caminhoArquivo) {
         this.caminhoArquivo = caminhoArquivo;
