@@ -49,7 +49,6 @@ public class RelatorioFuncionarioController {
             FXCollections.observableArrayList();
 
     private ILojaFacade facade;
-    
     private GeradorRelatorios relatorios;
 
     private static final DateTimeFormatter FORMATO_DATA =
@@ -134,73 +133,53 @@ public class RelatorioFuncionarioController {
 
         try {
             alugueis.clear();
-
-            Map<String, ContratoAluguel> contratos =
-                    facade.listarContratosAtivos();
-
-            LocalDate hoje =
-                    LocalDate.now(FUSO);
-
+            Map<String, ContratoAluguel> contratos = facade.listarContratosAtivos();
+            LocalDate hoje = LocalDate.now(FUSO);
             int atrasados = 0;
 
             if (contratos != null) {
                 for (ContratoAluguel contrato : contratos.values()) {
-
-                    LocalDate prevista =
-                            contrato.getDataPrevDevolucao();
-
-                    boolean atrasado =
-                            prevista != null && hoje.isAfter(prevista);
-
-                    long dias = atrasado
-                            ? ChronoUnit.DAYS.between(prevista, hoje)
-                            : 0;
-
-                    if (atrasado) {
+                    LinhaAluguel linha = criarLinhaAluguel(contrato, hoje);
+                    alugueis.add(linha);
+                    if ("Em atraso".equals(linha.getSituacao())) {
                         atrasados++;
                     }
-
-                    alugueis.add(new LinhaAluguel(
-                            contrato.getId(),
-
-                            contrato.getItem() == null
-                                    ? "—"
-                                    : contrato.getItem().getNome(),
-
-                            contrato.getCliente() == null
-                                    ? "—"
-                                    : contrato.getCliente().getNome(),
-
-                            formatarData(contrato.getDataRetirada()),
-                            formatarData(prevista),
-
-                            atrasado ? "Em atraso" : "Em dia",
-
-                            String.valueOf(dias),
-
-                            contrato.getValorTotal() == null
-                                    ? "—"
-                                    : "R$ " + contrato.getValorTotal()
-                    ));
                 }
             }
 
-            lblTotalAlugados.setText(
-                    "Total: " + alugueis.size());
-
-            lblTotalAtrasados.setText(
-                    "Em atraso: " + atrasados);
+            lblTotalAlugados.setText("Total: " + alugueis.size());
+            lblTotalAtrasados.setText("Em atraso: " + atrasados);
 
         } catch (RuntimeException e) {
             mostrarAlerta(
                     Alert.AlertType.ERROR,
                     "Erro ao atualizar",
-                    "Não foi possível carregar os aluguéis: "
-                            + e.getMessage());
+                    "Não foi possível carregar os aluguéis: " + e.getMessage());
         }
     }
 
-        @FXML
+    private LinhaAluguel criarLinhaAluguel(ContratoAluguel contrato, LocalDate hoje) {
+        LocalDate prevista = contrato.getDataPrevDevolucao();
+        boolean atrasado = prevista != null && hoje.isAfter(prevista);
+        long dias = atrasado ? ChronoUnit.DAYS.between(prevista, hoje) : 0;
+
+        String nomeItem = contrato.getItem() == null ? "—" : contrato.getItem().getNome();
+        String nomeCliente = contrato.getCliente() == null ? "—" : contrato.getCliente().getNome();
+        String valorStr = contrato.getValorTotal() == null ? "—" : "R$ " + contrato.getValorTotal();
+
+        return new LinhaAluguel(
+                contrato.getId(),
+                nomeItem,
+                nomeCliente,
+                formatarData(contrato.getDataRetirada()),
+                formatarData(prevista),
+                atrasado ? "Em atraso" : "Em dia",
+                String.valueOf(dias),
+                valorStr
+        );
+    }
+
+    @FXML
     private void salvarAlugadosPDF() {
         if (semFachada()) {
             return;
@@ -225,9 +204,7 @@ public class RelatorioFuncionarioController {
     }
 
     private String formatarData(LocalDate data) {
-        return data == null
-                ? "—"
-                : data.format(FORMATO_DATA);
+        return data == null ? "—" : data.format(FORMATO_DATA);
     }
 
     private boolean semFachada() {
