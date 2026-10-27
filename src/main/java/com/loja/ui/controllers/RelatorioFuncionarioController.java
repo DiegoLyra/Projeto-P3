@@ -139,7 +139,7 @@ public class RelatorioFuncionarioController {
 
             if (contratos != null) {
                 for (ContratoAluguel contrato : contratos.values()) {
-                    LinhaAluguel linha = criarLinhaAluguel(contrato, hoje);
+                    LinhaAluguel linha = new LinhaAluguel(contrato, hoje);
                     alugueis.add(linha);
                     if ("Em atraso".equals(linha.getSituacao())) {
                         atrasados++;
@@ -156,27 +156,6 @@ public class RelatorioFuncionarioController {
                     "Erro ao atualizar",
                     "Não foi possível carregar os aluguéis: " + e.getMessage());
         }
-    }
-
-    private LinhaAluguel criarLinhaAluguel(ContratoAluguel contrato, LocalDate hoje) {
-        LocalDate prevista = contrato.getDataPrevDevolucao();
-        boolean atrasado = prevista != null && hoje.isAfter(prevista);
-        long dias = atrasado ? ChronoUnit.DAYS.between(prevista, hoje) : 0;
-
-        String nomeItem = contrato.getItem() == null ? "—" : contrato.getItem().getNome();
-        String nomeCliente = contrato.getCliente() == null ? "—" : contrato.getCliente().getNome();
-        String valorStr = contrato.getValorTotal() == null ? "—" : "R$ " + contrato.getValorTotal();
-
-        return new LinhaAluguel(
-                contrato.getId(),
-                nomeItem,
-                nomeCliente,
-                formatarData(contrato.getDataRetirada()),
-                formatarData(prevista),
-                atrasado ? "Em atraso" : "Em dia",
-                String.valueOf(dias),
-                valorStr
-        );
     }
 
     @FXML
@@ -203,7 +182,7 @@ public class RelatorioFuncionarioController {
         }
     }
 
-    private String formatarData(LocalDate data) {
+    private static String formatarData(LocalDate data) {
         return data == null ? "—" : data.format(FORMATO_DATA);
     }
 
@@ -238,24 +217,19 @@ public class RelatorioFuncionarioController {
         private final String diasAtraso;
         private final String valor;
 
-        public LinhaAluguel(
-                String contrato,
-                String item,
-                String cliente,
-                String retirada,
-                String devolucao,
-                String situacao,
-                String diasAtraso,
-                String valor) {
+        // Monta a linha da tabela a partir do contrato (já com os textos formatados)
+        public LinhaAluguel(ContratoAluguel c, LocalDate hoje) {
+            LocalDate prevista = c.getDataPrevDevolucao();
+            boolean atrasado = prevista != null && hoje.isAfter(prevista);
 
-            this.contrato = contrato;
-            this.item = item;
-            this.cliente = cliente;
-            this.retirada = retirada;
-            this.devolucao = devolucao;
-            this.situacao = situacao;
-            this.diasAtraso = diasAtraso;
-            this.valor = valor;
+            this.contrato = c.getId();
+            this.item = c.getItem() == null ? "—" : c.getItem().getNome();
+            this.cliente = c.getCliente() == null ? "—" : c.getCliente().getNome();
+            this.retirada = formatarData(c.getDataRetirada());
+            this.devolucao = formatarData(prevista);
+            this.situacao = atrasado ? "Em atraso" : "Em dia";
+            this.diasAtraso = String.valueOf(atrasado ? ChronoUnit.DAYS.between(prevista, hoje) : 0);
+            this.valor = c.getValorTotal() == null ? "—" : "R$ " + c.getValorTotal();
         }
 
         public String getContrato() { return contrato; }
