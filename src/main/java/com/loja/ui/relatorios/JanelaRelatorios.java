@@ -142,10 +142,19 @@ public final class JanelaRelatorios {
         }
         final File temporario;
         try {
-            // Files.createTempFile cria o arquivo com permissão só para o usuário atual
-            temporario = Files.createTempFile(relatorio.getNomeArquivo() + "-", ".pdf").toFile();            
+            java.nio.file.Path pastaTemporaria = Files.createTempDirectory("relatorios-");
+
+            temporario = Files.createTempFile(
+                    pastaTemporaria,
+                    relatorio.getNomeArquivo() + "-",
+                    ".pdf"
+            ).toFile();
+
+            pastaTemporaria.toFile().deleteOnExit();
             temporario.deleteOnExit();
+
             RelatorioPDF.gerar(relatorio, temporario);
+
         } catch (IOException | RuntimeException e) {
             logger.error("Falha ao preparar impressão do relatório: {}", e.getMessage(), e);
             mensagem(Alert.AlertType.ERROR, "Erro", "Não foi possível preparar a impressão.");
@@ -160,7 +169,8 @@ public final class JanelaRelatorios {
                     PrinterJob trabalho = PrinterJob.getPrinterJob();
                     trabalho.setJobName(relatorio.getTitulo());
                     trabalho.setPageable(new PDFPageable(pdf));
-                    if (trabalho.printDialog()) { // false = o usuário cancelou
+
+                    if (trabalho.printDialog()) {
                         trabalho.print();
                     }
                 } catch (IOException | PrinterException | RuntimeException e) {
