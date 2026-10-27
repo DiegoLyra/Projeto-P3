@@ -1041,21 +1041,8 @@ public class MenuAdminController {
         }
     }
 
-    private static final class TextosFormulario {
-        private final String tituloNovo;
-        private final String tituloEdicao;
-        private final String textoSalvar;
-
-        TextosFormulario(String tituloNovo, String tituloEdicao, String textoSalvar) {
-            this.tituloNovo = tituloNovo;
-            this.tituloEdicao = tituloEdicao;
-            this.textoSalvar = textoSalvar;
-        }
-
-        String tituloNovo() { return tituloNovo; }
-        String tituloEdicao() { return tituloEdicao; }
-        String textoSalvar() { return textoSalvar; }
-    }
+    // Textos de cada formulário (título de cadastro, título de edição e texto do botão salvar)
+    private record TextosFormulario(String tituloNovo, String tituloEdicao, String textoSalvar) {}
 
     //Alterna um formulário entre "Cadastrar" e "Modo de Edição
     private static class FormState {

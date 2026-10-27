@@ -15,7 +15,7 @@ import com.loja.repositories.interfaces.IMultaRepository;
 
 public class MultaBusiness implements IMultaBusiness{
 
-    private IMultaRepository multaRepository;
+    private final IMultaRepository multaRepository;
     private static final BigDecimal valorFixoPenalidade = new BigDecimal("20.00");
     private static final BigDecimal valorTaxaDiaria = new BigDecimal ("5.50");
 

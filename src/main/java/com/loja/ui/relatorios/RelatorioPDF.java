@@ -46,13 +46,11 @@ public final class RelatorioPDF {
 
     public static void gerar(Relatorio relatorio, File arquivo) throws IOException {
         Rectangle tamanho = relatorio.isPaisagem() ? PageSize.A4.rotate() : PageSize.A4;
-        Document documento = new Document(tamanho, 40, 40, 40, 50);
         String emissao = "Emitido em " + LocalDateTime.now(ZoneId.of("America/Recife")).format(FORMATO_EMISSAO);
 
-        // O Document é dono do arquivo: ao fechar o documento, ele grava o final do PDF e fecha o arquivo.
-        // (Não usar try-with-resources aqui: ele fecharia o arquivo ANTES do documento terminar de gravar.)
-        FileOutputStream saida = new FileOutputStream(arquivo);
-        try {
+        // Os recursos fecham na ordem inversa: primeiro o documento (grava o final do PDF), depois o arquivo
+        try (FileOutputStream saida = new FileOutputStream(arquivo);
+             Document documento = new Document(tamanho, 40, 40, 40, 50)) {
             PdfWriter escritor = PdfWriter.getInstance(documento, saida);
             escritor.setPageEvent(new Rodape(emissao));
             documento.open();
@@ -78,13 +76,7 @@ public final class RelatorioPDF {
                     documento.add(new Paragraph(linha, FONTE_RESUMO));
                 }
             }
-        } finally {
-            if (documento.isOpen()) {
-                documento.close(); // grava o final do PDF e fecha o arquivo
-            } else {
-                saida.close();     // deu erro antes de abrir o documento: só fecha o arquivo
-            }
-        }
+        } 
     }
 
     private static void adicionarSecao(Document documento, Relatorio.Secao secao) {

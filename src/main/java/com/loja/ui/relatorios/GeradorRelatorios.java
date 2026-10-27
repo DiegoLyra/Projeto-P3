@@ -23,6 +23,9 @@ public class GeradorRelatorios {
 
     private static final ZoneId FUSO = ZoneId.of("America/Recife");
     private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String CONTRATO = "Contrato";
+    private static final String VALOR = "Valor";
+    private static final String RETIRADA = "Retirada";
 
     private final ILojaFacade facade;
 
@@ -73,16 +76,16 @@ public class GeradorRelatorios {
                 cliente.getNome() + " (#" + cliente.getId() + ")   -   Login: " + cliente.getLogin());
 
         Relatorio.Secao atuais = relatorio.novaSecao("Aluguéis atuais",
-                "Contrato", "Item", "Retirada", "Prev. devolução", "Valor")
+                CONTRATO, "Item", RETIRADA, "Prev. devolução", VALOR)
                 .seVazia("Nenhum aluguel em andamento.");
         Relatorio.Secao encerrados = relatorio.novaSecao("Aluguéis encerrados",
-                "Contrato", "Item", "Retirada", "Devolução", "Valor")
+                CONTRATO, "Item", RETIRADA, "Devolução", VALOR)
                 .seVazia("Nenhum aluguel encerrado.");
         Relatorio.Secao atrasos = relatorio.novaSecao("Atrasos",
-                "Contrato", "Item", "Situação", "Dias de atraso")
+                CONTRATO, "Item", "Situação", "Dias de atraso")
                 .seVazia("Nenhum atraso registrado.");
         Relatorio.Secao secaoMultas = relatorio.novaSecao("Multas",
-                "Multa", "Motivo", "Valor", "Status")
+                "Multa", "Motivo", VALOR, "Status")
                 .seVazia("Nenhuma multa registrada.");
 
         for (ContratoAluguel c : contratos.values()) {
@@ -127,7 +130,7 @@ public class GeradorRelatorios {
 
         Relatorio relatorio = new Relatorio("Relatório de Faturamento",
                 "Período: " + formatarData(inicio) + " a " + formatarData(fim));
-        Relatorio.Secao receitas = relatorio.novaSecao("Receitas do período", "Descrição", "Valor");
+        Relatorio.Secao receitas = relatorio.novaSecao("Receitas do período", "Descrição", VALOR);
 
         // A fachada devolve o relatório em texto; aqui separamos as linhas "Descrição : R$ valor"
         for (String linha : texto.split("\n")) {
@@ -149,7 +152,7 @@ public class GeradorRelatorios {
         relatorio.setPaisagem(true); // 8 colunas: a página deitada fica mais legível
 
         Relatorio.Secao secao = relatorio.novaSecao("Contratos ativos",
-                "Contrato", "Item", "Cliente", "Retirada", "Prev. devolução", "Situação", "Dias de atraso", "Valor")
+                CONTRATO, "Item", "Cliente", RETIRADA, "Prev. devolução", "Situação", "Dias de atraso", VALOR)
                 .seVazia("Nenhum item alugado no momento.");
 
         int atrasados = 0;

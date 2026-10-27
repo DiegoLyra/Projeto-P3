@@ -1,18 +1,10 @@
 package com.loja.ui.controllers;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 
 import com.loja.model.ContratoAluguel;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
@@ -30,10 +22,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.stage.Window;
 
 public class RelatorioFuncionarioController {
+    private static final ZoneId FUSO = ZoneId.of("America/Recife");
+    private static final String ERRO_RELATORIO = "Erro ao gerar relatório";
 
     @FXML private DatePicker dpFaturamentoInicio;
     @FXML private DatePicker dpFaturamentoFim;
@@ -57,7 +49,6 @@ public class RelatorioFuncionarioController {
             FXCollections.observableArrayList();
 
     private ILojaFacade facade;
-    
     private GeradorRelatorios relatorios;
 
     private static final DateTimeFormatter FORMATO_DATA =
@@ -66,9 +57,9 @@ public class RelatorioFuncionarioController {
     @FXML
     public void initialize() {
         dpFaturamentoInicio.setValue(
-                LocalDate.now().withDayOfMonth(1));
+                LocalDate.now(FUSO).withDayOfMonth(1));
 
-        dpFaturamentoFim.setValue(LocalDate.now());
+        dpFaturamentoFim.setValue(LocalDate.now(FUSO));
 
         colContrato.setCellValueFactory(
                 new PropertyValueFactory<>("contrato"));
@@ -130,7 +121,7 @@ public class RelatorioFuncionarioController {
                     dpFaturamentoInicio.getValue(), dpFaturamentoFim.getValue()));
         } catch (RuntimeException e) {
             painelFaturamento.limpar();
-            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, ERRO_RELATORIO, e.getMessage());
         }
     }
 
@@ -142,73 +133,53 @@ public class RelatorioFuncionarioController {
 
         try {
             alugueis.clear();
-
-            Map<String, ContratoAluguel> contratos =
-                    facade.listarContratosAtivos();
-
-            LocalDate hoje =
-                    LocalDate.now(ZoneId.of("America/Recife"));
-
+            Map<String, ContratoAluguel> contratos = facade.listarContratosAtivos();
+            LocalDate hoje = LocalDate.now(FUSO);
             int atrasados = 0;
 
             if (contratos != null) {
                 for (ContratoAluguel contrato : contratos.values()) {
-
-                    LocalDate prevista =
-                            contrato.getDataPrevDevolucao();
-
-                    boolean atrasado =
-                            prevista != null && hoje.isAfter(prevista);
-
-                    long dias = atrasado
-                            ? ChronoUnit.DAYS.between(prevista, hoje)
-                            : 0;
-
-                    if (atrasado) {
+                    LinhaAluguel linha = criarLinhaAluguel(contrato, hoje);
+                    alugueis.add(linha);
+                    if ("Em atraso".equals(linha.getSituacao())) {
                         atrasados++;
                     }
-
-                    alugueis.add(new LinhaAluguel(
-                            contrato.getId(),
-
-                            contrato.getItem() == null
-                                    ? "—"
-                                    : contrato.getItem().getNome(),
-
-                            contrato.getCliente() == null
-                                    ? "—"
-                                    : contrato.getCliente().getNome(),
-
-                            formatarData(contrato.getDataRetirada()),
-                            formatarData(prevista),
-
-                            atrasado ? "Em atraso" : "Em dia",
-
-                            String.valueOf(dias),
-
-                            contrato.getValorTotal() == null
-                                    ? "—"
-                                    : "R$ " + contrato.getValorTotal()
-                    ));
                 }
             }
 
-            lblTotalAlugados.setText(
-                    "Total: " + alugueis.size());
-
-            lblTotalAtrasados.setText(
-                    "Em atraso: " + atrasados);
+            lblTotalAlugados.setText("Total: " + alugueis.size());
+            lblTotalAtrasados.setText("Em atraso: " + atrasados);
 
         } catch (RuntimeException e) {
             mostrarAlerta(
                     Alert.AlertType.ERROR,
                     "Erro ao atualizar",
-                    "Não foi possível carregar os aluguéis: "
-                            + e.getMessage());
+                    "Não foi possível carregar os aluguéis: " + e.getMessage());
         }
     }
 
-        @FXML
+    private LinhaAluguel criarLinhaAluguel(ContratoAluguel contrato, LocalDate hoje) {
+        LocalDate prevista = contrato.getDataPrevDevolucao();
+        boolean atrasado = prevista != null && hoje.isAfter(prevista);
+        long dias = atrasado ? ChronoUnit.DAYS.between(prevista, hoje) : 0;
+
+        String nomeItem = contrato.getItem() == null ? "—" : contrato.getItem().getNome();
+        String nomeCliente = contrato.getCliente() == null ? "—" : contrato.getCliente().getNome();
+        String valorStr = contrato.getValorTotal() == null ? "—" : "R$ " + contrato.getValorTotal();
+
+        return new LinhaAluguel(
+                contrato.getId(),
+                nomeItem,
+                nomeCliente,
+                formatarData(contrato.getDataRetirada()),
+                formatarData(prevista),
+                atrasado ? "Em atraso" : "Em dia",
+                String.valueOf(dias),
+                valorStr
+        );
+    }
+
+    @FXML
     private void salvarAlugadosPDF() {
         if (semFachada()) {
             return;
@@ -216,7 +187,7 @@ public class RelatorioFuncionarioController {
         try {
             JanelaRelatorios.salvarPdf(relatorios.itensAlugados(), tabelaAlugados.getScene().getWindow());
         } catch (RuntimeException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, ERRO_RELATORIO, e.getMessage());
         }
     }
 
@@ -228,157 +199,12 @@ public class RelatorioFuncionarioController {
         try {
             JanelaRelatorios.imprimir(relatorios.itensAlugados());
         } catch (RuntimeException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, ERRO_RELATORIO, e.getMessage());
         }
-    }
-
-    private File escolherArquivoPDF(
-            String titulo,
-            String nome,
-            Window janela) {
-
-        FileChooser seletor = new FileChooser();
-
-        seletor.setTitle(titulo);
-        seletor.setInitialFileName(nome);
-
-        seletor.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter(
-                        "Arquivo PDF", "*.pdf"));
-
-        File arquivo = seletor.showSaveDialog(janela);
-
-        if (arquivo != null
-                && !arquivo.getName().toLowerCase().endsWith(".pdf")) {
-            arquivo = new File(
-                    arquivo.getAbsolutePath() + ".pdf");
-        }
-
-        return arquivo;
-    }
-
-    private void criarPDF(File arquivo, String conteudo)
-            throws IOException {
-
-        try (PDDocument documento = new PDDocument()) {
-            PDType0Font fonte = carregarFonte(documento);
-
-            float tamanhoFonte = 10;
-            float margem = 50;
-            float alturaLinha = 15;
-
-            float larguraUtil =
-                    PDRectangle.A4.getWidth() - 2 * margem;
-
-            PDPage pagina = new PDPage(PDRectangle.A4);
-            documento.addPage(pagina);
-
-            PDPageContentStream stream =
-                    new PDPageContentStream(documento, pagina);
-
-            float y =
-                    pagina.getMediaBox().getHeight() - margem;
-
-            stream.beginText();
-            stream.setFont(fonte, tamanhoFonte);
-            stream.newLineAtOffset(margem, y);
-
-            for (String linha : conteudo.split("\\R", -1)) {
-                for (String parte : quebrarLinha(
-                        linha, fonte, tamanhoFonte, larguraUtil)) {
-
-                    if (y < margem) {
-                        stream.endText();
-                        stream.close();
-
-                        pagina = new PDPage(PDRectangle.A4);
-                        documento.addPage(pagina);
-
-                        stream = new PDPageContentStream(
-                                documento, pagina);
-
-                        y = pagina.getMediaBox().getHeight() - margem;
-
-                        stream.beginText();
-                        stream.setFont(fonte, tamanhoFonte);
-                        stream.newLineAtOffset(margem, y);
-                    }
-
-                    stream.showText(parte);
-                    stream.newLineAtOffset(0, -alturaLinha);
-                    y -= alturaLinha;
-                }
-            }
-
-            stream.endText();
-            stream.close();
-
-            documento.save(arquivo);
-        }
-    }
-
-    private PDType0Font carregarFonte(PDDocument documento)
-            throws IOException {
-
-        String[] caminhos = {
-                "C:/Windows/Fonts/arial.ttf",
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
-                "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
-        };
-
-        for (String caminho : caminhos) {
-            File arquivoFonte = new File(caminho);
-
-            if (arquivoFonte.isFile()) {
-                return PDType0Font.load(documento, arquivoFonte);
-            }
-        }
-
-        throw new IOException(
-                "Nenhuma fonte compatível foi encontrada no computador.");
-    }
-
-    private String[] quebrarLinha(
-            String linha,
-            PDType0Font fonte,
-            float tamanhoFonte,
-            float larguraMaxima) throws IOException {
-
-        if (linha.isEmpty()) {
-            return new String[]{""};
-        }
-
-        java.util.List<String> partes =
-                new java.util.ArrayList<>();
-
-        StringBuilder atual = new StringBuilder();
-
-        for (String palavra : linha.split(" ")) {
-            String candidata = atual.isEmpty()
-                    ? palavra
-                    : atual + " " + palavra;
-
-            float largura = fonte.getStringWidth(candidata)
-                    / 1000 * tamanhoFonte;
-
-            if (largura > larguraMaxima && !atual.isEmpty()) {
-                partes.add(atual.toString());
-                atual = new StringBuilder(palavra);
-            } else {
-                atual = new StringBuilder(candidata);
-            }
-        }
-
-        partes.add(atual.toString());
-
-        return partes.toArray(new String[0]);
     }
 
     private String formatarData(LocalDate data) {
-        return data == null
-                ? "—"
-                : data.format(FORMATO_DATA);
+        return data == null ? "—" : data.format(FORMATO_DATA);
     }
 
     private boolean semFachada() {
