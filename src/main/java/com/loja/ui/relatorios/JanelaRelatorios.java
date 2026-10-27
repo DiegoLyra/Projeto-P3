@@ -142,8 +142,12 @@ public final class JanelaRelatorios {
         }
         final File temporario;
         try {
-            // Files.createTempFile cria o arquivo com permissão só para o usuário atual
-            temporario = Files.createTempFile(relatorio.getNomeArquivo() + "-", ".pdf").toFile();            
+            // Pasta própria do app dentro da pasta do usuário (não usa o /tmp, que qualquer usuário pode escrever)
+            File pasta = new File(System.getProperty("user.home"), ".aluga-tudo-impressao");
+            if (!pasta.isDirectory() && !pasta.mkdirs()) {
+                throw new IOException("Não foi possível criar a pasta de impressão: " + pasta);
+            }
+            temporario = new File(pasta, relatorio.getNomeArquivo() + "-" + System.currentTimeMillis() + ".pdf");
             temporario.deleteOnExit();
             RelatorioPDF.gerar(relatorio, temporario);
         } catch (IOException | RuntimeException e) {
