@@ -164,7 +164,6 @@ public class DevolucaoFuncionarioController {
             }
 
         } catch (RuntimeException e) {
-            e.printStackTrace();
 
             mensagemLabel.setText(
                     "Erro ao carregar contratos: "
@@ -238,7 +237,6 @@ public class DevolucaoFuncionarioController {
             carregarContratos();
 
         } catch (RuntimeException e) {
-            e.printStackTrace();
 
             Alert erro = new Alert(Alert.AlertType.ERROR);
             erro.setTitle("Erro na devolução");

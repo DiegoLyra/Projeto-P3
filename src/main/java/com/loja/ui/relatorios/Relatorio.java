@@ -58,7 +58,7 @@ public class Relatorio {
     //Nome sugerido para o arquivo: "Histórico do Cliente" vira "historico-do-cliente"
     public String getNomeArquivo() {
         String semAcento = Normalizer.normalize(titulo, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
-        String nome = semAcento.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+        String nome = semAcento.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
         return nome.isEmpty() ? "relatorio" : nome;
     }
 

@@ -996,7 +996,15 @@ public class MenuAdminController {
         return sb.toString();
     }
 
-    private static String normalizar(String valor) {
+    private static String somenteDigitos(String valor) {
+        return valor == null ? null : valor.replaceAll("\\D", "");
+    }
+
+    private abstract static class Pesquisa<T> {
+
+        protected abstract String textoPesquisavel(T item);
+
+            private static String normalizar(String valor) {
         if (valor == null) {
             return "";
         }
@@ -1005,14 +1013,6 @@ public class MenuAdminController {
                 .toLowerCase()
                 .trim();
     }
-
-    private static String somenteDigitos(String valor) {
-        return valor == null ? null : valor.replaceAll("\\D", "");
-    }
-
-    private abstract static class Pesquisa<T> {
-
-        protected abstract String textoPesquisavel(T item);
 
         void ligar(TextField campo, final TableView<T> tabela, ObservableList<T> dados) {
             final FilteredList<T> filtrados = new FilteredList<>(dados);
