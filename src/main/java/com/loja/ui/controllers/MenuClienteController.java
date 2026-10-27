@@ -1,15 +1,5 @@
 package com.loja.ui.controllers;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.loja.model.Cliente;
 import com.loja.model.ContratoAluguel;
 import com.loja.model.Item;
@@ -24,23 +14,20 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.Pagination;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 public class MenuClienteController {
 
@@ -179,34 +166,13 @@ public class MenuClienteController {
         });
     }
 
-private void configurarPesquisa() {
+    private void configurarPesquisa() {
         listaContratosFiltrada = new FilteredList<>(listaContratos, p -> true);
 
         txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> {
-            listaContratosFiltrada.setPredicate(contrato ->
-                    newValue == null || newValue.isBlank()
-                            || correspondeABusca(contrato, newValue.toLowerCase().trim()));
-
+            listaContratosFiltrada.setPredicate(contrato -> filtrarContrato(contrato, newValue));
             atualizarPaginacaoAlugueis();
         });
-    }
-
-    // Junta os campos pesquisáveis do contrato e verifica se o termo aparece em algum deles
-    private boolean correspondeABusca(ContratoAluguel contrato, String termoBusca) {
-        Item item = contrato.getItem();
-        LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null
-                ? contrato.getDataEfetivaDevolucao()
-                : contrato.getDataPrevDevolucao();
-
-        String textoPesquisavel = String.join("\n",
-                item != null && item.getNome() != null ? item.getNome() : "",
-                contrato.getValorTotal() != null ? contrato.getValorTotal().toString() : "",
-                contrato.getStatus() != null ? contrato.getStatus().toString() : "",
-                contrato.getId() != null ? contrato.getId() : "",
-                formatarData(contrato.getDataRetirada(), ""),
-                formatarData(dataDevolucao, ""));
-
-        return textoPesquisavel.toLowerCase().contains(termoBusca);
     }
 
     private boolean filtrarContrato(ContratoAluguel contrato, String termo) {
@@ -232,7 +198,7 @@ private void configurarPesquisa() {
     }
 
     private boolean matchStatus(ContratoAluguel contrato, String termo) {
-        return contrato.getStatus() != null && contrato.getStatus().toString().toLowerCase().contains(termo);
+        return contrato.getStatus() != null && contrato.getStatus().toLowerCase().contains(termo);
     }
 
     private boolean matchId(ContratoAluguel contrato, String termo) {
@@ -410,8 +376,9 @@ private void configurarPesquisa() {
         Label lblTitulo = new Label("Alugar: " + item.getNome());
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #1e293b;");
 
-        DatePicker dpRetirada = new DatePicker(LocalDate.now(ZoneId.systemDefault()));
-        DatePicker dpDevolucao = new DatePicker(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        LocalDate hoje = LocalDate.now(ZoneId.systemDefault());
+        DatePicker dpRetirada = new DatePicker(hoje);
+        DatePicker dpDevolucao = new DatePicker(hoje.plusDays(1));
 
         Label lblDiarias = new Label("Duração: 1 dia(s)");
         Label lblValorTotal = new Label("Valor Total Previsto: " + formatarMoeda(item.getTaxaDiaria()));
@@ -427,41 +394,7 @@ private void configurarPesquisa() {
         btnConfirmar.setMaxWidth(Double.MAX_VALUE);
         btnConfirmar.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
 
-        Runnable recalcular = () -> {
-            LocalDate dtInicio = dpRetirada.getValue();
-            LocalDate dtFim = dpDevolucao.getValue();
-
-            if (dtInicio == null || dtFim == null || !dtFim.isAfter(dtInicio)) {
-                lblDiarias.setText("Período inválido");
-                lblValorTotal.setText("Valor Total Previsto: R$ 0,00");
-                lblStatusConflito.setText("❌ A data de devolução deve ser posterior à data de retirada.");
-                lblStatusConflito.setStyle("-fx-text-fill: #dc2626;");
-                btnConfirmar.setDisable(true);
-                return;
-            }
-
-            long dias = ChronoUnit.DAYS.between(dtInicio, dtFim);
-            BigDecimal total = item.getTaxaDiaria().multiply(BigDecimal.valueOf(dias));
-
-            lblDiarias.setText("Duração: " + dias + " dia(s)");
-            lblValorTotal.setText("Valor Total Previsto: " + formatarMoeda(total));
-
-            boolean possuiConflito = verificarConflitoDeDatas(item.getId(), dtInicio, dtFim);
-
-            if (possuiConflito) {
-                lblStatusConflito.setText("❌ Este item já possui reserva/aluguel para o período selecionado.");
-                lblStatusConflito.setStyle("-fx-text-fill: #dc2626;");
-                btnConfirmar.setDisable(true);
-            } else {
-                lblStatusConflito.setText("✅ Período disponível para aluguel!");
-                lblStatusConflito.setStyle("-fx-text-fill: #166534;");
-                btnConfirmar.setDisable(false);
-            }
-        };
-
-        dpRetirada.valueProperty().addListener((obs, oldV, newV) -> recalcular.run());
-        dpDevolucao.valueProperty().addListener((obs, oldV, newV) -> recalcular.run());
-        recalcular.run();
+        configurarCalculoModal(item, dpRetirada, dpDevolucao, lblDiarias, lblValorTotal, lblStatusConflito, btnConfirmar);
 
         btnConfirmar.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -485,6 +418,46 @@ private void configurarPesquisa() {
         Scene scene = new Scene(root, 420, 320);
         modal.setScene(scene);
         modal.showAndWait();
+    }
+
+    private void configurarCalculoModal(Item item, DatePicker dpRetirada, DatePicker dpDevolucao,
+                                       Label lblDiarias, Label lblValorTotal, Label lblStatusConflito, Button btnConfirmar) {
+        Runnable recalcular = () -> recalcularModal(item, dpRetirada.getValue(), dpDevolucao.getValue(),
+                lblDiarias, lblValorTotal, lblStatusConflito, btnConfirmar);
+
+        dpRetirada.valueProperty().addListener((obs, oldV, newV) -> recalcular.run());
+        dpDevolucao.valueProperty().addListener((obs, oldV, newV) -> recalcular.run());
+        recalcular.run();
+    }
+
+    private void recalcularModal(Item item, LocalDate dtInicio, LocalDate dtFim,
+                                 Label lblDiarias, Label lblValorTotal, Label lblStatusConflito, Button btnConfirmar) {
+        if (dtInicio == null || dtFim == null || !dtFim.isAfter(dtInicio)) {
+            lblDiarias.setText("Período inválido");
+            lblValorTotal.setText("Valor Total Previsto: R$ 0,00");
+            lblStatusConflito.setText("❌ A data de devolução deve ser posterior à data de retirada.");
+            lblStatusConflito.setStyle("-fx-text-fill: #dc2626;");
+            btnConfirmar.setDisable(true);
+            return;
+        }
+
+        long dias = ChronoUnit.DAYS.between(dtInicio, dtFim);
+        BigDecimal total = item.getTaxaDiaria().multiply(BigDecimal.valueOf(dias));
+
+        lblDiarias.setText("Duração: " + dias + " dia(s)");
+        lblValorTotal.setText("Valor Total Previsto: " + formatarMoeda(total));
+
+        boolean possuiConflito = verificarConflitoDeDatas(item.getId(), dtInicio, dtFim);
+
+        if (possuiConflito) {
+            lblStatusConflito.setText("❌ Este item já possui reserva/aluguel para o período selecionado.");
+            lblStatusConflito.setStyle("-fx-text-fill: #dc2626;");
+            btnConfirmar.setDisable(true);
+        } else {
+            lblStatusConflito.setText("✅ Período disponível para aluguel!");
+            lblStatusConflito.setStyle("-fx-text-fill: #166534;");
+            btnConfirmar.setDisable(false);
+        }
     }
 
     private boolean verificarConflitoDeDatas(String itemId, LocalDate inicioDesejado, LocalDate fimDesejado) {
