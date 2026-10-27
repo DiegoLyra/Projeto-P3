@@ -34,6 +34,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 public class RelatorioFuncionarioController {
+    private static final ZoneId FUSO = ZoneId.of("America/Recife");
 
     @FXML private DatePicker dpFaturamentoInicio;
     @FXML private DatePicker dpFaturamentoFim;
@@ -66,9 +67,9 @@ public class RelatorioFuncionarioController {
     @FXML
     public void initialize() {
         dpFaturamentoInicio.setValue(
-                LocalDate.now().withDayOfMonth(1));
+                LocalDate.now(FUSO).withDayOfMonth(1));
 
-        dpFaturamentoFim.setValue(LocalDate.now());
+        dpFaturamentoFim.setValue(LocalDate.now(FUSO));
 
         colContrato.setCellValueFactory(
                 new PropertyValueFactory<>("contrato"));
@@ -147,7 +148,7 @@ public class RelatorioFuncionarioController {
                     facade.listarContratosAtivos();
 
             LocalDate hoje =
-                    LocalDate.now(ZoneId.of("America/Recife"));
+                    LocalDate.now(FUSO);
 
             int atrasados = 0;
 
