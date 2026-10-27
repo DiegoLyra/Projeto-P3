@@ -25,6 +25,7 @@ import javafx.scene.layout.VBox;
 
 public class RelatorioFuncionarioController {
     private static final ZoneId FUSO = ZoneId.of("America/Recife");
+    private static final String ERRO_RELATORIO = "Erro ao gerar relatório";
 
     @FXML private DatePicker dpFaturamentoInicio;
     @FXML private DatePicker dpFaturamentoFim;
@@ -121,7 +122,7 @@ public class RelatorioFuncionarioController {
                     dpFaturamentoInicio.getValue(), dpFaturamentoFim.getValue()));
         } catch (RuntimeException e) {
             painelFaturamento.limpar();
-            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, ERRO_RELATORIO, e.getMessage());
         }
     }
 
@@ -207,7 +208,7 @@ public class RelatorioFuncionarioController {
         try {
             JanelaRelatorios.salvarPdf(relatorios.itensAlugados(), tabelaAlugados.getScene().getWindow());
         } catch (RuntimeException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, ERRO_RELATORIO, e.getMessage());
         }
     }
 
@@ -219,7 +220,7 @@ public class RelatorioFuncionarioController {
         try {
             JanelaRelatorios.imprimir(relatorios.itensAlugados());
         } catch (RuntimeException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Erro ao gerar relatório", e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, ERRO_RELATORIO, e.getMessage());
         }
     }
 
