@@ -33,6 +33,7 @@ public class AluguelController {
     private static final ZoneId FUSO = ZoneId.of("America/Recife");
     private static final String ESTILO_ERRO = "-fx-text-fill: #b91c1c;";
     private static final String ESTILO_SUCESSO = "-fx-text-fill: #15803d;";
+    private static final String STYLE_DESABILITADO_DATA = "-fx-background-color: #fee2e2;";
 
     @FXML private ComboBox<Cliente> clienteComboBox;
     @FXML private ComboBox<Item> itemComboBox;
