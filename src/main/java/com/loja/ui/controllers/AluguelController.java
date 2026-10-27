@@ -31,8 +31,8 @@ public class AluguelController {
 
     private static final Logger logger = LoggerFactory.getLogger(AluguelController.class);
     private static final ZoneId FUSO = ZoneId.of("America/Recife");
-    private static final String STYLE_ERRO = "-fx-text-fill: #b91c1c;";
-    private static final String STYLE_DESABILITADO_DATA = "-fx-background-color: #fee2e2;";
+    private static final String ESTILO_ERRO = "-fx-text-fill: #b91c1c;";
+    private static final String ESTILO_SUCESSO = "-fx-text-fill: #15803d;";
 
     @FXML private ComboBox<Cliente> clienteComboBox;
     @FXML private ComboBox<Item> itemComboBox;
@@ -203,21 +203,9 @@ public class AluguelController {
         LocalDate retirada = dataRetiradaPicker.getValue();
         LocalDate devolucao = dataDevolucaoPicker.getValue();
 
-        if (cliente == null || item == null || retirada == null || devolucao == null) {
-            mensagemLabel.setStyle(STYLE_ERRO);
-            mensagemLabel.setText("Selecione o cliente, o item e as duas datas.");
-            return;
-        }
-
-        if (retirada.isBefore(LocalDate.now(FUSO))) {
-            mensagemLabel.setStyle(STYLE_ERRO);
-            mensagemLabel.setText("A data de retirada não pode ser no passado.");
-            return;
-        }
-
-        if (!devolucao.isAfter(retirada)) {
-            mensagemLabel.setStyle(STYLE_ERRO);
-            mensagemLabel.setText("A data de devolução deve ser posterior à data de retirada (mínimo 1 dia).");
+        String erro = validarAluguel(cliente, item, retirada, devolucao);
+        if (erro != null) {
+            mostrarErro(erro);
             return;
         }
 
@@ -231,17 +219,38 @@ public class AluguelController {
 
             alugados.add(contrato);
 
-            mensagemLabel.setStyle("-fx-text-fill: #15803d;");
-            mensagemLabel.setText("Aluguel registrado! Contrato: " + contrato.getId());
+            mostrarSucesso("Aluguel registrado! Contrato: " + contrato.getId());
 
             carregarDados();
             limparFormulario();
 
         } catch (Exception e) {
-            logger.error("Erro ao registrar aluguel: {}", e.getMessage(), e);
-            mensagemLabel.setStyle(STYLE_ERRO);
-            mensagemLabel.setText("Não foi possível registrar: " + e.getMessage());
+            e.printStackTrace();
+            mostrarErro("Não foi possível registrar: " + e.getMessage());
         }
+    }
+
+    private String validarAluguel(Cliente cliente, Item item, LocalDate retirada, LocalDate devolucao) {
+        if (cliente == null || item == null || retirada == null || devolucao == null) {
+            return "Selecione o cliente, o item e as duas datas.";
+        }
+        if (retirada.isBefore(LocalDate.now(FUSO))) {
+            return "A data de retirada não pode ser no passado.";
+        }
+        if (!devolucao.isAfter(retirada)) {
+            return "A data de devolução deve ser posterior à data de retirada (mínimo 1 dia).";
+        }
+        return null;
+    }
+
+    private void mostrarErro(String mensagem) {
+        mensagemLabel.setStyle(ESTILO_ERRO);
+        mensagemLabel.setText(mensagem);
+    }
+
+    private void mostrarSucesso(String mensagem) {
+        mensagemLabel.setStyle(ESTILO_SUCESSO);
+        mensagemLabel.setText(mensagem);
     }
 
     private void limparFormulario() {
