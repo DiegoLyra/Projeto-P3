@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
     private String caminhoArquivo;
-    private Map<String, Usuario> usuarios;
+    private final Map<String, Usuario> usuarios;
     private static final Logger logger = LoggerFactory.getLogger(UsuarioPersistenciaCSV.class);
 
     public UsuarioPersistenciaCSV(String caminhoArquivo) {
