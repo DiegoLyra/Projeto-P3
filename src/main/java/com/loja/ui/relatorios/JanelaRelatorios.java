@@ -38,6 +38,9 @@ import javafx.stage.Stage;
  * Janela de pré-visualização de um relatório, com os botões "Salvar PDF" e "Imprimir".
  * Usada pelas telas de Admin e de Funcionário.
  */
+
+@SuppressWarnings({"java:S9357", "java:S1604"})
+
 public final class JanelaRelatorios {
 
     private static final Logger logger = LoggerFactory.getLogger(JanelaRelatorios.class);
