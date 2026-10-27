@@ -261,8 +261,8 @@ public class MenuFuncionarioController {
 
         } catch (NoSuchMethodException erro) {
             try {
-                Constructor<?> construtorPadrão = tipo.getConstructor();
-                return construtorPadrão.newInstance();
+                Constructor<?> construtorPadrao = tipo.getConstructor();
+                return construtorPadrao.newInstance();
 
             } catch (ReflectiveOperationException erroInterno) {
                 throw new IllegalStateException(

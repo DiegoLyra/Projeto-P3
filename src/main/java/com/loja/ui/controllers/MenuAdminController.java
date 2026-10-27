@@ -19,7 +19,6 @@ import com.loja.model.Item;
 import com.loja.model.Usuario;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.ui.components.Banner;
-import com.loja.ui.components.ColunaTexto;
 import com.loja.ui.components.EmptyState;
 import com.loja.ui.components.FormField;
 import com.loja.ui.components.PillNav;
