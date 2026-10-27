@@ -4,6 +4,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -141,7 +142,8 @@ public final class JanelaRelatorios {
         }
         final File temporario;
         try {
-            temporario = File.createTempFile(relatorio.getNomeArquivo() + "-", ".pdf");
+            // Files.createTempFile cria o arquivo com permissão só para o usuário atual
+            temporario = Files.createTempFile(relatorio.getNomeArquivo() + "-", ".pdf").toFile();            
             temporario.deleteOnExit();
             RelatorioPDF.gerar(relatorio, temporario);
         } catch (IOException | RuntimeException e) {
