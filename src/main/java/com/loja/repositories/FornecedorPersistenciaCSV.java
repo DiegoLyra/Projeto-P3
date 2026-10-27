@@ -1,17 +1,21 @@
 package com.loja.repositories;
 
-import com.loja.model.Fornecedor;
-import com.loja.repositories.interfaces.IFornecedorRepository;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.loja.model.Fornecedor;
+import com.loja.repositories.interfaces.IFornecedorRepository;
+
 public class FornecedorPersistenciaCSV implements IFornecedorRepository {
     
     private String caminhoArquivo;
-    private Map<String, Fornecedor> fornecedores;
+    private final Map<String, Fornecedor> fornecedores;
 
     public String getCaminhoArquivo() {
         return caminhoArquivo;

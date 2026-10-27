@@ -1,13 +1,13 @@
 
 package com.loja.ui.controllers;
 
-import com.loja.padrao.facade.interfaces.ILojaFacade;
-import com.loja.ui.navigation.Navigator;
-
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+
+import com.loja.padrao.facade.interfaces.ILojaFacade;
+import com.loja.ui.navigation.Navigator;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -204,7 +204,6 @@ public class MenuFuncionarioController {
             return true;
 
         } catch (Exception erro) {
-            erro.printStackTrace();
 
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Erro de navegação");

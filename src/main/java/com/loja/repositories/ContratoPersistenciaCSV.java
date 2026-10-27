@@ -1,11 +1,10 @@
 package com.loja.repositories;
 
-import com.loja.model.Cliente;
-import com.loja.model.ContratoAluguel;
-import com.loja.model.Item;
-import com.loja.repositories.interfaces.IContratoRepository;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -14,9 +13,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Item;
+import com.loja.repositories.interfaces.IContratoRepository;
+
 public class ContratoPersistenciaCSV implements IContratoRepository {
 
-    private String caminhoArquivo;
+    private final String caminhoArquivo;
     private Map<String, ContratoAluguel> contratos;
 
     public ContratoPersistenciaCSV(String caminhoArquivo){

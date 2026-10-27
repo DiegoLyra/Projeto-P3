@@ -1,5 +1,15 @@
 package com.loja.ui.controllers;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.loja.model.Cliente;
 import com.loja.model.ContratoAluguel;
 import com.loja.model.Item;
@@ -14,19 +24,23 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.Pagination;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 public class MenuClienteController {
 
@@ -165,7 +179,7 @@ public class MenuClienteController {
         });
     }
 
-    private void configurarPesquisa() {
+private void configurarPesquisa() {
         listaContratosFiltrada = new FilteredList<>(listaContratos, p -> true);
 
         txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -173,49 +187,40 @@ public class MenuClienteController {
                 if (newValue == null || newValue.isBlank()) {
                     return true;
                 }
-
-                String termoBusca = newValue.toLowerCase().trim();
-
-                Item item = contrato.getItem();
-                if (item != null && item.getNome() != null && item.getNome().toLowerCase().contains(termoBusca)) {
-                    return true;
-                }
-
-                if (contrato.getValorTotal() != null && contrato.getValorTotal().toString().contains(termoBusca)) {
-                    return true;
-                }
-
-                if (contrato.getStatus() != null && contrato.getStatus().toString().toLowerCase().contains(termoBusca)) {
-                    return true;
-                }
-
-                if (contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca)) {
-                    return true;
-                }
-
-                if (contrato.getDataRetirada() != null) {
-                    String dataRetiradaStr = formatarData(contrato.getDataRetirada(), "");
-                    if (dataRetiradaStr.contains(termoBusca)) {
-                        return true;
-                    }
-                }
-
-                LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null 
-                        ? contrato.getDataEfetivaDevolucao() 
-                        : contrato.getDataPrevDevolucao();
-
-                if (dataDevolucao != null) {
-                    String dataDevolucaoStr = formatarData(dataDevolucao, "");
-                    if (dataDevolucaoStr.contains(termoBusca)) {
-                        return true;
-                    }
-                }
-
-                return false;
+                return contratoCombinaComTermo(contrato, newValue.toLowerCase().trim());
             });
 
             atualizarPaginacaoAlugueis();
         });
+    }
+
+    private boolean contratoCombinaComTermo(ContratoAluguel contrato, String termoBusca) {
+        Item item = contrato.getItem();
+        if (item != null && item.getNome() != null && item.getNome().toLowerCase().contains(termoBusca)) {
+            return true;
+        }
+
+        if (contrato.getValorTotal() != null && contrato.getValorTotal().toString().contains(termoBusca)) {
+            return true;
+        }
+
+        if (contrato.getStatus() != null && contrato.getStatus().toLowerCase().contains(termoBusca)) {
+            return true;
+        }
+
+        if (contrato.getId() != null && contrato.getId().toLowerCase().contains(termoBusca)) {
+            return true;
+        }
+
+        if (contrato.getDataRetirada() != null && formatarData(contrato.getDataRetirada(), "").contains(termoBusca)) {
+            return true;
+        }
+
+        LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null 
+                ? contrato.getDataEfetivaDevolucao() 
+                : contrato.getDataPrevDevolucao();
+
+        return dataDevolucao != null && formatarData(dataDevolucao, "").contains(termoBusca);
     }
 
     private void configurarPaginacao() {
@@ -254,7 +259,7 @@ public class MenuClienteController {
         
         paginacaoAlugueis.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
         
-        int paginaAtual = Math.min(paginacaoAlugueis.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
+        int paginaAtual = Math.clamp(paginacaoAlugueis.getCurrentPageIndex(), 0, Math.max(0, totalPaginas - 1));
         paginacaoAlugueis.setCurrentPageIndex(paginaAtual);
         tblAlugueis.setItems(obterItensPaginaAlugueis(paginaAtual));
     }
@@ -265,7 +270,7 @@ public class MenuClienteController {
         
         paginacaoMultas.setPageCount(totalPaginas == 0 ? 1 : totalPaginas);
         
-        int paginaAtual = Math.min(paginacaoMultas.getCurrentPageIndex(), Math.max(0, totalPaginas - 1));
+        int paginaAtual = Math.clamp(paginacaoMultas.getCurrentPageIndex(), 0, Math.max(0, totalPaginas - 1));
         paginacaoMultas.setCurrentPageIndex(paginaAtual);
         tblMultas.setItems(obterItensPaginaMultas(paginaAtual));
     }
@@ -377,8 +382,8 @@ public class MenuClienteController {
         Label lblTitulo = new Label("Alugar: " + item.getNome());
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #1e293b;");
 
-        DatePicker dpRetirada = new DatePicker(LocalDate.now());
-        DatePicker dpDevolucao = new DatePicker(LocalDate.now().plusDays(1));
+        DatePicker dpRetirada = new DatePicker(LocalDate.now(ZoneId.systemDefault()));
+        DatePicker dpDevolucao = new DatePicker(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
 
         Label lblDiarias = new Label("Duração: 1 dia(s)");
         Label lblValorTotal = new Label("Valor Total Previsto: " + formatarMoeda(item.getTaxaDiaria()));
