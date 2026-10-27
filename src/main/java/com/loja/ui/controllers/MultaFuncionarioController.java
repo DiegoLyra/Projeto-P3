@@ -192,7 +192,6 @@ public class MultaFuncionarioController {
             }
 
         } catch (RuntimeException e) {
-            e.printStackTrace();
 
             mensagemLabel.setText(
                     "Erro ao carregar multas: " + e.getMessage()
@@ -243,7 +242,6 @@ public class MultaFuncionarioController {
             carregarMultas();
 
         } catch (RuntimeException e) {
-            e.printStackTrace();
 
             Alert erro = new Alert(AlertType.ERROR);
             erro.setTitle("Erro ao quitar multa");
