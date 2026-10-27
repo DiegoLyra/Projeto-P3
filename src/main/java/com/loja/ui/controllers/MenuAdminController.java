@@ -19,6 +19,7 @@ import com.loja.model.Item;
 import com.loja.model.Usuario;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.ui.components.Banner;
+import com.loja.ui.components.ColunaTexto;
 import com.loja.ui.components.EmptyState;
 import com.loja.ui.components.FormField;
 import com.loja.ui.components.PillNav;
@@ -972,17 +973,34 @@ public class MenuAdminController {
         alert.setContentText(mensagem);
         alert.showAndWait();
     }
+    private static class BadgeCell<T> extends TableCell<T, String> {
 
-    private static StatusBadge.StatusType tipoDoBadge(String valor) {
-        switch (valor.toUpperCase()) {
-            case "ATIVO", STATUS_DISPONIVEL, "EM DIA":
-                return StatusBadge.StatusType.SUCCESS;
-            case "ALUGADO":
-                return StatusBadge.StatusType.WARNING;
-            case "INATIVO", "MANUTENCAO", "INDISPONIVEL", "ATRASADO":
-                return StatusBadge.StatusType.DANGER;
-            default:
-                return StatusBadge.StatusType.INFO;
+        private static StatusBadge.StatusType tipoDoBadge(String valor) {
+            switch (valor.toUpperCase()) {
+                case "ATIVO", STATUS_DISPONIVEL, "EM DIA":
+                    return StatusBadge.StatusType.SUCCESS;
+                case "ALUGADO":
+                    return StatusBadge.StatusType.WARNING;
+                case "INATIVO", "MANUTENCAO", "INDISPONIVEL", "ATRASADO":
+                    return StatusBadge.StatusType.DANGER;
+                default:
+                    return StatusBadge.StatusType.INFO;
+            }
+        }
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(null);
+
+            if (empty || item == null) {
+                setGraphic(null);
+                return;
+            }
+
+            StatusBadge badge = new StatusBadge(item, tipoDoBadge(item));
+            badge.setMaxWidth(Region.USE_PREF_SIZE);
+            setGraphic(badge);
         }
     }
 
@@ -1135,20 +1153,7 @@ public class MenuAdminController {
         }
     }
 
-    private static class BadgeCell<T> extends TableCell<T, String> {
-        @Override
-        protected void updateItem(String item, boolean empty) {
-            super.updateItem(item, empty);
-            setText(null);
-            if (empty || item == null) {
-                setGraphic(null);
-                return;
-            }
-            StatusBadge badge = new StatusBadge(item, tipoDoBadge(item));
-            badge.setMaxWidth(Region.USE_PREF_SIZE);
-            setGraphic(badge);
-        }
-    }
+    
 
     private interface AcoesTabela<T> {
         void editar(T item);
