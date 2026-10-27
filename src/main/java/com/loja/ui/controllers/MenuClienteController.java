@@ -105,13 +105,8 @@ public class MenuClienteController {
         });
         colContratoRetirada.setCellValueFactory(cellData ->
                 new SimpleStringProperty(formatarData(cellData.getValue().getDataRetirada(), "-")));
-        colContratoDevolucao.setCellValueFactory(cellData -> {
-            LocalDate data = cellData.getValue().getDataEfetivaDevolucao();
-            if (data == null) {
-                data = cellData.getValue().getDataPrevDevolucao();
-            }
-            return new SimpleStringProperty(formatarData(data, "Em Aberto"));
-        });
+        colContratoDevolucao.setCellValueFactory(cellData ->
+                new SimpleStringProperty(formatarData(fimDoContrato(cellData.getValue()), "Em Aberto")));
         colContratoValorTotal.setCellValueFactory(cellData ->
                 new SimpleStringProperty(formatarMoeda(cellData.getValue().getValorTotal())));
         colContratoStatus.setCellValueFactory(cellData ->
@@ -210,10 +205,7 @@ public class MenuClienteController {
             return true;
         }
 
-        LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null
-                ? contrato.getDataEfetivaDevolucao()
-                : contrato.getDataPrevDevolucao();
-
+        LocalDate dataDevolucao = fimDoContrato(contrato);
         return dataDevolucao != null && formatarData(dataDevolucao, "").contains(termo);
     }
 
@@ -463,25 +455,39 @@ public class MenuClienteController {
     private boolean verificarConflitoDeDatas(String itemId, LocalDate inicioDesejado, LocalDate fimDesejado) {
         try {
             Map<String, ContratoAluguel> historico = facade.consultarHistoricoCliente(usuarioLogado.getId());
-            if (historico == null) return false;
-
+            if (historico == null) {
+                return false;
+            }
             for (ContratoAluguel c : historico.values()) {
-                if (c.getItem() != null && itemId.equalsIgnoreCase(c.getItem().getId())) {
-                    LocalDate inicioExistente = c.getDataRetirada();
-                    LocalDate fimExistente = c.getDataEfetivaDevolucao() != null ? c.getDataEfetivaDevolucao() : c.getDataPrevDevolucao();
-
-                    if (inicioExistente != null && fimExistente != null) {
-                        boolean sobrepoe = !(fimDesejado.isBefore(inicioExistente) || inicioDesejado.isAfter(fimExistente));
-                        if (sobrepoe && !"ENCERRADO".equalsIgnoreCase(String.valueOf(c.getStatus()))) {
-                            return true;
-                        }
-                    }
+                if (conflitaComContrato(c, itemId, inicioDesejado, fimDesejado)) {
+                    return true;
                 }
             }
         } catch (RuntimeException e) {
             logger.error("Erro ao verificar conflito de datas: {}", e.getMessage());
         }
         return false;
+    }
+
+    private boolean conflitaComContrato(ContratoAluguel c, String itemId,
+                                        LocalDate inicioDesejado, LocalDate fimDesejado) {
+        if (!mesmoItem(c, itemId) || "ENCERRADO".equalsIgnoreCase(String.valueOf(c.getStatus()))) {
+            return false;
+        }
+        LocalDate inicioExistente = c.getDataRetirada();
+        LocalDate fimExistente = fimDoContrato(c);
+        if (inicioExistente == null || fimExistente == null) {
+            return false;
+        }
+        return !(fimDesejado.isBefore(inicioExistente) || inicioDesejado.isAfter(fimExistente));
+    }
+
+    private boolean mesmoItem(ContratoAluguel c, String itemId) {
+        return c.getItem() != null && itemId.equalsIgnoreCase(c.getItem().getId());
+    }
+
+    private LocalDate fimDoContrato(ContratoAluguel c) {
+        return c.getDataEfetivaDevolucao() != null ? c.getDataEfetivaDevolucao() : c.getDataPrevDevolucao();
     }
 
     @FXML
