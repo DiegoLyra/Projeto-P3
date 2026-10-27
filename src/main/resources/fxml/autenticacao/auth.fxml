@@ -30,11 +30,6 @@
             <Label text="Alugue o que precisar, quando precisar." wrapText="true" textAlignment="CENTER"
                    style="-fx-font-size: 14px; -fx-text-fill: #6b7280;"/>
 
-            <HBox alignment="CENTER" spacing="8">
-                <Circle radius="4" fill="#0b7fd6"/>
-                <Circle radius="4" fill="#d1d5db"/>
-                <Circle radius="4" fill="#d1d5db"/>
-            </HBox>
         </VBox>
 
         <!-- Metade direita (50%): fundo azul com o card -->
