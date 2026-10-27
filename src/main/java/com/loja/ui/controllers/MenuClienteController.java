@@ -98,6 +98,11 @@ public class MenuClienteController {
     }
 
     private void configurarTabelas() {
+        configurarTabelaAlugueis();
+        configurarTabelaMultas();
+    }
+
+    private void configurarTabelaAlugueis() {
         colContratoId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getId()));
         colContratoItem.setCellValueFactory(cellData -> {
             Item item = cellData.getValue().getItem();
@@ -121,20 +126,27 @@ public class MenuClienteController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(item);
-                    if (item.equalsIgnoreCase("ENCERRADO") || item.equalsIgnoreCase("CONCLUIDO")) {
-                        setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-alignment: CENTER;");
-                    } else {
-                        setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-weight: bold; -fx-alignment: CENTER;");
-                    }
-                }
+                estilizarCelulaStatusContrato(this, item, empty);
             }
         });
+    }
 
+    private void estilizarCelulaStatusContrato(TableCell<?, String> cell, String item, boolean empty) {
+        if (empty || item == null) {
+            cell.setText(null);
+            cell.setStyle("");
+            return;
+        }
+
+        cell.setText(item);
+        if (item.equalsIgnoreCase("ENCERRADO") || item.equalsIgnoreCase("CONCLUIDO")) {
+            cell.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-alignment: CENTER;");
+        } else {
+            cell.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-weight: bold; -fx-alignment: CENTER;");
+        }
+    }
+
+    private void configurarTabelaMultas() {
         colMultaId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getId()));
         colMultaMotivo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMotivo()));
         colMultaDias.setCellValueFactory(cellData ->
@@ -148,22 +160,27 @@ public class MenuClienteController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(item);
-                    String lower = item.toLowerCase();
-                    if (lower.contains("pendente") || lower.contains("aberto")) {
-                        setStyle("-fx-background-color: #fef2f2; -fx-text-fill: #991b1b; -fx-font-weight: bold; -fx-alignment: CENTER;");
-                    } else if (lower.contains("quitada") || lower.contains("paga")) {
-                        setStyle("-fx-background-color: #f0fdf4; -fx-text-fill: #166534; -fx-font-weight: bold; -fx-alignment: CENTER;");
-                    } else {
-                        setStyle("-fx-alignment: CENTER;");
-                    }
-                }
+                estilizarCelulaStatusMulta(this, item, empty);
             }
         });
+    }
+
+    private void estilizarCelulaStatusMulta(TableCell<?, String> cell, String item, boolean empty) {
+        if (empty || item == null) {
+            cell.setText(null);
+            cell.setStyle("");
+            return;
+        }
+
+        cell.setText(item);
+        String lower = item.toLowerCase();
+        if (lower.contains("pendente") || lower.contains("aberto")) {
+            cell.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: #991b1b; -fx-font-weight: bold; -fx-alignment: CENTER;");
+        } else if (lower.contains("quitada") || lower.contains("paga")) {
+            cell.setStyle("-fx-background-color: #f0fdf4; -fx-text-fill: #166534; -fx-font-weight: bold; -fx-alignment: CENTER;");
+        } else {
+            cell.setStyle("-fx-alignment: CENTER;");
+        }
     }
 
     private void configurarPesquisa() {
@@ -466,20 +483,23 @@ public class MenuClienteController {
             if (historico == null) return false;
 
             for (ContratoAluguel c : historico.values()) {
-                if (c.getItem() != null && itemId.equalsIgnoreCase(c.getItem().getId())) {
-                    LocalDate inicioExistente = c.getDataRetirada();
-                    LocalDate fimExistente = c.getDataEfetivaDevolucao() != null ? c.getDataEfetivaDevolucao() : c.getDataPrevDevolucao();
-
-                    if (inicioExistente != null && fimExistente != null) {
-                        boolean sobrepoe = !(fimDesejado.isBefore(inicioExistente) || inicioDesejado.isAfter(fimExistente));
-                        if (sobrepoe && !"ENCERRADO".equalsIgnoreCase(String.valueOf(c.getStatus()))) {
-                            return true;
-                        }
-                    }
+                if (c.getItem() != null && itemId.equalsIgnoreCase(c.getItem().getId()) && checarSobreposicaoContrato(c, inicioDesejado, fimDesejado)) {
+                    return true;
                 }
             }
         } catch (RuntimeException e) {
             logger.error("Erro ao verificar conflito de datas: {}", e.getMessage());
+        }
+        return false;
+    }
+
+    private boolean checarSobreposicaoContrato(ContratoAluguel c, LocalDate inicioDesejado, LocalDate fimDesejado) {
+        LocalDate inicioExistente = c.getDataRetirada();
+        LocalDate fimExistente = c.getDataEfetivaDevolucao() != null ? c.getDataEfetivaDevolucao() : c.getDataPrevDevolucao();
+
+        if (inicioExistente != null && fimExistente != null) {
+            boolean sobrepoe = !(fimDesejado.isBefore(inicioExistente) || inicioDesejado.isAfter(fimExistente));
+            return sobrepoe && !"ENCERRADO".equalsIgnoreCase(String.valueOf(c.getStatus()));
         }
         return false;
     }
