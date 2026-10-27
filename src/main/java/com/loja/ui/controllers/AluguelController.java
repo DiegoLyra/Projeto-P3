@@ -19,11 +19,13 @@ import javafx.scene.control.ListCell;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Map;
 
 public class AluguelController {
+    private static final ZoneId FUSO = ZoneId.of("America/Recife");
 
     @FXML private ComboBox<Cliente> clienteComboBox;
     @FXML private ComboBox<Item> itemComboBox;
@@ -105,7 +107,7 @@ public class AluguelController {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
-                if (date.isBefore(LocalDate.now())) {
+                if (date.isBefore(LocalDate.now(FUSO))) {
                     setDisable(true);
                     setStyle("-fx-background-color: #fee2e2;");
                 }
@@ -200,7 +202,7 @@ public class AluguelController {
             return;
         }
 
-        if (retirada.isBefore(LocalDate.now())) {
+        if (retirada.isBefore(LocalDate.now(FUSO))) {
             mensagemLabel.setStyle("-fx-text-fill: #b91c1c;");
             mensagemLabel.setText("A data de retirada não pode ser no passado.");
             return;
