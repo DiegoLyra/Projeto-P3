@@ -1,5 +1,14 @@
 package com.loja.ui.controllers;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.loja.model.Cliente;
 import com.loja.model.ContratoAluguel;
 import com.loja.model.Item;
@@ -14,19 +23,23 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.Pagination;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 public class MenuClienteController {
 
@@ -169,9 +182,30 @@ public class MenuClienteController {
         listaContratosFiltrada = new FilteredList<>(listaContratos, p -> true);
 
         txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> {
-            listaContratosFiltrada.setPredicate(contrato -> filtrarContrato(contrato, newValue));
+            listaContratosFiltrada.setPredicate(contrato ->
+                    newValue == null || newValue.isBlank()
+                            || correspondeABusca(contrato, newValue.toLowerCase().trim()));
+
             atualizarPaginacaoAlugueis();
         });
+    }
+
+    // Junta os campos pesquisáveis do contrato e verifica se o termo aparece em algum deles
+    private boolean correspondeABusca(ContratoAluguel contrato, String termoBusca) {
+        Item item = contrato.getItem();
+        LocalDate dataDevolucao = contrato.getDataEfetivaDevolucao() != null
+                ? contrato.getDataEfetivaDevolucao()
+                : contrato.getDataPrevDevolucao();
+
+        String textoPesquisavel = String.join("\n",
+                item != null && item.getNome() != null ? item.getNome() : "",
+                contrato.getValorTotal() != null ? contrato.getValorTotal().toString() : "",
+                contrato.getStatus() != null ? contrato.getStatus().toString() : "",
+                contrato.getId() != null ? contrato.getId() : "",
+                formatarData(contrato.getDataRetirada(), ""),
+                formatarData(dataDevolucao, ""));
+
+        return textoPesquisavel.toLowerCase().contains(termoBusca);
     }
 
     private boolean filtrarContrato(ContratoAluguel contrato, String termo) {
