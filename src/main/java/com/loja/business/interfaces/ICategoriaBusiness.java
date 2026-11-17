@@ -14,6 +14,4 @@ public interface ICategoriaBusiness {
     public Map<String, Categoria> listar();
 
     public void deletar(String id);
-
-    public void salvarDados();
 }
