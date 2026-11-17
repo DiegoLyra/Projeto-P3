@@ -43,13 +43,4 @@ public class CategoriaRepositoryFake implements ICategoriaRepository {
         return false;
     }
 
-    @Override
-    public void carregarDados() {
-        // Fake em memória usado apenas em testes: não há fonte externa para carregar.
-    }
-
-    @Override
-    public void salvarDados() {
-        // Fake em memória usado apenas em testes: não há necessidade de persistir em disco.
-    }
 }

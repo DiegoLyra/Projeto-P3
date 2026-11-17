@@ -350,7 +350,6 @@ class LojaFacadeTest {
 
         verify(usuarioBusiness).salvarDados();
         verify(itemBusiness).salvarDados();
-        verify(categoriaBusiness).salvarDados();
         verify(fornecedorBusiness).salvarDados();
         verify(contratoBusiness).salvarDados();
         verify(multaBusiness).salvarDados();
@@ -365,7 +364,6 @@ class LojaFacadeTest {
 
         assertDoesNotThrow(() -> facade.salvarTudo());
         verify(usuarioBusiness).salvarDados();
-        verify(categoriaBusiness).salvarDados();
         verify(fornecedorBusiness).salvarDados();
         verify(contratoBusiness).salvarDados();
         verify(multaBusiness).salvarDados();
