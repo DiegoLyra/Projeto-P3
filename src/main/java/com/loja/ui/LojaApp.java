@@ -2,8 +2,8 @@ package com.loja.ui;
 
 import com.loja.business.*;
 import com.loja.business.interfaces.*;
-import com.loja.database.Conexao;
 import com.loja.padrao.facade.LojaFacade;
+import com.loja.repositories.jpa.JPAUtil;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.repositories.*;
 import com.loja.repositories.interfaces.*;
@@ -14,11 +14,6 @@ import javafx.stage.Stage;
 public class LojaApp extends Application {
 
     private ILojaFacade facade;
-
-    @Override
-    public void init() {
-        Conexao.getConexao();
-    }
 
     public static ILojaFacade montarFacade() {
         IUsuarioRepository usuarioRepo = new UsuarioPersistenciaCSV("dados/usuarios.csv");
@@ -52,6 +47,6 @@ public class LojaApp extends Application {
         if (facade != null) {
             facade.salvarTudo();
         }
-        Conexao.fecharConexao();
+        JPAUtil.close();
     }
 }
