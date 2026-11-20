@@ -1,102 +1,75 @@
 package com.loja.repositories;
 
-import com.loja.database.Conexao;
-import com.loja.exceptions.PersistenciaException;
+import com.loja.exceptions.CategoriaException;
 import com.loja.model.Categoria;
 import com.loja.repositories.interfaces.ICategoriaRepository;
+import com.loja.repositories.jpa.JPAUtil;
 
-import java.sql.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CategoriaPersistenciaJPA implements ICategoriaRepository {
 
     @Override
     public void salvar(Categoria categoria) {
-        String sql = "INSERT INTO categorias (id, nome, historico) VALUES (?, ?, ?)";
-        Connection conn = Conexao.getConexao();
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, categoria.getId().toUpperCase());
-            pstmt.setString(2, categoria.getNome());
-            pstmt.setInt(3, categoria.hasHistorico() ? 1 : 0);
-
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new PersistenciaException("Erro ao salvar categoria: " + categoria.getId(), e);
-        }
+        JPAUtil.write(em -> {
+            String id = categoria.getId().toUpperCase();
+            Categoria existente = em.find(Categoria.class, id);
+            if (existente != null) {
+                throw new CategoriaException("Categoria ja existe: " + id);
+            }
+            Categoria paraPersistir = new Categoria(id, categoria.getNome());
+            paraPersistir.setHistorico(categoria.hasHistorico());
+            em.persist(paraPersistir);
+            return null;
+        });
     }
 
     @Override
     public Categoria buscar(String id) {
-        String sql = "SELECT id, nome, historico FROM categorias WHERE id = ?";
-        Connection conn = Conexao.getConexao();
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, id.toUpperCase());
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapearCategoria(rs);
-                }
-            }
-            return null;
-        } catch (SQLException e) {
-            throw new PersistenciaException("Erro ao buscar categoria: " + id, e);
-        }
+        return JPAUtil.read(em -> em.find(Categoria.class, id.toUpperCase()));
     }
 
     @Override
     public Map<String, Categoria> listar() {
-        String sql = "SELECT id, nome, historico FROM categorias";
-        Map<String, Categoria> categorias = new HashMap<>();
-        Connection conn = Conexao.getConexao();
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                Categoria categoria = mapearCategoria(rs);
-                categorias.put(categoria.getId(), categoria);
+        return JPAUtil.read(em -> {
+            TypedQuery<Categoria> query = em.createQuery("SELECT c FROM Categoria c", Categoria.class);
+            List<Categoria> resultados = query.getResultList();
+            Map<String, Categoria> categorias = new HashMap<>();
+            for (Categoria c : resultados) {
+                categorias.put(c.getId(), c);
             }
             return categorias;
-        } catch (SQLException e) {
-            throw new PersistenciaException("Erro ao listar categorias.", e);
-        }
+        });
     }
 
     @Override
     public boolean atualizar(Categoria categoria) {
-        String sql = "UPDATE categorias SET nome = ?, historico = ? WHERE id = ?";
-        Connection conn = Conexao.getConexao();
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, categoria.getNome());
-            pstmt.setInt(2, categoria.hasHistorico() ? 1 : 0);
-            pstmt.setString(3, categoria.getId().toUpperCase());
-
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new PersistenciaException("Erro ao atualizar categoria: " + categoria.getId(), e);
-        }
+        return JPAUtil.write(em -> {
+            String id = categoria.getId().toUpperCase();
+            Categoria existente = em.find(Categoria.class, id);
+            if (existente == null) {
+                return false;
+            }
+            existente.setNome(categoria.getNome());
+            existente.setHistorico(categoria.hasHistorico());
+            return true;
+        });
     }
 
     @Override
     public boolean deletar(String id) {
-        String sql = "DELETE FROM categorias WHERE id = ?";
-        Connection conn = Conexao.getConexao();
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, id.toUpperCase());
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new PersistenciaException("Erro ao deletar categoria: " + id, e);
-        }
-    }
-
-    private Categoria mapearCategoria(ResultSet rs) throws SQLException {
-        Categoria categoria = new Categoria(rs.getString("id"), rs.getString("nome"));
-        categoria.setHistorico(rs.getInt("historico") == 1);
-        return categoria;
+        return JPAUtil.write(em -> {
+            Categoria categoria = em.find(Categoria.class, id.toUpperCase());
+            if (categoria == null) {
+                return false;
+            }
+            em.remove(categoria);
+            return true;
+        });
     }
 }
