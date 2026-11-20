@@ -75,8 +75,4 @@ public class CategoriaBusiness implements ICategoriaBusiness {
         }
         repo.deletar(id);
     }
-
-    public void salvarDados(){
-        this.repo.salvarDados();
-    }
 }
