@@ -1,15 +1,21 @@
 package com.loja.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@Entity 
+@Entity
+@Table(name = "categorias")
 public class Categoria {
 
-    @Id 
+    @Id
     private String id;
-    
+
+    @Column(name = "nome", nullable = false)
     private String nome;
+
+    @Column(name = "historico")
     private boolean historico;
 
     public Categoria(String id, String nome){
