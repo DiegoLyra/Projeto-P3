@@ -28,7 +28,7 @@
         <properties>
             <!-- Conexão com o SQLite (o arquivo .db é criado na pasta onde o app roda) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.sqlite.JDBC"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlite:loja_aluga_tudo.db"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlite:dados/loja.db?foreign_keys=true"/>
 
             <!-- SQLite não vem no hibernate-core: o dialeto é do hibernate-community-dialects -->
             <property name="hibernate.dialect" value="org.hibernate.community.dialect.SQLiteDialect"/>
@@ -39,6 +39,7 @@
             <!-- Mostra no terminal o SQL executado -->
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
+
         </properties>
     </persistence-unit>
 </persistence>
