@@ -1,5 +1,8 @@
 package com.loja.business;
 
+import java.util.Map;
+import java.util.Objects;
+
 import com.loja.business.interfaces.IUsuarioBusiness;
 import com.loja.exceptions.UsuarioException;
 import com.loja.model.Administrador;
@@ -7,9 +10,6 @@ import com.loja.model.Cliente;
 import com.loja.model.Funcionario;
 import com.loja.model.Usuario;
 import com.loja.repositories.interfaces.IUsuarioRepository;
-
-import java.util.Map;
-import java.util.Objects;
 
 public class UsuarioBusiness implements IUsuarioBusiness {
 
@@ -185,10 +185,6 @@ public class UsuarioBusiness implements IUsuarioBusiness {
     @Override
     public void encerrarSessao() {
         usuarioAtual = null;
-    }
-
-    public void salvarDados() {
-        this.usuarioRepository.salvarDados();
     }
 
     /* --------------------------- autorização ---------------------------- */

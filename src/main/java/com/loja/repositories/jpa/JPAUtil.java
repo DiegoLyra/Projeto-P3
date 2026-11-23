@@ -1,18 +1,31 @@
 package com.loja.repositories.jpa;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 import com.loja.exceptions.PersistenciaException;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-import java.util.function.Function;
-
 public final class JPAUtil {
 
     private static volatile EntityManagerFactory emf;
+    // Se a propriedade "loja.db.url" existir (nos testes), usa esse banco no lugar do persistence.xml
+    private static final String PROPRIEDADE_URL = "loja.db.url";
 
     private JPAUtil() {
+    }
+
+    private static EntityManagerFactory criarFactory() {
+        Map<String, String> config = new HashMap<>();
+        String url = System.getProperty(PROPRIEDADE_URL);
+        if (url != null && !url.isBlank()) {
+            config.put("jakarta.persistence.jdbc.url", url);
+        }
+        return Persistence.createEntityManagerFactory("loja", config);
     }
 
     public static EntityManager getEntityManager() {
@@ -21,7 +34,7 @@ public final class JPAUtil {
             synchronized (JPAUtil.class) {
                 factory = emf;
                 if (factory == null) {
-                    factory = Persistence.createEntityManagerFactory("loja");
+                    factory = criarFactory();                    
                     emf = factory;
                 }
             }

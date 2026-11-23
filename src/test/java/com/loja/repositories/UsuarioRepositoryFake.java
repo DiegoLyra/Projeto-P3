@@ -1,12 +1,12 @@
 package com.loja.repositories;
 
-import com.loja.model.Usuario;
-import com.loja.repositories.interfaces.IUsuarioRepository;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.loja.model.Usuario;
+import com.loja.repositories.interfaces.IUsuarioRepository;
 
 public class UsuarioRepositoryFake implements IUsuarioRepository {
     private Map<String, Usuario> usuarios = new HashMap<>();
@@ -53,13 +53,4 @@ public class UsuarioRepositoryFake implements IUsuarioRepository {
         return usuarios.remove(id) != null;
     }
 
-    @Override 
-    public void carregarDados() {
-        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
-    }
-
-    @Override 
-    public void salvarDados() {
-        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
-    }
 }

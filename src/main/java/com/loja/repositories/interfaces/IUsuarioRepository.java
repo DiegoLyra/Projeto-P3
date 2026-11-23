@@ -1,8 +1,8 @@
 package com.loja.repositories.interfaces;
 
-import com.loja.model.Usuario;
-
 import java.util.Map;
+
+import com.loja.model.Usuario;
 
 public interface IUsuarioRepository {
 
@@ -20,7 +20,4 @@ public interface IUsuarioRepository {
 
     boolean deletar(String id);
 
-    void carregarDados();
-
-    void salvarDados();
 }

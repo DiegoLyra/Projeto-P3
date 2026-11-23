@@ -1,0 +1,1 @@
+INSERT INTO categorias VALUES('CAT001',0,'TELEVISAO');

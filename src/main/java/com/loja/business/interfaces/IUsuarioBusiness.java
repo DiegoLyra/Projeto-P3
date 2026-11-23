@@ -1,8 +1,9 @@
 package com.loja.business.interfaces;
 
+import java.util.Map;
+
 import com.loja.model.Cliente;
 import com.loja.model.Usuario;
-import java.util.Map;
 
 public interface IUsuarioBusiness {
     void cadastrar(Usuario usuario);
@@ -30,6 +31,4 @@ public interface IUsuarioBusiness {
     void encerrarSessao();
 
     void registrarHistorico(String clienteId);
-
-    public void salvarDados();
 }
