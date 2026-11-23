@@ -127,11 +127,15 @@
     <build>
         <plugins>
 
-            <!-- Testes JUnit 5 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <!-- Nos testes, o JPA usa um banco separado em target/ (nunca o banco de desenvolvimento) -->
+                    <systemPropertyVariables>
+                    <loja.db.url>jdbc:sqlite:target/teste-loja.db?foreign_keys=true</loja.db.url>                    </systemPropertyVariables>
+                </configuration>
             </plugin>
 
             <!-- JAR executável -->
