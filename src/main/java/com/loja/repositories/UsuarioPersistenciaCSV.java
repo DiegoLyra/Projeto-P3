@@ -1,15 +1,5 @@
 package com.loja.repositories;
 
-import com.loja.exceptions.PersistenciaException;
-import com.loja.model.Administrador;
-import com.loja.model.Cliente;
-import com.loja.model.Funcionario;
-import com.loja.model.Usuario;
-import com.loja.repositories.interfaces.IUsuarioRepository;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -21,10 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.loja.exceptions.PersistenciaException;
+import com.loja.model.Administrador;
+import com.loja.model.Cliente;
+import com.loja.model.Funcionario;
+import com.loja.model.Usuario;
+import com.loja.repositories.interfaces.IUsuarioRepository;
+
 public class UsuarioPersistenciaCSV implements IUsuarioRepository {
 
     private String caminhoArquivo;
-    private final Map<String, Usuario> usuarios;
+    private Map<String, Usuario> usuarios;
     private static final Logger logger = LoggerFactory.getLogger(UsuarioPersistenciaCSV.class);
 
     public UsuarioPersistenciaCSV(String caminhoArquivo) {
@@ -92,7 +92,6 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
         return false;
     }
 
-    @Override
     public void carregarDados() {
         File arquivo = new File(this.caminhoArquivo);
         if (!arquivo.exists()) {
@@ -158,7 +157,6 @@ public class UsuarioPersistenciaCSV implements IUsuarioRepository {
         return null;
     }
 
-    @Override
     public void salvarDados() {
         try (BufferedWriter escritor = new BufferedWriter(new FileWriter(caminhoArquivo))) {
             escritor.write("id;nome;login;senha;perfil;ativo;campoExtra1;campoExtra2");

@@ -1,28 +1,44 @@
 package com.loja.padrao.facade;
 
-import com.loja.business.interfaces.*;
-import com.loja.exceptions.ItemException;
-import com.loja.exceptions.PersistenciaException;
-import com.loja.model.*;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.mockito.Mock;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+import com.loja.business.interfaces.ICategoriaBusiness;
+import com.loja.business.interfaces.IContratoBusiness;
+import com.loja.business.interfaces.IFornecedorBusiness;
+import com.loja.business.interfaces.IItemBusiness;
+import com.loja.business.interfaces.IMultaBusiness;
+import com.loja.business.interfaces.IUsuarioBusiness;
+import com.loja.exceptions.ItemException;
+import com.loja.exceptions.PersistenciaException;
+import com.loja.model.Cliente;
+import com.loja.model.ContratoAluguel;
+import com.loja.model.Item;
+import com.loja.model.Usuario;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -348,7 +364,6 @@ class LojaFacadeTest {
     void salvarTudo_deveChamarSalvarDadosDeTodasAsBusiness() {
         facade.salvarTudo();
 
-        verify(usuarioBusiness).salvarDados();
         verify(itemBusiness).salvarDados();
         verify(fornecedorBusiness).salvarDados();
         verify(contratoBusiness).salvarDados();
@@ -363,7 +378,6 @@ class LojaFacadeTest {
         doThrow(new PersistenciaException("Falha ao salvar")).when(itemBusiness).salvarDados();
 
         assertDoesNotThrow(() -> facade.salvarTudo());
-        verify(usuarioBusiness).salvarDados();
         verify(fornecedorBusiness).salvarDados();
         verify(contratoBusiness).salvarDados();
         verify(multaBusiness).salvarDados();

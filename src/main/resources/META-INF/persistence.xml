@@ -15,7 +15,7 @@
         <!--SO TIRA A ANOTAÇÃO QUANDO ESTIVER PRONTO COM AS ANOTAÇÕES, CONSTRUCTOR E O DAO-->
         <!-- <class>com.loja.model.Fornecedor</class> -->
         <!-- <class>com.loja.model.Item</class> -->
-        <!-- <class>com.loja.model.Usuario</class> -->
+        <!--<class>com.loja.model.Usuario</class>-->
         <!-- <class>com.loja.model.Cliente</class> -->
         <!-- <class>com.loja.model.Funcionario</class> -->
         <!-- <class>com.loja.model.Administrador</class> -->
@@ -28,8 +28,7 @@
         <properties>
             <!-- Conexão com o SQLite (o arquivo .db é criado na pasta onde o app roda) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.sqlite.JDBC"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlite:loja_aluga_tudo.db"/>
-
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlite:loja_aluga_tudo.db?foreign_keys=true"/>
             <!-- SQLite não vem no hibernate-core: o dialeto é do hibernate-community-dialects -->
             <property name="hibernate.dialect" value="org.hibernate.community.dialect.SQLiteDialect"/>
 
