@@ -20,6 +20,7 @@ import com.loja.repositories.FornecedorPersistenciaCSV;
 import com.loja.repositories.ItemPersistenciaCSV;
 import com.loja.repositories.MultaPersistenciaCSV;
 import com.loja.repositories.UsuarioPersistenciaCSV;
+import com.loja.repositories.UsuarioPersistenciaJPA;
 import com.loja.repositories.interfaces.ICategoriaRepository;
 import com.loja.repositories.interfaces.IContratoRepository;
 import com.loja.repositories.interfaces.IFornecedorRepository;
@@ -37,7 +38,7 @@ public class LojaApp extends Application {
     private ILojaFacade facade;
 
     public static ILojaFacade montarFacade() {
-        IUsuarioRepository usuarioRepo = new UsuarioPersistenciaCSV("dados/usuarios.csv");
+        IUsuarioRepository usuarioRepo = new UsuarioPersistenciaJPA();
         IItemRepository itemRepo = new ItemPersistenciaCSV("dados/itens.csv");
         ICategoriaRepository categoriaRepo = new CategoriaPersistenciaJPA();
         IFornecedorRepository fornecedorRepo = new FornecedorPersistenciaCSV("dados/fornecedores.csv");
