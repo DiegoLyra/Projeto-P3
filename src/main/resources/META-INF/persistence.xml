@@ -12,12 +12,12 @@
 
         <!-- Entidades: adicione cada uma SÓ DEPOIS que ela tiver @Entity -->
         <class>com.loja.model.Categoria</class>
+        <class>com.loja.model.Usuario</class>
+        <class>com.loja.model.Funcionario</class>
         <!--SO TIRA A ANOTAÇÃO QUANDO ESTIVER PRONTO COM AS ANOTAÇÕES, CONSTRUCTOR E O DAO-->
         <!-- <class>com.loja.model.Fornecedor</class> -->
         <!-- <class>com.loja.model.Item</class> -->
-        <!--<class>com.loja.model.Usuario</class>-->
         <!-- <class>com.loja.model.Cliente</class> -->
-        <!-- <class>com.loja.model.Funcionario</class> -->
         <!-- <class>com.loja.model.Administrador</class> -->
         <!-- <class>com.loja.model.ContratoAluguel</class> -->
         <!-- <class>com.loja.model.Multa</class> -->
