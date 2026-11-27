@@ -3,14 +3,30 @@ package com.loja.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import jakarta.persistence.*;
+
+
+
+
+@Entity
+@Table(name = "contratos_aluguel")
 public class ContratoAluguel {
+    @Id
+    @Column(name = "id")
     private String id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
     private Item item;
     private LocalDate dataRetirada;
     private LocalDate dataPrevDevolucao;
     private LocalDate dataEfetivaDevolucao;
+
+    @Column(precision = 10, scale = 2)
     private BigDecimal valorTotal;
+
     private String status;
     private Boolean historico;
 
