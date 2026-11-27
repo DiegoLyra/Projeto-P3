@@ -21,6 +21,6 @@ public interface IContratoBusiness {
 
     void atualizar(ContratoAluguel contrato);
 
-    public void salvarDados();
+
 }
 
