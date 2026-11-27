@@ -121,7 +121,4 @@ public class ContratoBusiness implements IContratoBusiness {
         repo.atualizar(contrato);
     }
 
-    public void salvarDados(){
-        this.repo.salvarDados();
-    }
 }

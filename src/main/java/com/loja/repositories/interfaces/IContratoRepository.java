@@ -20,7 +20,4 @@ public interface IContratoRepository {
 
     boolean deletar(String id);
 
-    public void carregarDados();
-
-    public void salvarDados();
 }

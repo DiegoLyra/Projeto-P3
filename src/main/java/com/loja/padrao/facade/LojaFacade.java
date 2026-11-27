@@ -424,7 +424,6 @@ public class LojaFacade implements ILojaFacade {
     public void salvarTudo() {
         salvarComTratamento("itens", itemBusiness::salvarDados);
         salvarComTratamento("fornecedores", fornecedorBusiness::salvarDados);
-        salvarComTratamento("contratos", contratoBusiness::salvarDados);
         salvarComTratamento("multas", multaBusiness::salvarDados);
     }
 
