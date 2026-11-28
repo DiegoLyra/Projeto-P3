@@ -1,3 +1,4 @@
+
 package com.loja.repositories;
 
 import com.loja.model.Cliente;
@@ -32,19 +33,29 @@ public class ContratoRepositoryFake implements IContratoRepository {
     public Map<String, ContratoAluguel> listar(String status) {
         return contratos.entrySet().stream()
                 .filter(e -> e.getValue().getStatus().equalsIgnoreCase(status))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));
     }
 
     @Override
     public Map<String, ContratoAluguel> listar(Cliente cliente) {
         return contratos.entrySet().stream()
-                .filter(e -> e.getValue().getCliente().getId().equals(cliente.getId()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .filter(e -> e.getValue().getCliente().getId()
+                        .equals(cliente.getId()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));
     }
 
     @Override
     public boolean atualizar(ContratoAluguel contrato) {
-        if (!contratos.containsKey(contrato.getId())) return false;
+        if (!contratos.containsKey(contrato.getId())) {
+            return false;
+        }
+
         contratos.put(contrato.getId(), contrato);
         return true;
     }
@@ -52,15 +63,5 @@ public class ContratoRepositoryFake implements IContratoRepository {
     @Override
     public boolean deletar(String id) {
         return contratos.remove(id) != null;
-    }
-
-    @Override
-    public void carregarDados() {
-        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
-    }
-
-    @Override
-    public void salvarDados() {
-        throw new UnsupportedOperationException("Operação não suportada no repositório fake em memória.");
     }
 }

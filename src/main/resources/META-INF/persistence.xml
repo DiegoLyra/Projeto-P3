@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="3.0"
              xmlns="https://jakarta.ee/xml/ns/persistence"
@@ -10,36 +11,41 @@
         <!-- Implementação da JPA usada no projeto -->
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!-- Entidades: adicione cada uma SÓ DEPOIS que ela tiver @Entity -->
+        <!-- Entidades registradas na unidade de persistência -->
         <class>com.loja.model.Categoria</class>
         <class>com.loja.model.Usuario</class>
         <class>com.loja.model.Funcionario</class>
         <class>com.loja.model.Cliente</class>
         <class>com.loja.model.Administrador</class>
-        <!--SO TIRA A ANOTAÇÃO QUANDO ESTIVER PRONTO COM AS ANOTAÇÕES, CONSTRUCTOR E O DAO-->
-        <!-- <class>com.loja.model.Fornecedor</class> -->
-        <!-- <class>com.loja.model.Item</class> -->
-        <!-- <class>com.loja.model.Cliente</class> -->
-        <!-- <class>com.loja.model.Administrador</class> -->
-        <!-- <class>com.loja.model.ContratoAluguel</class> -->
-        <!-- <class>com.loja.model.Multa</class> -->
+        <class>com.loja.model.Item</class>
+        <class>com.loja.model.ContratoAluguel</class>
 
-        <!-- Só usa as classes listadas acima -->
+        <!-- Só utiliza as classes listadas acima -->
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
         <properties>
-            <!-- Conexão com o SQLite (o arquivo .db é criado na pasta onde o app roda) -->
-            <property name="jakarta.persistence.jdbc.driver" value="org.sqlite.JDBC"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlite:loja_aluga_tudo.db?foreign_keys=true"/>
-            <!-- SQLite não vem no hibernate-core: o dialeto é do hibernate-community-dialects -->
-            <property name="hibernate.dialect" value="org.hibernate.community.dialect.SQLiteDialect"/>
+            <!-- Conexão com o SQLite -->
+            <property name="jakarta.persistence.jdbc.driver"
+                      value="org.sqlite.JDBC"/>
 
-            <!-- Cria/atualiza as tabelas a partir das entidades, sem apagar dados -->
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:sqlite:loja_aluga_tudo.db?foreign_keys=true"/>
 
-            <!-- Mostra no terminal o SQL executado -->
-            <property name="hibernate.show_sql" value="true"/>
-            <property name="hibernate.format_sql" value="true"/>
+            <!-- Dialeto SQLite -->
+            <property name="hibernate.dialect"
+                      value="org.hibernate.community.dialect.SQLiteDialect"/>
+
+            <!-- Cria ou atualiza as tabelas sem apagar dados -->
+            <property name="hibernate.hbm2ddl.auto"
+                      value="update"/>
+
+            <!-- Exibe o SQL executado no terminal -->
+            <property name="hibernate.show_sql"
+                      value="true"/>
+
+            <property name="hibernate.format_sql"
+                      value="true"/>
         </properties>
+
     </persistence-unit>
 </persistence>

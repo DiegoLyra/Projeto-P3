@@ -1,3 +1,4 @@
+
 package com.loja.padrao.facade;
 
 import java.math.BigDecimal;
@@ -360,13 +361,12 @@ class LojaFacadeTest {
     }
 
     @Test
-    @DisplayName("salvarTudo: deve chamar salvarDados de todas as camadas de negócio")
-    void salvarTudo_deveChamarSalvarDadosDeTodasAsBusiness() {
+    @DisplayName("salvarTudo: deve chamar salvarDados das camadas que utilizam CSV")
+    void salvarTudo_deveChamarSalvarDadosDasCamadasCSV() {
         facade.salvarTudo();
 
         verify(itemBusiness).salvarDados();
         verify(fornecedorBusiness).salvarDados();
-        verify(contratoBusiness).salvarDados();
         verify(multaBusiness).salvarDados();
     }
 
@@ -378,8 +378,8 @@ class LojaFacadeTest {
         doThrow(new PersistenciaException("Falha ao salvar")).when(itemBusiness).salvarDados();
 
         assertDoesNotThrow(() -> facade.salvarTudo());
+
         verify(fornecedorBusiness).salvarDados();
-        verify(contratoBusiness).salvarDados();
         verify(multaBusiness).salvarDados();
     }
 
