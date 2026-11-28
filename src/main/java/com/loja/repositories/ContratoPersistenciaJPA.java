@@ -1,18 +1,13 @@
-
 package com.loja.repositories;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.loja.exceptions.PersistenciaException;
 import com.loja.model.Cliente;
 import com.loja.model.ContratoAluguel;
-import com.loja.model.Item;
 import com.loja.repositories.interfaces.IContratoRepository;
 import com.loja.repositories.jpa.JPAUtil;
-
-import jakarta.persistence.EntityManager;
 
 public class ContratoPersistenciaJPA implements IContratoRepository {
 
@@ -21,15 +16,10 @@ public class ContratoPersistenciaJPA implements IContratoRepository {
         JPAUtil.write(em -> {
             contrato.setId(contrato.getId().toUpperCase());
 
-            // Obtém referências gerenciadas pelo JPA
             Cliente cliente = em.getReference(
                     Cliente.class, contrato.getCliente().getId());
 
-            Item item = em.getReference(
-                    Item.class, contrato.getItem().getId());
-
             contrato.setCliente(cliente);
-            contrato.setItem(item);
 
             em.persist(contrato);
             return null;
@@ -41,7 +31,6 @@ public class ContratoPersistenciaJPA implements IContratoRepository {
         return JPAUtil.read(em -> em.createQuery(
                 "SELECT c FROM ContratoAluguel c " +
                 "LEFT JOIN FETCH c.cliente " +
-                "LEFT JOIN FETCH c.item " +
                 "WHERE c.id = :id",
                 ContratoAluguel.class)
                 .setParameter("id", id.toUpperCase())
@@ -55,8 +44,7 @@ public class ContratoPersistenciaJPA implements IContratoRepository {
         return JPAUtil.read(em -> {
             List<ContratoAluguel> contratos = em.createQuery(
                     "SELECT DISTINCT c FROM ContratoAluguel c " +
-                    "LEFT JOIN FETCH c.cliente " +
-                    "LEFT JOIN FETCH c.item",
+                    "LEFT JOIN FETCH c.cliente",
                     ContratoAluguel.class)
                     .getResultList();
 
@@ -70,7 +58,6 @@ public class ContratoPersistenciaJPA implements IContratoRepository {
             List<ContratoAluguel> contratos = em.createQuery(
                     "SELECT DISTINCT c FROM ContratoAluguel c " +
                     "LEFT JOIN FETCH c.cliente " +
-                    "LEFT JOIN FETCH c.item " +
                     "WHERE c.cliente.id = :clienteId",
                     ContratoAluguel.class)
                     .setParameter("clienteId", cliente.getId())
@@ -86,7 +73,6 @@ public class ContratoPersistenciaJPA implements IContratoRepository {
             List<ContratoAluguel> contratos = em.createQuery(
                     "SELECT DISTINCT c FROM ContratoAluguel c " +
                     "LEFT JOIN FETCH c.cliente " +
-                    "LEFT JOIN FETCH c.item " +
                     "WHERE UPPER(c.status) = UPPER(:status)",
                     ContratoAluguel.class)
                     .setParameter("status", status)
@@ -113,11 +99,6 @@ public class ContratoPersistenciaJPA implements IContratoRepository {
             if (contrato.getCliente() != null) {
                 contrato.setCliente(em.getReference(
                         Cliente.class, contrato.getCliente().getId()));
-            }
-
-            if (contrato.getItem() != null) {
-                contrato.setItem(em.getReference(
-                        Item.class, contrato.getItem().getId()));
             }
 
             em.merge(contrato);
