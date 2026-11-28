@@ -15,7 +15,7 @@ import com.loja.business.interfaces.IUsuarioBusiness;
 import com.loja.padrao.facade.LojaFacade;
 import com.loja.padrao.facade.interfaces.ILojaFacade;
 import com.loja.repositories.CategoriaPersistenciaJPA;
-import com.loja.repositories.ContratoPersistenciaCSV;
+import com.loja.repositories.ContratoPersistenciaJPA;
 import com.loja.repositories.FornecedorPersistenciaCSV;
 import com.loja.repositories.ItemPersistenciaCSV;
 import com.loja.repositories.MultaPersistenciaCSV;
@@ -42,7 +42,7 @@ public class LojaApp extends Application {
         IItemRepository itemRepo = new ItemPersistenciaCSV("dados/itens.csv");
         ICategoriaRepository categoriaRepo = new CategoriaPersistenciaJPA();
         IFornecedorRepository fornecedorRepo = new FornecedorPersistenciaCSV("dados/fornecedores.csv");
-        IContratoRepository contratoRepo = new ContratoPersistenciaCSV("dados/contratos.csv");
+        IContratoRepository contratoRepo = new ContratoPersistenciaJPA();
         IMultaRepository multaRepo = new MultaPersistenciaCSV("dados/multas.csv");
 
         IUsuarioBusiness usuarioBusiness = new UsuarioBusiness(usuarioRepo);
